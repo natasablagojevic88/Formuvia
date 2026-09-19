@@ -21,7 +21,7 @@ The web client lives in a separate repository: **FormuviaFront** (Angular).
 |---|---|
 | Java (JDK) | 21 |
 | Maven | 3.9+ |
-| PostgreSQL | 14+ |
+| PostgreSQL | 18+ (uses the built-in `uuidv7()` function) |
 | Servlet container | Jakarta Servlet 6.1 (e.g. Apache Tomcat 11) |
 
 ## Installation
