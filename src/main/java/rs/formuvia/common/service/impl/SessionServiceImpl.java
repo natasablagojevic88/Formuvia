@@ -1,0 +1,85 @@
+package rs.formuvia.common.service.impl;
+
+import java.net.HttpURLConnection;
+import java.util.Set;
+
+import org.jvnet.hk2.annotations.Service;
+
+import jakarta.inject.Inject;
+import rs.formuvia.administration.entity.AppUser;
+import rs.formuvia.administration.service.impl.AppUserServiceImpl;
+import rs.formuvia.common.dto.ChangePasswordDTO;
+import rs.formuvia.common.dto.MenuDTO;
+import rs.formuvia.common.dto.UserInfo;
+import rs.formuvia.common.service.CommonService;
+import rs.formuvia.common.service.ResourceBundleService;
+import rs.formuvia.common.service.SessionService;
+import rs.formuvia.database.service.DatabaseService;
+import rs.formuvia.exceptions.CommonException;
+import rs.formuvia.utils.MenuInfo;
+import rs.formuvia.utils.StaticData;
+import rs.formuvia.utils.StringUtils;
+
+@Service
+public class SessionServiceImpl implements SessionService {
+
+	@Inject
+	private CommonService commonService;
+
+	@Inject
+	private ResourceBundleService resourceBundleService;
+
+	private final String PASSWORDS_NOT_EQUAL_MESSAGE = "passwordsNotEqual";
+
+	@Inject
+	private DatabaseService databaseService;
+
+	@Override
+	public UserInfo getUserInfo() {
+		AppUser appUser = commonService.getUser();
+		UserInfo userInfo = new UserInfo();
+		userInfo.setName(appUser.getName());
+		userInfo.setSurname(appUser.getSurname());
+		userInfo.setUsername(appUser.getUsername());
+
+		Set<String> roles = commonService.getRoles();
+
+		for (MenuInfo menuInfo : StaticData.menuInfos) {
+
+			loadMenu(roles, userInfo, menuInfo, null);
+		}
+
+		return userInfo;
+	}
+
+	private void loadMenu(Set<String> roles, UserInfo userInfo, MenuInfo menuInfo, MenuDTO parent) {
+		if (StringUtils.hasText(menuInfo.getRole()) && !roles.contains(menuInfo.getRole())) {
+			return;
+		}
+		MenuDTO menuDTO = new MenuDTO();
+		menuDTO.setIcon(menuInfo.getIcon());
+		menuDTO.setName(resourceBundleService.getText(menuInfo.getName()));
+		menuDTO.setUrl(menuInfo.getUrl());
+
+		for (MenuInfo child : menuInfo.getItems()) {
+			loadMenu(roles, userInfo, child, menuDTO);
+		}
+
+		if (parent == null)
+			userInfo.getMenu().add(menuDTO);
+		else
+			parent.getChildren().add(menuDTO);
+	}
+
+	@Override
+	public void changePassword(ChangePasswordDTO changePasswordDTO) {
+		if (!changePasswordDTO.getNewPassword().equals(changePasswordDTO.getNewPasswordAgain())) {
+			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, PASSWORDS_NOT_EQUAL_MESSAGE, null);
+		}
+
+		AppUser appUser = this.databaseService.findById(commonService.getUser().getId(), AppUser.class);
+		appUser.setPassword(AppUserServiceImpl.convertPasswordToHash(changePasswordDTO.getNewPassword()));
+		this.databaseService.save(appUser);
+	}
+
+}

@@ -1,0 +1,18 @@
+package rs.formuvia.database.enums;
+
+public enum SearchOperation {
+	
+	EQUALS,
+	NOT_EQUALS,
+	STARTS_WITH,
+	ENDS_WITH,
+	CONTAINS,
+	LESS_THEN,
+	GREATER_THEN,
+	LESS_THEN_OR_EQUALS,
+	GREATER_THEN_OR_EQUALS,
+	BETWEEN,
+	IS_NULL,
+	IS_NOT_NULL
+
+}

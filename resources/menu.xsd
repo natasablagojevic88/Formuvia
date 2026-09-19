@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	elementFormDefault="qualified">
+
+	<xs:element name="menu">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="item" type="itemType" minOccurs="0" maxOccurs="unbounded" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:complexType name="itemType">
+		<xs:sequence>
+			<xs:element name="item" type="itemType" minOccurs="0" maxOccurs="unbounded" />
+		</xs:sequence>
+		<xs:attribute name="name" type="nonEmptyString" use="required" />
+		<xs:attribute name="url" type="urlType" use="optional" />
+		<xs:attribute name="role" type="nonEmptyString" use="optional" />
+		<xs:attribute name="icon" type="xs:string" use="optional" />
+	</xs:complexType>
+
+	<xs:simpleType name="nonEmptyString">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1" />
+		</xs:restriction>
+	</xs:simpleType>
+
+	<xs:simpleType name="urlType">
+		<xs:restriction base="xs:string">
+			<xs:pattern value="/[A-Za-z0-9/_\-]*" />
+		</xs:restriction>
+	</xs:simpleType>
+
+</xs:schema>

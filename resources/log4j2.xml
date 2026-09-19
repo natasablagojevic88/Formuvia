@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+
+	<Properties>
+		<Property name="logFile">${sys:log.path:-${sys:user.home}/.logs/formuvia.log}
+		</Property>
+		<Property name="pattern">%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%t]
+			%logger{36} - %msg%n</Property>
+	</Properties>
+
+
+	<Appenders>
+		<Console name="Console" target="SYSTEM_OUT">
+			<PatternLayout pattern="${pattern}" />
+		</Console>
+
+		<RollingFile name="File" fileName="${logFile}"
+			filePattern="${logFile}-%d{yyyy-MM-dd}-%i.gz">
+			<PatternLayout pattern="${pattern}" />
+			<Policies>
+				<TimeBasedTriggeringPolicy />
+				<SizeBasedTriggeringPolicy size="10 MB" />
+			</Policies>
+			<DefaultRolloverStrategy max="30" />
+		</RollingFile>
+	</Appenders>
+
+	<Loggers>
+		<Logger name="rs.formuvia" level="debug" additivity="false">
+			<AppenderRef ref="Console" />
+			<AppenderRef ref="File" />
+		</Logger>
+
+
+		<Logger
+			name="com.mchange.v2.c3p0.impl.C3P0PooledConnectionPool"
+			level="error" />
+
+		<Root level="warn">
+			<AppenderRef ref="Console" />
+			<AppenderRef ref="File" />
+		</Root>
+	</Loggers>
+</Configuration>
+
+              

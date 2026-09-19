@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<menu xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="menu.xsd">
+	<item icon="fa-solid fa-gear" name="menu.administration" role="admin">
+		<item icon="fa-solid fa-users" name="menu.users" url="/users" />
+	</item>
+</menu>
