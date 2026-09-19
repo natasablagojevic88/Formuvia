@@ -10,6 +10,7 @@ import lombok.Setter;
 import rs.formuvia.administration.entity.AppUser;
 import rs.formuvia.database.annotations.EntityClass;
 import rs.formuvia.database.annotations.HideInTable;
+import rs.formuvia.database.annotations.InitSort;
 import rs.formuvia.utils.RoleList;
 
 @Setter
@@ -23,6 +24,7 @@ public class AppUserDTO {
 	private UUID id;
 
 	@NotNull
+	@InitSort
 	private String username;
 
 	@HideInTable
