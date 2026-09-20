@@ -170,7 +170,7 @@ public class GenerateQueryFromDTO<C> implements ExecuteQuery<C> {
 		return fields.stream().filter(a -> a.getName().equals(fieldName)).count() != 0;
 	}
 
-	private static String findTableName(Class<?> inClass) {
+	public static String findTableName(Class<?> inClass) {
 		if (inClass.isAnnotationPresent(Table.class)) {
 			return inClass.getAnnotation(Table.class).name();
 		} else {

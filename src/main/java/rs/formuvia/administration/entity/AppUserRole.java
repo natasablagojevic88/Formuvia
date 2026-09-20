@@ -6,6 +6,7 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -20,7 +21,9 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name="appuser_role",uniqueConstraints = @UniqueConstraint(columnNames = { "appuser", "role" },name="appuser_role_unique1"))
+@Table(name="appuser_role",uniqueConstraints = @UniqueConstraint(columnNames = { "appuser", "role" },name="appuser_role_unique1"),
+	indexes = @Index(columnList = "appuser",name="appuser_role_index1")
+		)
 public class AppUserRole {
 
 	@Id

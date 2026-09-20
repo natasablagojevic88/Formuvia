@@ -13,6 +13,12 @@ public class ApiRoute {
 	public static final String appuserTable = "/appuser/table";
 	public static final String appuserAllRoles = "/appuser/all-roles";
 
+	public static final String role = "/role";
+	public static final String roleId = "/role/{id}";
+	public static final String roleTable = "/role/table";
+
 	public static final String exportTable = "/export-table";
+
+	public static final String history = "/history/{className}/{id}";
 
 }

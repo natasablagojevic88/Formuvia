@@ -1,5 +1,7 @@
 package rs.formuvia.exceptions;
 
+import java.lang.reflect.Field;
+
 import jakarta.ws.rs.WebApplicationException;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,13 +12,11 @@ public class NotNullException extends WebApplicationException{
 
 	private static final long serialVersionUID = 1L;
 
-	private Class<?> fieldClass;
-	
-	private String field;
+	private Field field;
 
-	public NotNullException(Class<?> fieldClass, String field) {
+
+	public NotNullException(Field field) {
 		super("fieldRequired");
-		this.fieldClass = fieldClass;
 		this.field = field;
 	}
 	

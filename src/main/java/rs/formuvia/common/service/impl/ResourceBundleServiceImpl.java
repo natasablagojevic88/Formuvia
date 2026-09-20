@@ -24,7 +24,7 @@ public class ResourceBundleServiceImpl implements ResourceBundleService {
 		this.httpServletRequest = httpServletRequest;
 	}
 
-	private final String[] RESOURCE_BUNDLE_PATH = new String[] { "error", "dto", "menu", "common" };
+	private final String[] RESOURCE_BUNDLE_PATH = new String[] { "error", "dto", "menu", "common", "enum" };
 	private final String RESOURCE_BUNDLE_PREFIX = "resource_bundle_";
 
 	@Inject

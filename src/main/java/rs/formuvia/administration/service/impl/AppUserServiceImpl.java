@@ -31,6 +31,7 @@ public class AppUserServiceImpl implements AppUserService {
 		DatabaseTable<AppUserDTO> databaseTable = databaseService.createTable(databaseParameter, AppUserDTO.class);
 		databaseTable.getList().forEach(a -> {
 			a.setPassword(null);
+			a.setUserRoles(rolesForUser(a.getId()));
 		});
 		return databaseTable;
 	}

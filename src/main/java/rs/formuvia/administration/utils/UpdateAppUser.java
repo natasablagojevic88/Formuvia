@@ -14,12 +14,14 @@ import rs.formuvia.administration.dto.RoleDTO;
 import rs.formuvia.administration.entity.AppUser;
 import rs.formuvia.administration.entity.AppUserRole;
 import rs.formuvia.administration.entity.Role;
+import rs.formuvia.database.enums.SearchOperation;
 import rs.formuvia.database.service.DatabaseService;
 import rs.formuvia.database.service.impl.DatabaseServiceImpl;
 import rs.formuvia.database.utils.DatabaseFilter;
 import rs.formuvia.database.utils.DatabaseParameter;
 import rs.formuvia.database.utils.ExecuteQuery;
 import rs.formuvia.exceptions.NotNullException;
+import rs.formuvia.exceptions.UniqueException;
 import rs.formuvia.utils.CheckAdmin;
 import rs.formuvia.utils.StringUtils;
 
@@ -36,7 +38,26 @@ public class UpdateAppUser implements ExecuteQuery<AppUser> {
 		AppUser appUser = this.appUserDTO.getId() == null ? new AppUser()
 				: this.databaseService.findById(appUserDTO.getId(), AppUser.class, connection);
 		if (appUserDTO.getId() == null && (!StringUtils.hasText(appUserDTO.getPassword()))) {
-			throw new NotNullException(appUserDTO.getClass(), "password");
+			throw new NotNullException(UniqueException.findFieldFromList(AppUserDTO.class, "password"));
+		}
+
+		if (appUser.getId() != null) {
+			if (this.databaseService.exists(
+					DatabaseParameter.valueOf(new DatabaseFilter[] {
+							DatabaseFilter.valueOf("username", appUserDTO.getUsername()),
+							DatabaseFilter.valueOf("id", SearchOperation.NOT_EQUALS, appUserDTO.getId().toString()) }),
+					AppUser.class, connection)) {
+				throw new UniqueException(UniqueException.findFieldFromList(AppUserDTO.class, "username"),
+						appUserDTO.getUsername());
+			}
+		} else {
+			if (this.databaseService.exists(
+					DatabaseParameter.valueOf(
+							new DatabaseFilter[] { DatabaseFilter.valueOf("username", appUserDTO.getUsername()) }),
+					AppUser.class, connection)) {
+				throw new UniqueException(UniqueException.findFieldFromList(AppUserDTO.class, "username"),
+						appUserDTO.getUsername());
+			}
 		}
 
 		if (StringUtils.hasText(appUserDTO.getPassword())) {

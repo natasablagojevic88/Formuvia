@@ -119,7 +119,7 @@ public class CustomContainerRequestFilter implements ContainerRequestFilter {
 									continue;
 								}
 
-								throw new NotNullException(bodyClass, field.getName());
+								throw new NotNullException(field);
 							} catch (Exception e) {
 								throw new WebApplicationException(e);
 							}

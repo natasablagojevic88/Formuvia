@@ -11,9 +11,13 @@ import rs.formuvia.database.enums.Direction;
 @NoArgsConstructor
 @AllArgsConstructor
 public class QueryDatabaseOrder {
-	
+
 	private String fieldName;
-	
+
 	private Direction direction;
+
+	public static QueryDatabaseOrder valueOf(String fieldName, Direction direction) {
+		return new QueryDatabaseOrder(fieldName, direction);
+	}
 
 }

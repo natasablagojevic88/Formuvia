@@ -1,5 +1,6 @@
 package rs.formuvia.utils;
 
+import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 
 import org.apache.logging.log4j.LogManager;
@@ -14,10 +15,11 @@ import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
 import rs.formuvia.common.service.ResourceBundleService;
 import rs.formuvia.common.service.impl.LoginServiceImpl;
-import rs.formuvia.exceptions.UnAuthorizedException;
 import rs.formuvia.exceptions.CommonException;
 import rs.formuvia.exceptions.ForbiddenException;
 import rs.formuvia.exceptions.NotNullException;
+import rs.formuvia.exceptions.UnAuthorizedException;
+import rs.formuvia.exceptions.UniqueException;
 import rs.formuvia.exceptions.WrongLoginException;
 
 @Provider
@@ -54,9 +56,13 @@ public class CustomDefaultExceptionMapper implements ExceptionMapper<Throwable> 
 		if (lastException.getClass().equals(ForbiddenException.class)) {
 			return toForbiddenException((ForbiddenException) lastException);
 		}
-		
+
 		if (lastException.getClass().equals(CommonException.class)) {
 			return toCommonException((CommonException) lastException);
+		}
+
+		if (lastException.getClass().equals(UniqueException.class)) {
+			return toUniqueException((UniqueException) lastException);
 		}
 
 		ErrorDetail errorDetail = new ErrorDetail();
@@ -75,16 +81,21 @@ public class CustomDefaultExceptionMapper implements ExceptionMapper<Throwable> 
 	}
 
 	private Response toNotNullException(NotNullException notNullException) {
-		this.logger.error(notNullException.getMessage() + ":" + notNullException.getFieldClass().getSimpleName() + ":"
-				+ notNullException.getField());
+		this.logger.error(
+				notNullException.getMessage() + ":" + notNullException.getField().getDeclaringClass().getSimpleName()
+						+ ":" + notNullException.getField().getName());
 		ErrorDetail errorDetail = new ErrorDetail();
 		errorDetail.setStatus(HttpURLConnection.HTTP_BAD_REQUEST);
 		String message = this.resourceBundleService.getText(notNullException.getMessage());
 		message += ": ";
-		message += this.resourceBundleService
-				.getText(notNullException.getFieldClass().getSimpleName() + "." + notNullException.getField());
+		message += this.resourceBundleService.getText(createFieldName(notNullException.getField()));
 		errorDetail.setMessage(message);
 		return Response.status(errorDetail.getStatus()).entity(errorDetail).build();
+	}
+	
+	public static String createFieldName(Field field) {
+		return field.getDeclaringClass().getSimpleName()
+				+ "." + field.getName();
 	}
 
 	private Response toUnauthorizedException(UnAuthorizedException forbiddenException) {
@@ -104,15 +115,28 @@ public class CustomDefaultExceptionMapper implements ExceptionMapper<Throwable> 
 		errorDetail.setMessage(this.resourceBundleService.getText(forbiddenException.getMessage()));
 		return Response.status(errorDetail.getStatus()).entity(errorDetail).build();
 	}
-	
+
 	private Response toCommonException(CommonException commonException) {
-		this.logger.error(commonException.getMessage(),commonException);
+		this.logger.error(commonException.getInMessage() + " : " + commonException.getInObject(), commonException);
 		ErrorDetail errorDetail = new ErrorDetail();
 		errorDetail.setStatus(commonException.getStatus());
-		String message=this.resourceBundleService.getText(commonException.getInMessage());
-		if(StringUtils.notNull(commonException.getInObject()))
-			message+=": "+commonException.getInObject();
+		String message = this.resourceBundleService.getText(commonException.getInMessage());
+		if (StringUtils.notNull(commonException.getInObject()))
+			message += ": " + commonException.getInObject();
 		errorDetail.setMessage(message);
+		return Response.status(errorDetail.getStatus()).entity(errorDetail).build();
+	}
+
+	private Response toUniqueException(UniqueException uniqueException) {
+		this.logger.error(uniqueException.getMessage() + " : " + uniqueException.getField().getName() + " : "
+				+ uniqueException.getData(), uniqueException);
+		ErrorDetail errorDetail = new ErrorDetail();
+		errorDetail.setStatus(HttpURLConnection.HTTP_BAD_REQUEST);
+		String fieldName = this.resourceBundleService
+				.getText(createFieldName(uniqueException.getField()));
+		String mesage = fieldName + " " + this.resourceBundleService.getText(uniqueException.getMessage());
+		mesage+=": "+uniqueException.getData();
+		errorDetail.setMessage(mesage);
 		return Response.status(errorDetail.getStatus()).entity(errorDetail).build();
 	}
 

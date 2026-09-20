@@ -9,12 +9,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import rs.formuvia.common.entity.Token;
 import rs.formuvia.database.annotations.EntityClass;
+import rs.formuvia.utils.RoleList;
 
 @Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@EntityClass(Token.class)
+@EntityClass(value = Token.class, roles = RoleList.ADMIN)
 public class TokenDTO {
 
 	private UUID id;

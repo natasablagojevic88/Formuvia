@@ -45,7 +45,7 @@ public class ExportTableController {
 					@ApiResponse(responseCode = "401", description = "No valid session, the access token cookie is removed",
 							content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
 	public Response getExportTable(
-			DatabaseTable<?> databaseTable
+			@SuppressWarnings("rawtypes") DatabaseTable databaseTable
 			) {
 		return exportTableService.getExport(databaseTable);
 	}

@@ -21,10 +21,13 @@ import rs.formuvia.administration.entity.AppUser;
 public class StaticData {
 
 	public static List<Class<?>> allClasses = new ArrayList<>();
+	public static Map<Class<?>, List<Field>> classFields = new HashMap<>();
+	public static Map<String,Class<?>> allClassesByName = new HashMap<>();
+	
 	public static Properties appProperties = new Properties();
 	public static BlockingQueue<Connection> connections = new LinkedBlockingQueue<>();
 	public static Set<Connection> allConnections = new HashSet<>();
-	public static Map<Class<?>, List<Field>> classFields = new HashMap<>();
+	
 	public static Scheduler localScheduler;
 	public static Scheduler databaseScheduler;
 	public static Connection databaseListenConnection;

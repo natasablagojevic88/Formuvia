@@ -49,7 +49,7 @@ public class CreateDatabaseTable<C> implements ExecuteQuery<DatabaseTable<C>> {
 		List<C> list = this.databaseService.findAll(databaseParameter, resultClass, connection);
 		DatabaseTable<C> databaseTable = new DatabaseTable<>();
 		databaseTable.setName(this.resourceBundleService.getText(resultClass.getSimpleName() + SUFIX_TITLE_NAME));
-		
+		databaseTable.setClassName(resultClass.getSimpleName());
 		if(StringUtils.hasText(resultClass.getAnnotation(EntityClass.class).saveUrl()))
 			databaseTable.setSaveUrl(resultClass.getAnnotation(EntityClass.class).saveUrl());
 		addColumn(databaseTable);

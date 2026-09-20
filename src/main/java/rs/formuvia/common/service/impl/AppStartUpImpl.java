@@ -70,12 +70,23 @@ public class AppStartUpImpl implements AppStartUp {
 	private final String INIT_SCRIPT_EXECUTE = "execute.scripts";
 	private final String MENU_FILE = "menu.xml";
 	private DatabaseService databaseService = new DatabaseServiceImpl();
+	private final String DUPLICATE_CLASS_NAME_MESSAGE = "Duplicate class name: ";
 
 	@Override
 	public void loadClass() {
 		Reflections reflections = new Reflections(Formuvia.PACKAGE_NAME, Scanners.SubTypes.filterResultsBy(a -> true));
-		StaticData.allClasses = reflections.getSubTypesOf(Object.class).stream().toList();
+		StaticData.allClasses = reflections.getSubTypesOf(Object.class).stream()
+				.filter(a -> a.getEnclosingClass() == null).filter(a -> !a.isSynthetic()).toList();
+		List<String> allClassName = StaticData.allClasses.stream().map(a -> a.getSimpleName()).toList();
+		for (Class<?> inClass : StaticData.allClasses.stream().collect(Collectors.toList())) {
+			if (allClassName.stream().filter(a -> a.equals(inClass.getSimpleName())).count() == 1) {
+				continue;
+			}
+			this.logger.error(DUPLICATE_CLASS_NAME_MESSAGE + inClass.getSimpleName());
+		}
+
 		for (Class<?> inClass : StaticData.allClasses) {
+			StaticData.allClassesByName.put(inClass.getSimpleName(), inClass);
 			List<Field> fields = new ArrayList<>();
 			for (Field field : inClass.getDeclaredFields()) {
 				field.setAccessible(true);
@@ -321,12 +332,12 @@ public class AppStartUpImpl implements AppStartUp {
 		menuInfo.setName(menu.getAttributeValue("name"));
 		menuInfo.setRole(menu.getAttributeValue("role"));
 		menuInfo.setUrl(menu.getAttributeValue("url"));
-		
-		for(Element child:menu.getChildren()) {
+
+		for (Element child : menu.getChildren()) {
 			loadMenuChild(child, menuInfo);
 		}
 
-		if (parent==null)
+		if (parent == null)
 			StaticData.menuInfos.add(menuInfo);
 		else
 			parent.getItems().add(menuInfo);

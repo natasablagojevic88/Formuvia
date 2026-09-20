@@ -12,13 +12,14 @@ import rs.formuvia.database.annotations.EntityClass;
 import rs.formuvia.database.annotations.HideInTable;
 import rs.formuvia.database.annotations.InitSort;
 import rs.formuvia.database.annotations.NotEditableInTable;
+import rs.formuvia.utils.ApiRoute;
 import rs.formuvia.utils.RoleList;
 
 @Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@EntityClass(value=Role.class, roles=RoleList.ADMIN)
+@EntityClass(value=Role.class, roles=RoleList.ADMIN, saveUrl = ApiRoute.role)
 public class RoleDTO {
 
 	@HideInTable
