@@ -15,6 +15,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.quartz.Scheduler;
 
 import rs.formuvia.administration.dto.AppUserRoleDTO;
+import rs.formuvia.administration.dto.RoleDTO;
 import rs.formuvia.administration.entity.AppUser;
 
 public class StaticData {
@@ -31,5 +32,6 @@ public class StaticData {
 
 	public static List<AppUser> appUsers = new ArrayList<>();
 	public static List<AppUserRoleDTO> appUserRoles = new ArrayList<>();
+	public static List<RoleDTO> roles = new ArrayList<>();
 
 }

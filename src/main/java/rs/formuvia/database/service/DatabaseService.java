@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import rs.formuvia.administration.entity.AppUser;
 import rs.formuvia.database.utils.DatabaseParameter;
 import rs.formuvia.database.utils.DatabaseTable;
 import rs.formuvia.database.utils.ExecuteQuery;
@@ -51,4 +52,6 @@ public interface DatabaseService {
 	<C> Boolean exists(DatabaseParameter databaseParameter, Class<C> resultClass);
 	
 	<C> Boolean exists(DatabaseParameter databaseParameter, Class<C> resultClass, Connection connection);
+	
+	AppUser getUser(Connection connection);
 }

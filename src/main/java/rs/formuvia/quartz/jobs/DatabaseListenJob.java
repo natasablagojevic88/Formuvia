@@ -10,6 +10,7 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
 import rs.formuvia.administration.dto.AppUserRoleDTO;
+import rs.formuvia.administration.dto.RoleDTO;
 import rs.formuvia.administration.entity.AppUser;
 import rs.formuvia.database.service.DatabaseService;
 import rs.formuvia.database.service.impl.DatabaseServiceImpl;
@@ -37,7 +38,11 @@ public class DatabaseListenJob implements Job {
 					StaticData.appUsers = this.databaseService.findAll(null, AppUser.class);
 					StaticData.appUserRoles = this.databaseService.findAll(null, AppUserRoleDTO.class);
 					break;
+				case role_listen:
+					StaticData.roles = this.databaseService.findAll(null, RoleDTO.class);
+					break;
 				}
+
 				;
 			}
 		} catch (Exception e) {

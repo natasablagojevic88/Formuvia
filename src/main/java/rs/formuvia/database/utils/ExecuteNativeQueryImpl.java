@@ -15,6 +15,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import lombok.RequiredArgsConstructor;
+import rs.formuvia.database.annotations.SkipColumn;
 import rs.formuvia.database.enums.ColumnType;
 import rs.formuvia.database.service.DatabaseService;
 import rs.formuvia.database.service.impl.DatabaseServiceImpl;
@@ -40,14 +41,14 @@ public class ExecuteNativeQueryImpl<C> implements ExecuteQuery<C> {
 				preparedStatement.setObject(key, parameters.get(key));
 			}
 		}
-
 		ResultSet resultSet = preparedStatement.executeQuery();
 		List<C> list = new ArrayList<>();
 		while (resultSet.next()) {
 			if (StaticData.allClasses.contains(resultClass)) {
 				C object = resultClass.getConstructor().newInstance();
 				int columnIndex = 0;
-				for (Field field : StaticData.classFields.get(resultClass).stream().collect(Collectors.toList())) {
+				for (Field field : StaticData.classFields.get(resultClass).stream()
+						.filter(a -> !a.isAnnotationPresent(SkipColumn.class)).collect(Collectors.toList())) {
 					columnIndex++;
 					field.set(object,
 							getValueFromResultSet(field.getType(), resultSet.getObject(columnIndex), connection));

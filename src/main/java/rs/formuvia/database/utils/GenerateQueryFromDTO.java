@@ -17,6 +17,7 @@ import lombok.Setter;
 import rs.formuvia.common.service.impl.AppStartUpImpl;
 import rs.formuvia.database.annotations.EntityClass;
 import rs.formuvia.database.annotations.InitSort;
+import rs.formuvia.database.annotations.SkipColumn;
 import rs.formuvia.database.enums.ColumnType;
 import rs.formuvia.database.enums.Direction;
 import rs.formuvia.database.service.DatabaseService;
@@ -39,7 +40,8 @@ public class GenerateQueryFromDTO<C> implements ExecuteQuery<C> {
 	public C execute(Connection connection) throws Exception {
 
 		QueryTableInfo queryTableInfo = createQueryTableInfo(this.resultClass);
-		DatabaseParameter databaseParameterFinal = databaseParameter == null ? new DatabaseParameter() : databaseParameter;
+		DatabaseParameter databaseParameterFinal = databaseParameter == null ? new DatabaseParameter()
+				: databaseParameter;
 		if (databaseParameterFinal.getOrders().isEmpty()) {
 			List<Field> fieldWithInitOrder = StaticData.classFields.get(resultClass).stream()
 					.filter(a -> a.isAnnotationPresent(InitSort.class)).collect(Collectors.toList());
@@ -70,7 +72,8 @@ public class GenerateQueryFromDTO<C> implements ExecuteQuery<C> {
 	}
 
 	public static QueryTableInfo createQueryTableInfo(Class<?> resultClass) {
-		List<Field> fields = StaticData.classFields.get(resultClass).stream().collect(Collectors.toList());
+		List<Field> fields = StaticData.classFields.get(resultClass).stream()
+				.filter(a -> !a.isAnnotationPresent(SkipColumn.class)).collect(Collectors.toList());
 		String tableName = findTableName(resultClass);
 		QueryTableInfo queryTableInfo = new QueryTableInfo();
 		queryTableInfo.setName(tableName);

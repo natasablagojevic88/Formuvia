@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,6 +35,7 @@ import rs.formuvia.database.utils.DatabaseTable;
 import rs.formuvia.database.utils.ExecuteNativeQueryImpl;
 import rs.formuvia.database.utils.ExecuteQuery;
 import rs.formuvia.database.utils.ExecuteUpdate;
+import rs.formuvia.database.utils.FindAppUser;
 import rs.formuvia.database.utils.GenerateQueryFromDTO;
 import rs.formuvia.exceptions.NoDataFoundException;
 import rs.formuvia.utils.StaticData;
@@ -52,6 +54,7 @@ public class DatabaseServiceImpl implements DatabaseService {
 	private final String RANDOM_UUID_QUERY = "SELECT " + CreateTable.ID_DEFAULT;
 	private final String SET_USER_QUERY = "select set_config('app.app_user_id', ?, true)";
 	private final String SET_IP_ADDRESS_QUERY = "select set_config('app.ip_address', ?, true)";
+	private final Integer SECONDS_TO_WAIT = 5;
 
 	private <C> C readQuery(ExecuteQuery<C> executeQuery) {
 		boolean commit = true;
@@ -60,13 +63,17 @@ public class DatabaseServiceImpl implements DatabaseService {
 		Connection connection = null;
 		try {
 
-			connection = StaticData.connections.take();
 			try {
+				connection = StaticData.connections.poll(SECONDS_TO_WAIT, TimeUnit.SECONDS);
 				String checkConnectionQuery = StaticData.appProperties.getProperty(CHECK_QUERY);
 				PreparedStatement preparedStatement = connection.prepareStatement(checkConnectionQuery);
 				preparedStatement.executeQuery();
 				preparedStatement.close();
 			} catch (Exception e) {
+				try {
+					connection.close();
+				} catch (Exception ignore) {
+				}
 				Integer MAXIMUM_CONNECTION_NUMBER = Integer
 						.valueOf(StaticData.appProperties.get(AppStartUpImpl.CONNECTION_NUMBER).toString());
 				if (StaticData.allConnections.contains(connection)) {
@@ -90,10 +97,12 @@ public class DatabaseServiceImpl implements DatabaseService {
 			PreparedStatement preparedStatement = connection.prepareStatement(SET_USER_QUERY);
 			preparedStatement.setObject(1, userId);
 			preparedStatement.execute();
-			
+			preparedStatement.close();
+
 			preparedStatement = connection.prepareStatement(SET_IP_ADDRESS_QUERY);
 			preparedStatement.setObject(1, commonService.getIpAdress());
 			preparedStatement.execute();
+			preparedStatement.close();
 
 			outObject = executeQuery.execute(connection);
 		} catch (Exception e) {
@@ -101,17 +110,23 @@ public class DatabaseServiceImpl implements DatabaseService {
 			commit = false;
 			outError = e;
 		} finally {
-			try {
-				if (commit)
-					connection.commit();
-				else
-					connection.rollback();
+			if (connection != null) {
+				try {
+					if (commit)
+						connection.commit();
+					else
+						connection.rollback();
 
-				StaticData.connections.offer(connection);
-			} catch (SQLException e) {
-				logger.error(e.getMessage(), e);
-				StaticData.connections.offer(connection);
-				throw new WebApplicationException(e);
+				} catch (SQLException e) {
+					logger.error(e.getMessage(), e);
+					try {
+						connection.rollback();
+					} catch (Exception ignore) {
+					}
+					throw new WebApplicationException(e);
+				} finally {
+					StaticData.connections.offer(connection);
+				}
 			}
 
 		}
@@ -276,5 +291,11 @@ public class DatabaseServiceImpl implements DatabaseService {
 	public <C> Boolean exists(DatabaseParameter databaseParameter, Class<C> resultClass, Connection connection) {
 		CreateExists<C> createExists = new CreateExists<>(databaseParameter, resultClass);
 		return readQueryWithConnection(createExists, connection);
+	}
+
+	@Override
+	public AppUser getUser(Connection connection) {
+		FindAppUser findUser = new FindAppUser();
+		return readQueryWithConnection(findUser, connection);
 	}
 }

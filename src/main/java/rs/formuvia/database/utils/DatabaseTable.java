@@ -16,6 +16,8 @@ public class DatabaseTable<C> {
 	
 	private String name;
 	
+	private String saveUrl;
+	
 	private List<DatabaseColumn> column=new ArrayList<>();
 
 	private List<C> list = new ArrayList<>();

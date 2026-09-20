@@ -22,5 +22,9 @@ public class DatabaseColumn {
 	
 	private ColumnType columnType;
 	
+	private Boolean editable = true;
+	
+	private Boolean required = false;
+	
 	List<ComboboxDTO> listOfValues=new ArrayList<>();
 }

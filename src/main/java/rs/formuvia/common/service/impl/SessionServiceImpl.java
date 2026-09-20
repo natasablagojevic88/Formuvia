@@ -7,7 +7,7 @@ import org.jvnet.hk2.annotations.Service;
 
 import jakarta.inject.Inject;
 import rs.formuvia.administration.entity.AppUser;
-import rs.formuvia.administration.service.impl.AppUserServiceImpl;
+import rs.formuvia.administration.utils.UpdateAppUser;
 import rs.formuvia.common.dto.ChangePasswordDTO;
 import rs.formuvia.common.dto.MenuDTO;
 import rs.formuvia.common.dto.UserInfo;
@@ -78,7 +78,7 @@ public class SessionServiceImpl implements SessionService {
 		}
 
 		AppUser appUser = this.databaseService.findById(commonService.getUser().getId(), AppUser.class);
-		appUser.setPassword(AppUserServiceImpl.convertPasswordToHash(changePasswordDTO.getNewPassword()));
+		appUser.setPassword(UpdateAppUser.convertPasswordToHash(changePasswordDTO.getNewPassword()));
 		this.databaseService.save(appUser);
 	}
 

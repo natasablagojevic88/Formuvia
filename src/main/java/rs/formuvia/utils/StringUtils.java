@@ -11,7 +11,11 @@ public class StringUtils {
 		if(text==null)
 			return false;
 		
-		if(text.trim().length()==0) {
+		if(text.trim().isBlank()) {
+			return false;
+		}
+		
+		if(text.trim().isEmpty()) {
 			return false;
 		}
 		
@@ -23,11 +27,30 @@ public class StringUtils {
 		if(object==null)
 			return false;
 		
-		if(object.toString().trim().length()==0) {
+		if(object.toString().trim().isEmpty()) {
+			return false;
+		}
+		
+		if(object.toString().trim().isBlank()) {
 			return false;
 		}
 		
 		return true;
+	}
+	
+	public static Boolean isNull(Object object) {
+		if(object==null) 
+			return true;
+		
+		if(object.toString().trim().isEmpty()) {
+			return true;
+		}
+		
+		if(object.toString().trim().isBlank()) {
+			return true;
+		}
+		
+		return false;
 	}
 	
 	public static String createStringArray(String[] array) {

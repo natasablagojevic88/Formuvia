@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -11,6 +12,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -21,6 +23,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import rs.formuvia.administration.dto.AppUserDTO;
+import rs.formuvia.administration.dto.RoleDTO;
 import rs.formuvia.administration.service.AppUserService;
 import rs.formuvia.database.utils.DatabaseParameter;
 import rs.formuvia.database.utils.DatabaseTable;
@@ -29,7 +32,7 @@ import rs.formuvia.utils.ErrorDetail;
 import rs.formuvia.utils.RoleList;
 
 @Path("")
-@Tag(name = "Users", description = "Administration of application users: paged table, retrieval, creation, update and deletion. All endpoints require a valid session and the admin role. Passwords are never returned. User roles are not managed through these endpoints.")
+@Tag(name = "Users", description = "Administration of application users: paged table, retrieval, creation, update, deletion and assigning roles. All endpoints require a valid session and the admin role. Passwords are never returned.")
 public class AppUserController {
 
 	@Inject
@@ -66,7 +69,7 @@ public class AppUserController {
 	@RolesAllowed(RoleList.ADMIN)
 	@Operation(
 			summary = "Get user",
-			description = "Returns one user by identifier, used to fill the edit form. The password is always null.",
+			description = "Returns one user by identifier, used to fill the edit form. The password is always null. Besides the user data the response carries userRoles (roles the user has) and allRoles (every role in the application), so the form can offer the full list with the current ones selected.",
 			responses = {
 					@ApiResponse(responseCode = "200", description = "User found",
 							content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = AppUserDTO.class))),
@@ -87,7 +90,7 @@ public class AppUserController {
 	@RolesAllowed(RoleList.ADMIN)
 	@Operation(
 			summary = "Create or update user",
-			description = "Creates a new user when id is empty, otherwise updates the user with that id. Username, first name, last name and the active flag must be set, and the username must be unique. The password is required when creating a user; when updating, an empty or omitted password keeps the existing one. The password is stored as a bcrypt hash. Returns the saved user with its id and without the password.",
+			description = "Creates a new user when id is empty, otherwise updates the user with that id. Username, first name, last name and the active flag must be set, and the username must be unique. The password is required when creating a user; when updating, an empty or omitted password keeps the existing one. The password is stored as a bcrypt hash. Roles are taken from userRoles: roles that are missing from the list are removed from the user and new ones are added, while allRoles is ignored on input. Returns the saved user without the password, with its roles and the list of all roles.",
 			requestBody = @RequestBody(
 					description = "User data; id empty for a new user",
 					required = true,
@@ -101,7 +104,7 @@ public class AppUserController {
 							content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
 					@ApiResponse(responseCode = "403", description = "Current user does not have the admin role",
 							content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
-	public Response getUpdate(AppUserDTO appUserDTO) {
+	public Response getUpdate(@Valid AppUserDTO appUserDTO) {
 		return Response.ok(appUserService.getUpdate(appUserDTO)).build();
 	}
 	
@@ -122,5 +125,24 @@ public class AppUserController {
 	public Response getDelete(@Parameter(description = "User identifier", required = true) @PathParam("id") UUID id) {
 		this.appUserService.getDelete(id);
 		return Response.noContent().build();
+	}
+	
+	@GET
+	@Path(ApiRoute.appuserAllRoles)
+	@Produces(MediaType.APPLICATION_JSON)
+	@RolesAllowed(RoleList.ADMIN)
+	@Operation(
+			summary = "List roles",
+			description = "Returns every role in the application (identifier, code and description), for filling the role picker when a new user is entered. The roles come from the data kept in memory, which is refreshed when the role table changes.",
+			responses = {
+					@ApiResponse(responseCode = "200", description = "All roles",
+							content = @Content(mediaType = MediaType.APPLICATION_JSON,
+									array = @ArraySchema(schema = @Schema(implementation = RoleDTO.class)))),
+					@ApiResponse(responseCode = "401", description = "No valid session",
+							content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+					@ApiResponse(responseCode = "403", description = "Current user does not have the admin role",
+							content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
+	public Response getAllRoles() {
+		return Response.ok(appUserService.getAllRoles()).build();
 	}
 }

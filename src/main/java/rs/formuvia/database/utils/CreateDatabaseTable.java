@@ -7,16 +7,21 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.constraints.NotNull;
 import rs.formuvia.common.dto.ComboboxDTO;
 import rs.formuvia.common.service.ResourceBundleService;
 import rs.formuvia.common.service.impl.ResourceBundleServiceImpl;
+import rs.formuvia.database.annotations.EntityClass;
 import rs.formuvia.database.annotations.HideInTable;
+import rs.formuvia.database.annotations.NotEditableInTable;
+import rs.formuvia.database.annotations.SkipColumn;
 import rs.formuvia.database.enums.ColumnType;
 import rs.formuvia.database.service.DatabaseService;
 import rs.formuvia.database.service.SqlQueryWriterService;
 import rs.formuvia.database.service.impl.DatabaseServiceImpl;
 import rs.formuvia.database.service.impl.SqlQueryWriterServiceImpl;
 import rs.formuvia.utils.StaticData;
+import rs.formuvia.utils.StringUtils;
 
 public class CreateDatabaseTable<C> implements ExecuteQuery<DatabaseTable<C>> {
 
@@ -44,6 +49,9 @@ public class CreateDatabaseTable<C> implements ExecuteQuery<DatabaseTable<C>> {
 		List<C> list = this.databaseService.findAll(databaseParameter, resultClass, connection);
 		DatabaseTable<C> databaseTable = new DatabaseTable<>();
 		databaseTable.setName(this.resourceBundleService.getText(resultClass.getSimpleName() + SUFIX_TITLE_NAME));
+		
+		if(StringUtils.hasText(resultClass.getAnnotation(EntityClass.class).saveUrl()))
+			databaseTable.setSaveUrl(resultClass.getAnnotation(EntityClass.class).saveUrl());
 		addColumn(databaseTable);
 		databaseTable.setList(list);
 		QueryTableInfo queryTableInfo = GenerateQueryFromDTO.createQueryTableInfo(this.resultClass);
@@ -91,10 +99,21 @@ public class CreateDatabaseTable<C> implements ExecuteQuery<DatabaseTable<C>> {
 			}
 
 			databaseColumn.setColumnType(columnType);
+			
+			if(field.isAnnotationPresent(NotEditableInTable.class)) {
+				databaseColumn.setEditable(false);
+			}
+			
+			if(field.isAnnotationPresent(NotNull.class)) {
+				databaseColumn.setRequired(true);
+			}
+			
 			if(!field.isAnnotationPresent(HideInTable.class)) {
 				databaseTable.getColumn().add(databaseColumn);
 			}
-			databaseTable.getAllColumns().add(databaseColumn);
+			if(!field.isAnnotationPresent(SkipColumn.class)) {
+				databaseTable.getAllColumns().add(databaseColumn);
+			}
 
 		}
 	}

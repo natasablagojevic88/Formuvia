@@ -54,7 +54,7 @@ public class CommonServiceImpl implements CommonService {
 	public Locale getUserLocale() {
 
 		if (this.httpServletRequest == null
-				|| (!StringUtils.notNull(httpServletRequest.getAttribute(LOCALE_ATTRIBUTE)))) {
+				|| (StringUtils.isNull(httpServletRequest.getAttribute(LOCALE_ATTRIBUTE)))) {
 			return Locale.forLanguageTag(StaticData.appProperties.getProperty(LOCALE_DEFAULT_PARAMETER).toString());
 		}
 
@@ -99,7 +99,7 @@ public class CommonServiceImpl implements CommonService {
 			return null;
 		}
 
-		if (!StringUtils.notNull(this.httpServletRequest.getAttribute(IP_ADDRESS_ATTRIBUTE))) {
+		if (StringUtils.isNull(this.httpServletRequest.getAttribute(IP_ADDRESS_ATTRIBUTE))) {
 			return null;
 		}
 
@@ -113,7 +113,7 @@ public class CommonServiceImpl implements CommonService {
 			return new HashSet<>();
 		}
 
-		if (!StringUtils.notNull(httpServletRequest.getAttribute(CustomContainerRequestFilter.ROLE_ATTRIBUTE))) {
+		if (StringUtils.isNull(httpServletRequest.getAttribute(CustomContainerRequestFilter.ROLE_ATTRIBUTE))) {
 			return new HashSet<>();
 		}
 

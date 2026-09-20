@@ -7,9 +7,10 @@ The web client lives in a separate repository: **FormuviaFront** (Angular).
 ## Features
 
 - Login with cookie-based sessions (HTTP-only access token, automatically refreshed)
-- Role-based access (`admin`, `user`)
+- Role-based access (`admin`, `user`), with roles assigned per user
 - User administration (list with paging, filtering and sorting; create, edit, delete)
 - Change own password
+- Export of table data to Excel (`.xlsx`)
 - Multilingual texts: English (`en-US`), Serbian Latin (`sr-Latn-RS`), Serbian Cyrillic (`sr-RS`)
 - Database schema is created and updated automatically on startup – no manual migrations
 - Scheduled jobs (Quartz), e.g. cleanup of expired sessions

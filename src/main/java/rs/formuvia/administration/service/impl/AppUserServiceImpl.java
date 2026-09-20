@@ -1,29 +1,29 @@
 package rs.formuvia.administration.service.impl;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.jvnet.hk2.annotations.Service;
-import org.modelmapper.ModelMapper;
 
-import at.favre.lib.crypto.bcrypt.BCrypt;
 import jakarta.inject.Inject;
 import rs.formuvia.administration.dto.AppUserDTO;
+import rs.formuvia.administration.dto.AppUserRoleDTO;
+import rs.formuvia.administration.dto.RoleDTO;
 import rs.formuvia.administration.entity.AppUser;
 import rs.formuvia.administration.service.AppUserService;
+import rs.formuvia.administration.utils.UpdateAppUser;
 import rs.formuvia.database.service.DatabaseService;
+import rs.formuvia.database.utils.DatabaseFilter;
 import rs.formuvia.database.utils.DatabaseParameter;
 import rs.formuvia.database.utils.DatabaseTable;
-import rs.formuvia.exceptions.NotNullException;
-import rs.formuvia.utils.CheckAdmin;
-import rs.formuvia.utils.StringUtils;
+import rs.formuvia.utils.StaticData;
 
 @Service
 public class AppUserServiceImpl implements AppUserService {
 
 	@Inject
 	private DatabaseService databaseService;
-
-	private ModelMapper modelMapper = new ModelMapper();
 
 	@Override
 	public DatabaseTable<AppUserDTO> getTable(DatabaseParameter databaseParameter) {
@@ -39,39 +39,37 @@ public class AppUserServiceImpl implements AppUserService {
 	public AppUserDTO getAppUserDTO(UUID id) {
 		AppUserDTO appUserDTO = databaseService.findById(id, AppUserDTO.class);
 		appUserDTO.setPassword(null);
+		appUserDTO.setAllRoles(StaticData.roles.stream().collect(Collectors.toList()));
+
+		appUserDTO.setUserRoles(rolesForUser(id));
+
 		return appUserDTO;
+	}
+
+	private List<RoleDTO> rolesForUser(UUID id) {
+		List<AppUserRoleDTO> rolesForUser = this.databaseService.findAll(
+				DatabaseParameter.valueOf(DatabaseFilter.valueOf("appUserId", id.toString())), AppUserRoleDTO.class);
+		return rolesForUser.stream().map(a -> new RoleDTO(a.getRoleId(), a.getRoleCode(), a.getRoleDescription()))
+				.toList();
 	}
 
 	@Override
 	public AppUserDTO getUpdate(AppUserDTO appUserDTO) {
-		AppUser appUser = appUserDTO.getId() == null ? new AppUser()
-				: this.databaseService.findById(appUserDTO.getId(), AppUser.class);
-		if (appUserDTO.getId() == null && (!StringUtils.hasText(appUserDTO.getPassword()))) {
-			throw new NotNullException(appUserDTO.getClass(), "password");
-		}
+		AppUser appUser = this.databaseService.executeQuery(new UpdateAppUser(appUserDTO));
 
-		if (StringUtils.hasText(appUserDTO.getPassword())) {
-			appUserDTO.setPassword(convertPasswordToHash(appUserDTO.getPassword()));
-		} else {
-			appUserDTO.setPassword(appUser.getPassword());
-		}
-
-		modelMapper.map(appUserDTO, appUser);
-
-		appUser = this.databaseService.save(appUser);
-		appUser.setPassword(null);
-
-		return modelMapper.map(appUser, AppUserDTO.class);
-	}
-
-	public static String convertPasswordToHash(String password) {
-		return BCrypt.withDefaults().hashToString(CheckAdmin.BCRYPT_CODE, password.toCharArray());
+		return getAppUserDTO(appUser.getId());
 	}
 
 	@Override
 	public void getDelete(UUID uuid) {
 		this.databaseService.delete(this.databaseService.findById(uuid, AppUser.class));
 
+	}
+
+	@Override
+	public List<RoleDTO> getAllRoles() {
+		
+		return StaticData.roles.stream().collect(Collectors.toList());
 	}
 
 }

@@ -56,7 +56,7 @@ public class CustomContainerRequestFilter implements ContainerRequestFilter {
 
 	private DatabaseService databaseService = new DatabaseServiceImpl();
 
-	private final String CONTENT_TYPE = "Content-Type";
+	public static final String CONTENT_TYPE = "Content-Type";
 
 	public static final String APP_USER_ATTRIBUTE = "AppUser";
 	public static final String TOKEN_ID = "TokenID";
