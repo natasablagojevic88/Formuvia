@@ -14,6 +14,7 @@ import rs.formuvia.administration.dto.RoleDTO;
 import rs.formuvia.administration.entity.AppUser;
 import rs.formuvia.database.service.DatabaseService;
 import rs.formuvia.database.service.impl.DatabaseServiceImpl;
+import rs.formuvia.model.dto.ModelDTO;
 import rs.formuvia.utils.DatabaseListen;
 import rs.formuvia.utils.StaticData;
 
@@ -40,6 +41,9 @@ public class DatabaseListenJob implements Job {
 					break;
 				case role_listen:
 					StaticData.roles = this.databaseService.findAll(null, RoleDTO.class);
+					break;
+				case model_listen:
+					StaticData.models = this.databaseService.findAll(null, ModelDTO.class);
 					break;
 				}
 

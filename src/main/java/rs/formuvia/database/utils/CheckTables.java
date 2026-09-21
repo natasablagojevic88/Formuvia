@@ -17,8 +17,8 @@ import rs.formuvia.utils.InitScriptExecute;
 @RequiredArgsConstructor
 public class CheckTables implements ExecuteQuery<Void> {
 
-	private CommonService commonService = new CommonServiceImpl();
-	private DatabaseService databaseService = new DatabaseServiceImpl();
+	private static CommonService commonService = new CommonServiceImpl();
+	private static DatabaseService databaseService = new DatabaseServiceImpl();
 	private static final String ALL_TABLES_QUERY_FILE = "allTables.sql";
 	private static final String ALL_COLUMNS_QUERY_FILE = "allColumns.sql";
 	private static final String ALL_INDEX_QUERY_FILE = "allIndexes.sql";
@@ -51,7 +51,7 @@ public class CheckTables implements ExecuteQuery<Void> {
 				List<ColumnInfo> columnToInsert = tableInfo.getColumns().stream()
 						.filter(a -> !baseColumnInfos.contains(a.getName())).collect(Collectors.toList());
 				for (ColumnInfo columnInfo : columnToInsert) {
-					this.databaseService.executeQuery(new CreateColumn(columnInfo), connection);
+					databaseService.executeQuery(new CreateColumn(columnInfo), connection);
 				}
 			}
 
@@ -64,7 +64,7 @@ public class CheckTables implements ExecuteQuery<Void> {
 			List<UniqueConstraintInfo> uniqueConstraintInfos = tableInfo.getUniqueContraints().stream()
 					.filter(a -> !uniquesBase.contains(a.getName())).collect(Collectors.toList());
 			for (UniqueConstraintInfo uniqueConstraintInfo : uniqueConstraintInfos) {
-				this.databaseService.executeQuery(new CreateUniqueConstraint(uniqueConstraintInfo), connection);
+				databaseService.executeQuery(new CreateUniqueConstraint(uniqueConstraintInfo), connection);
 			}
 
 			List<String> foreignKeyBase = baseConstraintInfos.stream()
@@ -74,7 +74,7 @@ public class CheckTables implements ExecuteQuery<Void> {
 			List<ForeignKeyInfo> foreignKeyInfos = tableInfo.getForeignKeys().stream()
 					.filter(a -> !foreignKeyBase.contains(a.getName())).collect(Collectors.toList());
 			for (ForeignKeyInfo foreignKeyInfo : foreignKeyInfos) {
-				this.databaseService.executeQuery(new CreateForeignKey(foreignKeyInfo), connection);
+				databaseService.executeQuery(new CreateForeignKey(foreignKeyInfo), connection);
 			}
 
 			List<String> baseIndexInfoBase = baseIndexInfos.stream()
@@ -83,7 +83,7 @@ public class CheckTables implements ExecuteQuery<Void> {
 			List<IndexInfo> indexInfos = tableInfo.getIndexes().stream()
 					.filter(a -> !baseIndexInfoBase.contains(a.getName())).collect(Collectors.toList());
 			for (IndexInfo indexInfo : indexInfos) {
-				this.databaseService.executeQuery(new CreateIndex(indexInfo), connection);
+				databaseService.executeQuery(new CreateIndex(indexInfo), connection);
 			}
 
 			List<ColumnInfo> columnInfosWithListOfValue = tableInfo.getColumns().stream()
@@ -99,10 +99,10 @@ public class CheckTables implements ExecuteQuery<Void> {
 						.filter(a -> checkConstraintName.equals(a.getName())).map(a -> a.getDefinition()).findFirst()
 						.orElse(null);
 				if (currentCheckConstraintText == null) {
-					this.databaseService.executeQuery(new CreateEnumCheckConstraint(columnInfo), connection);
+					databaseService.executeQuery(new CreateEnumCheckConstraint(columnInfo), connection);
 				} else {
 					if (!checkConstraintText.equals(currentCheckConstraintText)) {
-						this.databaseService.executeQuery(new CreateEnumCheckConstraint(columnInfo), connection);
+						databaseService.executeQuery(new CreateEnumCheckConstraint(columnInfo), connection);
 					}
 				}
 
@@ -122,7 +122,7 @@ public class CheckTables implements ExecuteQuery<Void> {
 				query = query.replaceAll(InitScriptExecute.TABLE_NAME_TO_REPLACE,
 						tableInfo.getName());
 				
-				this.databaseService.executeUpdateQuery(query, null, connection);
+				databaseService.executeUpdateQuery(query, null, connection);
 				
 
 			}
@@ -131,28 +131,28 @@ public class CheckTables implements ExecuteQuery<Void> {
 		return null;
 	}
 
-	private List<String> allTable(Connection connection) {
-		String query = this.commonService.readQueryFromFile(ALL_TABLES_QUERY_FILE);
+	public static List<String> allTable(Connection connection) {
+		String query = commonService.readQueryFromFile(ALL_TABLES_QUERY_FILE);
 		return databaseService.executeNativeQuery(query, null, String.class, connection);
 	}
 
 	private List<BaseColumnInfo> allColumns(Connection connection) {
-		String query = this.commonService.readQueryFromFile(ALL_COLUMNS_QUERY_FILE);
+		String query = commonService.readQueryFromFile(ALL_COLUMNS_QUERY_FILE);
 		return databaseService.executeNativeQuery(query, null, BaseColumnInfo.class, connection);
 	}
 
 	private List<BaseIndexInfo> allIndexes(Connection connection) {
-		String query = this.commonService.readQueryFromFile(ALL_INDEX_QUERY_FILE);
+		String query = commonService.readQueryFromFile(ALL_INDEX_QUERY_FILE);
 		return databaseService.executeNativeQuery(query, null, BaseIndexInfo.class, connection);
 	}
 
 	private List<BaseConstraintInfo> allConstraintInfos(Connection connection) {
-		String query = this.commonService.readQueryFromFile(ALL_CONSTRAINT_QUERY_FILE);
+		String query = commonService.readQueryFromFile(ALL_CONSTRAINT_QUERY_FILE);
 		return databaseService.executeNativeQuery(query, null, BaseConstraintInfo.class, connection);
 	}
 
 	private List<TriggerInfo> allTriggerInfos(Connection connection) {
-		String query = this.commonService.readQueryFromFile(ALL_TRIGGERS_QUERY_FILE);
+		String query = commonService.readQueryFromFile(ALL_TRIGGERS_QUERY_FILE);
 		return databaseService.executeNativeQuery(query, null, TriggerInfo.class, connection);
 	}
 

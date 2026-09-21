@@ -4,5 +4,6 @@
 	<item icon="fa-solid fa-gear" name="menu.administration" role="admin">
 		<item icon="fa-solid fa-users" name="menu.users" url="/users" />
 		<item icon="fa-solid fa-user-shield" name="menu.roles" url="/roles" />
+		<item icon="fa-solid fa-sitemap" name="menu.model" url="/model" />
 	</item>
 </menu>

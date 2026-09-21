@@ -17,6 +17,7 @@ import org.quartz.Scheduler;
 import rs.formuvia.administration.dto.AppUserRoleDTO;
 import rs.formuvia.administration.dto.RoleDTO;
 import rs.formuvia.administration.entity.AppUser;
+import rs.formuvia.model.dto.ModelDTO;
 
 public class StaticData {
 
@@ -36,5 +37,6 @@ public class StaticData {
 	public static List<AppUser> appUsers = new ArrayList<>();
 	public static List<AppUserRoleDTO> appUserRoles = new ArrayList<>();
 	public static List<RoleDTO> roles = new ArrayList<>();
+	public static List<ModelDTO> models = new ArrayList<>();
 
 }

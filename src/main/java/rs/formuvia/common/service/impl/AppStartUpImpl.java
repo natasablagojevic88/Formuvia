@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
@@ -35,7 +34,6 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.ws.rs.WebApplicationException;
 import rs.formuvia.Formuvia;
-import rs.formuvia.common.entity.Test;
 import rs.formuvia.common.service.AppStartUp;
 import rs.formuvia.database.enums.ColumnType;
 import rs.formuvia.database.service.DatabaseService;
@@ -299,10 +297,6 @@ public class AppStartUpImpl implements AppStartUp {
 		if (!Boolean.valueOf(StaticData.appProperties.getProperty(INIT_SCRIPT_EXECUTE))) {
 			return;
 		}
-
-		Test test = new Test();
-		test.setKratakTekst(UUID.randomUUID().toString());
-		this.databaseService.save(test);
 
 		InitScriptExecute initScriptExecute = new InitScriptExecute();
 		this.databaseService.executeQuery(initScriptExecute);

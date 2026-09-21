@@ -1,11 +1,11 @@
 package rs.formuvia.common.service;
 
 import rs.formuvia.common.dto.ChangePasswordDTO;
-import rs.formuvia.common.dto.UserInfo;
+import rs.formuvia.common.dto.UserInfoDTO;
 
 public interface SessionService {
 
-	UserInfo getUserInfo();
+	UserInfoDTO getUserInfo();
 
 	void changePassword(ChangePasswordDTO changePasswordDTO);
 }

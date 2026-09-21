@@ -12,7 +12,7 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserInfo {
+public class UserInfoDTO {
 
 	private String username;
 

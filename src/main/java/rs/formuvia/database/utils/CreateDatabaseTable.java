@@ -2,6 +2,7 @@ package rs.formuvia.database.utils;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -11,6 +12,7 @@ import jakarta.validation.constraints.NotNull;
 import rs.formuvia.common.dto.ComboboxDTO;
 import rs.formuvia.common.service.ResourceBundleService;
 import rs.formuvia.common.service.impl.ResourceBundleServiceImpl;
+import rs.formuvia.database.annotations.ComboboxList;
 import rs.formuvia.database.annotations.EntityClass;
 import rs.formuvia.database.annotations.HideInTable;
 import rs.formuvia.database.annotations.NotEditableInTable;
@@ -20,6 +22,7 @@ import rs.formuvia.database.service.DatabaseService;
 import rs.formuvia.database.service.SqlQueryWriterService;
 import rs.formuvia.database.service.impl.DatabaseServiceImpl;
 import rs.formuvia.database.service.impl.SqlQueryWriterServiceImpl;
+import rs.formuvia.utils.DatabaseListen;
 import rs.formuvia.utils.StaticData;
 import rs.formuvia.utils.StringUtils;
 
@@ -50,7 +53,7 @@ public class CreateDatabaseTable<C> implements ExecuteQuery<DatabaseTable<C>> {
 		DatabaseTable<C> databaseTable = new DatabaseTable<>();
 		databaseTable.setName(this.resourceBundleService.getText(resultClass.getSimpleName() + SUFIX_TITLE_NAME));
 		databaseTable.setClassName(resultClass.getSimpleName());
-		if(StringUtils.hasText(resultClass.getAnnotation(EntityClass.class).saveUrl()))
+		if (StringUtils.hasText(resultClass.getAnnotation(EntityClass.class).saveUrl()))
 			databaseTable.setSaveUrl(resultClass.getAnnotation(EntityClass.class).saveUrl());
 		addColumn(databaseTable);
 		databaseTable.setList(list);
@@ -74,8 +77,7 @@ public class CreateDatabaseTable<C> implements ExecuteQuery<DatabaseTable<C>> {
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void addColumn(DatabaseTable<C> databaseTable) {
-		List<Field> fields = StaticData.classFields.get(this.resultClass).stream()
-				.collect(Collectors.toList());
+		List<Field> fields = StaticData.classFields.get(this.resultClass).stream().collect(Collectors.toList());
 
 		for (Field field : fields) {
 			DatabaseColumn databaseColumn = new DatabaseColumn();
@@ -98,23 +100,46 @@ public class CreateDatabaseTable<C> implements ExecuteQuery<DatabaseTable<C>> {
 				}
 			}
 
+			if (field.isAnnotationPresent(ComboboxList.class)) {
+				databaseColumn.setListOfValues(createListOfValue(field.getAnnotation(ComboboxList.class).value()));
+			}
+
 			databaseColumn.setColumnType(columnType);
-			
-			if(field.isAnnotationPresent(NotEditableInTable.class)) {
+
+			if (field.isAnnotationPresent(NotEditableInTable.class)) {
 				databaseColumn.setEditable(false);
 			}
-			
-			if(field.isAnnotationPresent(NotNull.class)) {
+
+			if (field.isAnnotationPresent(NotNull.class)) {
 				databaseColumn.setRequired(true);
 			}
-			
-			if(!field.isAnnotationPresent(HideInTable.class)) {
+
+			if (!field.isAnnotationPresent(HideInTable.class)) {
 				databaseTable.getColumn().add(databaseColumn);
 			}
-			if(!field.isAnnotationPresent(SkipColumn.class)) {
+			if (!field.isAnnotationPresent(SkipColumn.class)) {
 				databaseTable.getAllColumns().add(databaseColumn);
 			}
 
 		}
+	}
+
+	private List<ComboboxDTO> createListOfValue(DatabaseListen databaseListen) {
+		switch (databaseListen) {
+		case appuser_listen:
+			return StaticData.appUsers.stream()
+					.map(a -> new ComboboxDTO(a.getId(), a.getUsername() + " - " + a.getName() + " " + a.getSurname()))
+					.collect(Collectors.toList());
+		case model_listen:
+			return StaticData.models.stream().map(a -> new ComboboxDTO(a.getId(), a.getName()))
+					.collect(Collectors.toList());
+		case role_listen:
+			return StaticData.roles.stream().map(a -> new ComboboxDTO(a.getId(), a.getCode()))
+					.collect(Collectors.toList());
+		case appuser_role_listen:
+			break;
+		}
+
+		return new ArrayList<>();
 	}
 }

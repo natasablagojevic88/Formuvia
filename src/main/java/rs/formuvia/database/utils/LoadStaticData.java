@@ -7,6 +7,7 @@ import rs.formuvia.administration.dto.RoleDTO;
 import rs.formuvia.administration.entity.AppUser;
 import rs.formuvia.database.service.DatabaseService;
 import rs.formuvia.database.service.impl.DatabaseServiceImpl;
+import rs.formuvia.model.dto.ModelDTO;
 import rs.formuvia.utils.StaticData;
 
 public class LoadStaticData implements ExecuteQuery<Void> {
@@ -18,6 +19,7 @@ public class LoadStaticData implements ExecuteQuery<Void> {
 		StaticData.appUsers = this.databaseService.findAll(null, AppUser.class, connection);
 		StaticData.appUserRoles = this.databaseService.findAll(null, AppUserRoleDTO.class, connection);
 		StaticData.roles = this.databaseService.findAll(null, RoleDTO.class, connection);
+		StaticData.models = this.databaseService.findAll(null, ModelDTO.class, connection);
 		return null;
 	}
 

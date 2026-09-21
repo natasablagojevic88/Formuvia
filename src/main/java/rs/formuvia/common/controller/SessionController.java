@@ -16,7 +16,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import rs.formuvia.common.dto.ChangePasswordDTO;
-import rs.formuvia.common.dto.UserInfo;
+import rs.formuvia.common.dto.UserInfoDTO;
 import rs.formuvia.common.service.SessionService;
 import rs.formuvia.utils.ApiRoute;
 import rs.formuvia.utils.ErrorDetail;
@@ -36,7 +36,7 @@ public class SessionController {
 			description = "Returns the username, first name and last name of the signed-in user together with the application menu. The menu contains only the items allowed for the user's roles, with names translated to the language from the X-Language header. The client calls it on startup to find out whether the user is signed in.",
 			responses = {
 					@ApiResponse(responseCode = "200", description = "Signed-in user and their menu",
-							content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = UserInfo.class))),
+							content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = UserInfoDTO.class))),
 					@ApiResponse(responseCode = "401", description = "No valid session, the access token cookie is removed",
 							content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
 	public Response getSession() {

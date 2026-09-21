@@ -68,6 +68,12 @@ public class GenerateQueryFromDTO<C> implements ExecuteQuery<C> {
 		for (DatabaseFilter databaseFilter : databaseParameter.getFilters()) {
 			Field field = findFieldFromStaticList(resultClass, databaseFilter.getField());
 			databaseFilter.setColumnType(ExecuteNativeQueryImpl.findColumnType(field.getType()));
+			if(databaseFilter.getColumnType()==null) {
+				if(field.getType().isEnum())
+					databaseFilter.setColumnType(ColumnType.STRING);
+				else
+					databaseFilter.setColumnType(ColumnType.UUID);
+			}
 		}
 	}
 

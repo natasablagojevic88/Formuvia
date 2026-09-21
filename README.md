@@ -11,6 +11,7 @@ The web client lives in a separate repository: **FormuviaFront** (Angular).
 - User administration (list with paging, filtering and sorting; create, edit, delete)
 - Change own password
 - Export of table data to Excel (`.xlsx`)
+- Model: menus and tables defined through the application; a new table is created in the database, with separate roles for viewing, adding, editing and deleting its data
 - Multilingual texts: English (`en-US`), Serbian Latin (`sr-Latn-RS`), Serbian Cyrillic (`sr-RS`)
 - Database schema is created and updated automatically on startup – no manual migrations
 - Scheduled jobs (Quartz), e.g. cleanup of expired sessions

@@ -10,7 +10,7 @@ import rs.formuvia.administration.entity.AppUser;
 import rs.formuvia.administration.utils.UpdateAppUser;
 import rs.formuvia.common.dto.ChangePasswordDTO;
 import rs.formuvia.common.dto.MenuDTO;
-import rs.formuvia.common.dto.UserInfo;
+import rs.formuvia.common.dto.UserInfoDTO;
 import rs.formuvia.common.service.CommonService;
 import rs.formuvia.common.service.ResourceBundleService;
 import rs.formuvia.common.service.SessionService;
@@ -35,9 +35,9 @@ public class SessionServiceImpl implements SessionService {
 	private DatabaseService databaseService;
 
 	@Override
-	public UserInfo getUserInfo() {
+	public UserInfoDTO getUserInfo() {
 		AppUser appUser = commonService.getUser();
-		UserInfo userInfo = new UserInfo();
+		UserInfoDTO userInfo = new UserInfoDTO();
 		userInfo.setName(appUser.getName());
 		userInfo.setSurname(appUser.getSurname());
 		userInfo.setUsername(appUser.getUsername());
@@ -52,7 +52,7 @@ public class SessionServiceImpl implements SessionService {
 		return userInfo;
 	}
 
-	private void loadMenu(Set<String> roles, UserInfo userInfo, MenuInfo menuInfo, MenuDTO parent) {
+	private void loadMenu(Set<String> roles, UserInfoDTO userInfo, MenuInfo menuInfo, MenuDTO parent) {
 		if (StringUtils.hasText(menuInfo.getRole()) && !roles.contains(menuInfo.getRole())) {
 			return;
 		}

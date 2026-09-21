@@ -21,4 +21,7 @@ public class ApiRoute {
 
 	public static final String history = "/history/{className}/{id}";
 
+	public static final String model = "/model";
+	public static final String modelTree = "/model/tree";
+	public static final String modelId = "/model/{id}";
 }
