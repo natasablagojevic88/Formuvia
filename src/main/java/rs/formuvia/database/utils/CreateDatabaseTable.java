@@ -126,17 +126,17 @@ public class CreateDatabaseTable<C> implements ExecuteQuery<DatabaseTable<C>> {
 
 	private List<ComboboxDTO> createListOfValue(DatabaseListen databaseListen) {
 		switch (databaseListen) {
-		case appuser_listen:
+		case listen_appuser:
 			return StaticData.appUsers.stream()
 					.map(a -> new ComboboxDTO(a.getId(), a.getUsername() + " - " + a.getName() + " " + a.getSurname()))
 					.collect(Collectors.toList());
-		case model_listen:
+		case listen_model:
 			return StaticData.models.stream().map(a -> new ComboboxDTO(a.getId(), a.getName()))
 					.collect(Collectors.toList());
-		case role_listen:
+		case listen_role:
 			return StaticData.roles.stream().map(a -> new ComboboxDTO(a.getId(), a.getCode()))
 					.collect(Collectors.toList());
-		case appuser_role_listen:
+		case listen_appuser_role:
 			break;
 		}
 

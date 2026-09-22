@@ -22,6 +22,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.container.ContainerRequestContext;
@@ -40,6 +41,7 @@ import rs.formuvia.database.service.impl.DatabaseServiceImpl;
 import rs.formuvia.database.utils.DatabaseFilter;
 import rs.formuvia.database.utils.DatabaseParameter;
 import rs.formuvia.exceptions.ForbiddenException;
+import rs.formuvia.exceptions.MinimumException;
 import rs.formuvia.exceptions.NotNullException;
 import rs.formuvia.exceptions.UnAuthorizedException;
 
@@ -123,6 +125,30 @@ public class CustomContainerRequestFilter implements ContainerRequestFilter {
 							} catch (Exception e) {
 								throw new WebApplicationException(e);
 							}
+						}
+
+						List<Field> minField = StaticData.classFields.get(bodyClass).stream()
+								.filter(a -> a.isAnnotationPresent(Min.class)).collect(Collectors.toList());
+
+						for (Field field : minField) {
+							try {
+								Object value = field.get(object);
+
+								if (StringUtils.isNull(value)) {
+									continue;
+								}
+
+								Min min = field.getAnnotation(Min.class);
+
+								Long longValue = Long.valueOf(value.toString());
+
+								if (longValue < min.value()) {
+									throw new MinimumException(field, min);
+								}
+							} catch (Exception e) {
+								throw new WebApplicationException(e);
+							}
+
 						}
 
 						requestContext.setEntityStream(new ByteArrayInputStream(inputStreamByte));

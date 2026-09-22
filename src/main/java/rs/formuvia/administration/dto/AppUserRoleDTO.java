@@ -13,21 +13,21 @@ import rs.formuvia.utils.RoleList;
 
 @Setter
 @Getter
-@EntityClass(value=AppUserRole.class, roles=RoleList.ADMIN)
+@EntityClass(value = AppUserRole.class, roles = RoleList.ADMIN)
 @NoArgsConstructor
 @AllArgsConstructor
 public class AppUserRoleDTO {
-	
+
 	private UUID id;
-	
+
 	private UUID appUserId;
 
 	private String appUserUsername;
-	
+
 	private UUID roleId;
-	
+
 	@InitSort
 	private String roleCode;
-	
+
 	private String roleDescription;
 }

@@ -11,11 +11,11 @@ import rs.formuvia.database.utils.DatabaseTable;
 public interface AppUserService {
 
 	DatabaseTable<AppUserDTO> getTable(DatabaseParameter databaseParameter);
-	
+
 	AppUserDTO getAppUserDTO(UUID id);
-	
+
 	AppUserDTO getUpdate(AppUserDTO appUserDTO);
-	
+
 	void getDelete(UUID uuid);
 
 	List<RoleDTO> getAllRoles();

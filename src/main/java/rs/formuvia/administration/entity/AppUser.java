@@ -17,29 +17,28 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name="appuser",
-	uniqueConstraints = @UniqueConstraint(columnNames = { "username" }, name="appuser_username_unique")
-		)
+@Table(name = "appuser", uniqueConstraints = @UniqueConstraint(columnNames = {
+		"username" }, name = "appuser_username_unique"))
 public class AppUser {
 
 	@Id
 	private UUID id;
-	
+
 	@Column(nullable = false)
 	private String username;
-	
+
 	@Column(nullable = false)
 	private String password;
-	
+
 	@Column(nullable = false)
 	private String name;
-	
+
 	@Column(nullable = false)
 	private String surname;
-	
+
 	@Column
 	private String email;
-	
+
 	@Column(nullable = false)
 	private Boolean active;
 }

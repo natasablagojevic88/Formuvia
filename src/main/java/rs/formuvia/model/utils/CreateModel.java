@@ -28,6 +28,7 @@ import rs.formuvia.exceptions.UniqueException;
 import rs.formuvia.model.dto.ModelDTO;
 import rs.formuvia.model.entity.Model;
 import rs.formuvia.model.enums.ModelType;
+import rs.formuvia.utils.InitScriptExecute;
 import rs.formuvia.utils.StringUtils;
 
 @RequiredArgsConstructor
@@ -57,8 +58,8 @@ public class CreateModel implements ExecuteQuery<ModelDTO> {
 		checkModel(modelDTO, connection);
 
 		modelMapper.map(modelDTO, model);
-		
-		if(modelDTO.getParentId()!=null) 
+
+		if (modelDTO.getParentId() != null)
 			model.setParent(this.databaseService.findById(modelDTO.getParentId(), Model.class, connection));
 		else
 			model.setParent(null);
@@ -117,6 +118,8 @@ public class CreateModel implements ExecuteQuery<ModelDTO> {
 
 		CheckTables createTable = new CheckTables(Arrays.asList(tableInfo));
 		this.databaseService.executeQuery(createTable, connection);
+
+		InitScriptExecute.createListen(connection, modelDTO.getCode());
 	}
 
 	private void checkModel(ModelDTO modelDTO, Connection connection) {

@@ -8,6 +8,6 @@ import lombok.Setter;
 public class ErrorDetail {
 
 	private Integer status;
-	
+
 	private String message;
 }

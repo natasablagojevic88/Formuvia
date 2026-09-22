@@ -35,14 +35,14 @@ public class DatabaseListenJob implements Job {
 				String nameNotification = notification.getName();
 				DatabaseListen databaseListen = DatabaseListen.valueOf(nameNotification);
 				switch (databaseListen) {
-				case appuser_listen, appuser_role_listen:
+				case listen_appuser, listen_appuser_role:
 					StaticData.appUsers = this.databaseService.findAll(null, AppUser.class);
 					StaticData.appUserRoles = this.databaseService.findAll(null, AppUserRoleDTO.class);
 					break;
-				case role_listen:
+				case listen_role:
 					StaticData.roles = this.databaseService.findAll(null, RoleDTO.class);
 					break;
-				case model_listen:
+				case listen_model:
 					StaticData.models = this.databaseService.findAll(null, ModelDTO.class);
 					break;
 				}

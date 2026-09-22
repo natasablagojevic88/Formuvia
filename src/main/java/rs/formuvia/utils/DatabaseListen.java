@@ -7,17 +7,13 @@ import rs.formuvia.model.entity.Model;
 
 public enum DatabaseListen {
 
-	appuser_listen(AppUser.class),
-	appuser_role_listen(AppUserRole.class),
-	role_listen(Role.class),
-	model_listen(Model.class),
-	;
-	
+	listen_appuser(AppUser.class), listen_appuser_role(AppUserRole.class), listen_role(Role.class),
+	listen_model(Model.class),;
+
 	public Class<?> entityClass;
 
 	private DatabaseListen(Class<?> entityClass) {
 		this.entityClass = entityClass;
 	}
-	
-	
+
 }

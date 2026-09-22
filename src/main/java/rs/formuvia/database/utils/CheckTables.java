@@ -107,8 +107,8 @@ public class CheckTables implements ExecuteQuery<Void> {
 				}
 
 			}
-			
-			if(tableInfo.getName().equals(Track.class.getAnnotation(Table.class).name())) {
+
+			if (tableInfo.getName().equals(Track.class.getAnnotation(Table.class).name())) {
 				continue;
 			}
 
@@ -119,11 +119,9 @@ public class CheckTables implements ExecuteQuery<Void> {
 						InitScriptExecute.additionalSchemaName());
 				query = query.replaceAll(InitScriptExecute.CURRENT_SCHEMA_TO_REPLACE,
 						InitScriptExecute.findCurrentSchema(databaseService, connection));
-				query = query.replaceAll(InitScriptExecute.TABLE_NAME_TO_REPLACE,
-						tableInfo.getName());
-				
+				query = query.replaceAll(InitScriptExecute.TABLE_NAME_TO_REPLACE, tableInfo.getName());
+
 				databaseService.executeUpdateQuery(query, null, connection);
-				
 
 			}
 
@@ -151,7 +149,7 @@ public class CheckTables implements ExecuteQuery<Void> {
 		return databaseService.executeNativeQuery(query, null, BaseConstraintInfo.class, connection);
 	}
 
-	private List<TriggerInfo> allTriggerInfos(Connection connection) {
+	public static List<TriggerInfo> allTriggerInfos(Connection connection) {
 		String query = commonService.readQueryFromFile(ALL_TRIGGERS_QUERY_FILE);
 		return databaseService.executeNativeQuery(query, null, TriggerInfo.class, connection);
 	}

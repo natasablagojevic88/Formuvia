@@ -92,10 +92,9 @@ public class CustomDefaultExceptionMapper implements ExceptionMapper<Throwable> 
 		errorDetail.setMessage(message);
 		return Response.status(errorDetail.getStatus()).entity(errorDetail).build();
 	}
-	
+
 	public static String createFieldName(Field field) {
-		return field.getDeclaringClass().getSimpleName()
-				+ "." + field.getName();
+		return field.getDeclaringClass().getSimpleName() + "." + field.getName();
 	}
 
 	private Response toUnauthorizedException(UnAuthorizedException forbiddenException) {
@@ -132,10 +131,9 @@ public class CustomDefaultExceptionMapper implements ExceptionMapper<Throwable> 
 				+ uniqueException.getData(), uniqueException);
 		ErrorDetail errorDetail = new ErrorDetail();
 		errorDetail.setStatus(HttpURLConnection.HTTP_BAD_REQUEST);
-		String fieldName = this.resourceBundleService
-				.getText(createFieldName(uniqueException.getField()));
+		String fieldName = this.resourceBundleService.getText(createFieldName(uniqueException.getField()));
 		String mesage = fieldName + " " + this.resourceBundleService.getText(uniqueException.getMessage());
-		mesage+=": "+uniqueException.getData();
+		mesage += ": " + uniqueException.getData();
 		errorDetail.setMessage(mesage);
 		return Response.status(errorDetail.getStatus()).entity(errorDetail).build();
 	}

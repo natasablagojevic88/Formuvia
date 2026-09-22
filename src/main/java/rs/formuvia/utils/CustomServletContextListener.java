@@ -48,7 +48,7 @@ public class CustomServletContextListener implements ServletContextListener {
 				this.logger.error(e.getMessage(), e);
 			}
 		}
-		
+
 		quartzService.closeScheduler();
 	}
 }

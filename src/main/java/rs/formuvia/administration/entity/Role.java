@@ -17,17 +17,15 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name="role",
-	uniqueConstraints = @UniqueConstraint(columnNames = { "code" },name = "role_unique")
-		)
+@Table(name = "role", uniqueConstraints = @UniqueConstraint(columnNames = { "code" }, name = "role_unique"))
 public class Role {
 
 	@Id
 	private UUID id;
-	
+
 	@Column(nullable = false)
 	private String code;
-	
+
 	@Column
 	private String description;
 }

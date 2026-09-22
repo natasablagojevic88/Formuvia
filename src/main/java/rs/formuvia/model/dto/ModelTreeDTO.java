@@ -28,7 +28,7 @@ public class ModelTreeDTO {
 	@HideInTable
 	private UUID id;
 
-	@ComboboxList(DatabaseListen.model_listen)
+	@ComboboxList(DatabaseListen.listen_model)
 	private UUID parentId;
 
 	@NotNull
@@ -43,22 +43,22 @@ public class ModelTreeDTO {
 
 	private String icon;
 
-	@ComboboxList(DatabaseListen.role_listen)
+	@ComboboxList(DatabaseListen.listen_role)
 	private UUID previewRoleId;
 
 	private String previewRoleCode;
 
-	@ComboboxList(DatabaseListen.role_listen)
+	@ComboboxList(DatabaseListen.listen_role)
 	private UUID addRoleId;
 
 	private String addRoleCode;
 
-	@ComboboxList(DatabaseListen.role_listen)
+	@ComboboxList(DatabaseListen.listen_role)
 	private UUID updateRoleId;
 
 	private String updateRoleCode;
 
-	@ComboboxList(DatabaseListen.role_listen)
+	@ComboboxList(DatabaseListen.listen_role)
 	private UUID deleteRoleId;
 
 	private String deleteRoleCode;

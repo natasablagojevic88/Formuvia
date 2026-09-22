@@ -19,13 +19,13 @@ import rs.formuvia.utils.RoleList;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@EntityClass(value=Role.class, roles=RoleList.ADMIN, saveUrl = ApiRoute.role)
+@EntityClass(value = Role.class, roles = RoleList.ADMIN, saveUrl = ApiRoute.role)
 public class RoleDTO {
 
 	@HideInTable
 	@NotEditableInTable
 	private UUID id;
-	
+
 	@InitSort
 	@NotNull
 	private String code;

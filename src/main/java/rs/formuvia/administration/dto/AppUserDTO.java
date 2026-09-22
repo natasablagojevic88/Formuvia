@@ -46,12 +46,12 @@ public class AppUserDTO {
 	private String email;
 
 	private Boolean active;
-	
+
 	@SkipColumn
 	@HideInTable
-	private List<RoleDTO> userRoles=new ArrayList<>();
-	
+	private List<RoleDTO> userRoles = new ArrayList<>();
+
 	@SkipColumn
 	@HideInTable
-	private List<RoleDTO> allRoles=new ArrayList<>();
+	private List<RoleDTO> allRoles = new ArrayList<>();
 }

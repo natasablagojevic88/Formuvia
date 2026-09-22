@@ -21,19 +21,18 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name="appuser_role",uniqueConstraints = @UniqueConstraint(columnNames = { "appuser", "role" },name="appuser_role_unique1"),
-	indexes = @Index(columnList = "appuser",name="appuser_role_index1")
-		)
+@Table(name = "appuser_role", uniqueConstraints = @UniqueConstraint(columnNames = { "appuser",
+		"role" }, name = "appuser_role_unique1"), indexes = @Index(columnList = "appuser", name = "appuser_role_index1"))
 public class AppUserRole {
 
 	@Id
 	private UUID id;
-	
-	@JoinColumn(name="appuser",nullable = false, foreignKey = @ForeignKey(name="fk_appuser_role_user"))
+
+	@JoinColumn(name = "appuser", nullable = false, foreignKey = @ForeignKey(name = "fk_appuser_role_user"))
 	@ManyToOne(cascade = CascadeType.REMOVE)
 	private AppUser appUser;
-	
-	@JoinColumn(nullable = false, foreignKey = @ForeignKey(name="fk_appuser_role_role"))
+
+	@JoinColumn(nullable = false, foreignKey = @ForeignKey(name = "fk_appuser_role_role"))
 	@ManyToOne(cascade = CascadeType.REMOVE)
 	private Role role;
 }
