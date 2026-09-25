@@ -21,17 +21,18 @@ public class CreateEnumCheckConstraint implements ExecuteQuery<Void> {
 	@Override
 	public Void execute(Connection connection) throws Exception {
 		String constraintName = CreateTable.createCheckConstraintEnumName(columnInfo);
-		String constraintText = CreateTable.createListOfValuesConstraint(columnInfo.getName(), columnInfo.getListOfValues());
-		
+		String constraintText = CreateTable.createListOfValuesConstraint(columnInfo.getName(),
+				columnInfo.getListOfValues());
+
 		String dropConstraintIfExitsQuery = new String(dropConstraintIfExists.getBytes());
 		dropConstraintIfExitsQuery = dropConstraintIfExitsQuery.replace(tableNameReplace, columnInfo.getTableName());
 		dropConstraintIfExitsQuery = dropConstraintIfExitsQuery.replace(constraintNameReplace, constraintName);
 		databaseService.executeUpdateQuery(dropConstraintIfExitsQuery, null, connection);
-		
+
 		String addConstraintQuery = new String(addConstraint.getBytes());
-		addConstraintQuery=addConstraintQuery.replace(tableNameReplace, columnInfo.getTableName());
-		addConstraintQuery=addConstraintQuery.replace(constraintNameReplace, constraintName);
-		addConstraintQuery=addConstraintQuery.replace(constraintTextReplace, constraintText);
+		addConstraintQuery = addConstraintQuery.replace(tableNameReplace, columnInfo.getTableName());
+		addConstraintQuery = addConstraintQuery.replace(constraintNameReplace, constraintName);
+		addConstraintQuery = addConstraintQuery.replace(constraintTextReplace, constraintText);
 		databaseService.executeUpdateQuery(addConstraintQuery, null, connection);
 
 		return null;

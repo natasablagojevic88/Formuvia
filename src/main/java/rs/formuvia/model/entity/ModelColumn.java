@@ -23,53 +23,62 @@ import rs.formuvia.database.enums.ColumnType;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name="model_column",
-	uniqueConstraints = {@UniqueConstraint(columnNames = { "model","code" },name="model_column_unique1")},
-	indexes = @Index(columnList = "model",name="model_column_model_index")
-		)
+@Table(name = "model_column", uniqueConstraints = {
+		@UniqueConstraint(columnNames = { "model", "code" }, name = "model_column_unique1") }, indexes = {
+				@Index(columnList = "model", name = "model_column_model_index"),
+				@Index(columnList = "codebook", name = "model_column_codebook_index") })
 public class ModelColumn {
 
 	@Id
 	private UUID id;
-	
-	@JoinColumn(nullable = false,foreignKey = @ForeignKey(name="fk_model_column_model"))
+
+	@JoinColumn(nullable = false, foreignKey = @ForeignKey(name = "fk_model_column_model"))
 	@ManyToOne(cascade = CascadeType.REMOVE)
 	private Model model;
-	
+
 	@Column(nullable = false)
 	private String code;
-	
+
 	@Column(nullable = false)
 	private String name;
-	
-	@Column(name="column_type", nullable = false)
+
+	@Column(name = "column_type", nullable = false)
 	private ColumnType columnType;
-	
+
 	@Column
 	private Integer length;
-	
-	@JoinColumn(foreignKey = @ForeignKey(name="fk_model_column_codebook"))
+
+	@JoinColumn(foreignKey = @ForeignKey(name = "fk_model_column_codebook"))
 	private Model codebook;
-	
+
 	@Column(nullable = false)
 	private Boolean nullable;
-	
+
+	@Column(name = "show_in_table", nullable = false)
+	private Boolean showInTable;
+
 	@Column(nullable = false)
 	private Boolean editable;
-	
-	@Column(name="default_value_sql")
+
+	@Column(name = "default_value_sql")
 	private String defaultValueSql;
-	
-	@Column(name="text_area",nullable = false)
+
+	@Column(name = "list_of_values_sql")
+	private String listOfValuesSql;
+
+	@Column(name = "text_area", nullable = false)
 	private Boolean textArea;
-	
-	@Column(nullable = false)
-	private Integer row;
-	
-	@Column(nullable = false)
-	private Integer column;
-	
+
+	@Column(name = "row_index", nullable = false)
+	private Integer rowIndex;
+
+	@Column(name = "column_index", nullable = false)
+	private Integer columnIndex;
+
 	@Column(nullable = false)
 	private Integer colspan;
+
+	@Column(name = "in_description_for_codebook", nullable = false)
+	private Boolean inDescriptionForCodebook;
 
 }

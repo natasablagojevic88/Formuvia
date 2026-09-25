@@ -138,6 +138,9 @@ public class CreateDatabaseTable<C> implements ExecuteQuery<DatabaseTable<C>> {
 					.collect(Collectors.toList());
 		case listen_appuser_role:
 			break;
+		case listen_model_column:
+			return StaticData.modelColumns.stream().map(a -> new ComboboxDTO(a.getId(), a.getName()))
+					.collect(Collectors.toList());
 		}
 
 		return new ArrayList<>();

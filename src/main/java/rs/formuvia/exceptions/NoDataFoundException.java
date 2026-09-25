@@ -8,18 +8,17 @@ import lombok.Setter;
 
 @Setter
 @Getter
-public class NoDataFoundException extends WebApplicationException{
+public class NoDataFoundException extends WebApplicationException {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	private final UUID id;
 	private final Class<?> inClass;
+
 	public NoDataFoundException(UUID id, Class<?> inClass) {
 		super("noDataFound");
 		this.id = id;
 		this.inClass = inClass;
 	}
-	
-	
 
 }

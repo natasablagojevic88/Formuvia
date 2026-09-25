@@ -11,7 +11,7 @@ import rs.formuvia.utils.DatabaseListen;
 @Retention(RUNTIME)
 @Target(FIELD)
 public @interface ComboboxList {
-	
+
 	DatabaseListen value();
 
 }

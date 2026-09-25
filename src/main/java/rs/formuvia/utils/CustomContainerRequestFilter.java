@@ -22,6 +22,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.WebApplicationException;
@@ -41,6 +42,7 @@ import rs.formuvia.database.service.impl.DatabaseServiceImpl;
 import rs.formuvia.database.utils.DatabaseFilter;
 import rs.formuvia.database.utils.DatabaseParameter;
 import rs.formuvia.exceptions.ForbiddenException;
+import rs.formuvia.exceptions.MaximumException;
 import rs.formuvia.exceptions.MinimumException;
 import rs.formuvia.exceptions.NotNullException;
 import rs.formuvia.exceptions.UnAuthorizedException;
@@ -144,6 +146,30 @@ public class CustomContainerRequestFilter implements ContainerRequestFilter {
 
 								if (longValue < min.value()) {
 									throw new MinimumException(field, min);
+								}
+							} catch (Exception e) {
+								throw new WebApplicationException(e);
+							}
+
+						}
+
+						List<Field> maxField = StaticData.classFields.get(bodyClass).stream()
+								.filter(a -> a.isAnnotationPresent(Max.class)).collect(Collectors.toList());
+
+						for (Field field : maxField) {
+							try {
+								Object value = field.get(object);
+
+								if (StringUtils.isNull(value)) {
+									continue;
+								}
+
+								Max max = field.getAnnotation(Max.class);
+
+								Long longValue = Long.valueOf(value.toString());
+
+								if (longValue > max.value()) {
+									throw new MaximumException(field, max);
 								}
 							} catch (Exception e) {
 								throw new WebApplicationException(e);

@@ -568,10 +568,10 @@ public class SqlQueryWriterServiceImpl implements SqlQueryWriterService {
 
 		return query;
 	}
-	
+
 	private String[] columnsWithoutId(String[] fieldArray) {
-		return Arrays.asList(fieldArray).stream().filter(a -> !a.equals(defaultIdColumn))
-				.collect(Collectors.toList()).toArray(String[]::new);
+		return Arrays.asList(fieldArray).stream().filter(a -> !a.equals(defaultIdColumn)).collect(Collectors.toList())
+				.toArray(String[]::new);
 	}
 
 	@Override
@@ -635,25 +635,25 @@ public class SqlQueryWriterServiceImpl implements SqlQueryWriterService {
 			bufferedWriter.newLine();
 			bufferedWriter.write("SET");
 			bufferedWriter.newLine();
-			if(fieldArrayWithoutId.length>1) {
+			if (fieldArrayWithoutId.length > 1) {
 				bufferedWriter.write("(");
 				bufferedWriter.newLine();
 			}
 			bufferedWriter.write(StringUtils.createStringArrayWithDelimiter(fieldArrayWithoutId, ",\n"));
 			bufferedWriter.newLine();
-			if(fieldArrayWithoutId.length>1) {
+			if (fieldArrayWithoutId.length > 1) {
 				bufferedWriter.write(")");
 				bufferedWriter.newLine();
 			}
 			bufferedWriter.write("=");
 			bufferedWriter.newLine();
-			if(fieldArrayWithoutId.length>1) {
+			if (fieldArrayWithoutId.length > 1) {
 				bufferedWriter.write("(");
 				bufferedWriter.newLine();
 			}
 			bufferedWriter.write(StringUtils.createStringArrayWithDelimiter(parameterArray, ",\n"));
 			bufferedWriter.newLine();
-			if(fieldArrayWithoutId.length>1) {
+			if (fieldArrayWithoutId.length > 1) {
 				bufferedWriter.write(")");
 				bufferedWriter.newLine();
 			}

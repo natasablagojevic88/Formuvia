@@ -13,12 +13,12 @@ public interface AppStartUp {
 	void checkTables();
 
 	void loadClass();
-	
+
 	void checkAdminUser();
-	
+
 	void initStaticData();
-	
+
 	void initScriptsExecute();
-	
+
 	void loadMenu();
 }

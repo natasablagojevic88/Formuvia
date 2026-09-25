@@ -12,10 +12,10 @@ import lombok.Setter;
 public class BaseConstraintInfo {
 
 	private String table;
-	
+
 	private String name;
-	
+
 	private String type;
-	
+
 	private String definition;
 }

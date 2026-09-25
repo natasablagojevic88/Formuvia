@@ -69,7 +69,7 @@ public class AppUserServiceImpl implements AppUserService {
 
 	@Override
 	public List<RoleDTO> getAllRoles() {
-		
+
 		return StaticData.roles.stream().collect(Collectors.toList());
 	}
 

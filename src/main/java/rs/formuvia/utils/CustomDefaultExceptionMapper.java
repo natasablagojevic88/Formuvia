@@ -17,6 +17,8 @@ import rs.formuvia.common.service.ResourceBundleService;
 import rs.formuvia.common.service.impl.LoginServiceImpl;
 import rs.formuvia.exceptions.CommonException;
 import rs.formuvia.exceptions.ForbiddenException;
+import rs.formuvia.exceptions.MaximumException;
+import rs.formuvia.exceptions.MinimumException;
 import rs.formuvia.exceptions.NotNullException;
 import rs.formuvia.exceptions.UnAuthorizedException;
 import rs.formuvia.exceptions.UniqueException;
@@ -63,6 +65,14 @@ public class CustomDefaultExceptionMapper implements ExceptionMapper<Throwable> 
 
 		if (lastException.getClass().equals(UniqueException.class)) {
 			return toUniqueException((UniqueException) lastException);
+		}
+
+		if (lastException.getClass().equals(MinimumException.class)) {
+			return toMinimumException((MinimumException) lastException);
+		}
+
+		if (lastException.getClass().equals(MaximumException.class)) {
+			return toMaximumException((MaximumException) lastException);
 		}
 
 		ErrorDetail errorDetail = new ErrorDetail();
@@ -128,12 +138,36 @@ public class CustomDefaultExceptionMapper implements ExceptionMapper<Throwable> 
 
 	private Response toUniqueException(UniqueException uniqueException) {
 		this.logger.error(uniqueException.getMessage() + " : " + uniqueException.getField().getName() + " : "
-				+ uniqueException.getData(), uniqueException);
+				+ uniqueException.getData());
 		ErrorDetail errorDetail = new ErrorDetail();
 		errorDetail.setStatus(HttpURLConnection.HTTP_BAD_REQUEST);
 		String fieldName = this.resourceBundleService.getText(createFieldName(uniqueException.getField()));
 		String mesage = fieldName + " " + this.resourceBundleService.getText(uniqueException.getMessage());
 		mesage += ": " + uniqueException.getData();
+		errorDetail.setMessage(mesage);
+		return Response.status(errorDetail.getStatus()).entity(errorDetail).build();
+	}
+
+	private Response toMinimumException(MinimumException minimumException) {
+		this.logger.error(minimumException.getMessage() + " : " + minimumException.getField().getName() + " : "
+				+ minimumException.getMin().value());
+		ErrorDetail errorDetail = new ErrorDetail();
+		errorDetail.setStatus(HttpURLConnection.HTTP_BAD_REQUEST);
+		String fieldName = this.resourceBundleService.getText(createFieldName(minimumException.getField()));
+		String mesage = fieldName + " - " + this.resourceBundleService.getText(minimumException.getMessage());
+		mesage += ": " + minimumException.getMin().value();
+		errorDetail.setMessage(mesage);
+		return Response.status(errorDetail.getStatus()).entity(errorDetail).build();
+	}
+
+	private Response toMaximumException(MaximumException maximumException) {
+		this.logger.error(maximumException.getMessage() + " : " + maximumException.getField().getName() + " : "
+				+ maximumException.getMax().value());
+		ErrorDetail errorDetail = new ErrorDetail();
+		errorDetail.setStatus(HttpURLConnection.HTTP_BAD_REQUEST);
+		String fieldName = this.resourceBundleService.getText(createFieldName(maximumException.getField()));
+		String mesage = fieldName + " - " + this.resourceBundleService.getText(maximumException.getMessage());
+		mesage += ": " + maximumException.getMax().value();
 		errorDetail.setMessage(mesage);
 		return Response.status(errorDetail.getStatus()).entity(errorDetail).build();
 	}

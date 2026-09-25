@@ -17,14 +17,14 @@ import rs.formuvia.database.enums.ColumnType;
 public class DatabaseColumn {
 
 	private String fieldName;
-	
+
 	private String description;
-	
+
 	private ColumnType columnType;
-	
+
 	private Boolean editable = true;
-	
+
 	private Boolean required = false;
-	
-	List<ComboboxDTO> listOfValues=new ArrayList<>();
+
+	List<ComboboxDTO> listOfValues = new ArrayList<>();
 }

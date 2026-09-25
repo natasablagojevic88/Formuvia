@@ -12,6 +12,6 @@ import lombok.Setter;
 public class ComboboxDTO {
 
 	private Object value;
-	
+
 	private String option;
 }

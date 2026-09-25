@@ -16,20 +16,20 @@ import rs.formuvia.database.enums.ColumnType;
 public class ColumnInfo {
 
 	private String name;
-	
+
 	private String tableName;
-	
-	private Boolean nullable=false;
-	
-	private Boolean isPrimary=false;
-	
+
+	private Boolean nullable = false;
+
+	private Boolean isPrimary = false;
+
 	private ColumnType columnType;
-	
-	private List<String> listOfValues=new ArrayList<>();
-	
+
+	private List<String> listOfValues = new ArrayList<>();
+
 	private Integer length;
-	
+
 	private Integer scale;
-	
+
 	private String columnDefinition;
 }

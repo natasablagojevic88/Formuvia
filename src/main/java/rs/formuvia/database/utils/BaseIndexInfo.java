@@ -10,9 +10,9 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BaseIndexInfo {
-	
+
 	private String tableName;
-	
+
 	private String indexName;
 
 }

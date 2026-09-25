@@ -22,46 +22,51 @@ import rs.formuvia.model.enums.ModelType;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name="model",
-	uniqueConstraints = {
-			@UniqueConstraint(columnNames = { "code" },name="model_code_unique"),
-			@UniqueConstraint(columnNames = { "name" },name="model_name_unique")
-	},
-	indexes = @Index(columnList = "parent",name="model_parent_index")
-		)
+@Table(name = "model", uniqueConstraints = { @UniqueConstraint(columnNames = { "code" }, name = "model_code_unique"),
+		@UniqueConstraint(columnNames = {
+				"name" }, name = "model_name_unique") }, indexes = @Index(columnList = "parent", name = "model_parent_index"))
 public class Model {
-	
+
 	@Id
 	private UUID id;
-	
-	@JoinColumn(foreignKey = @ForeignKey(name="fk_model_parent"))
+
+	@JoinColumn(foreignKey = @ForeignKey(name = "fk_model_parent"))
 	private Model parent;
-	
+
 	@Column(nullable = false)
 	private ModelType type;
-	
+
 	@Column
 	private String code;
-	
+
 	@Column(nullable = false)
 	private String name;
-	
+
 	@Column
 	private String description;
-	
+
 	@Column
 	private String icon;
-	
-	@JoinColumn(name="preview_role",foreignKey = @ForeignKey(name="fk_model_preview_role"))
+
+	@Column(name = "dialog_width")
+	private Integer dialogWidth;
+
+	@Column(name = "row_number")
+	private Integer rowNumber;
+
+	@Column(name = "column_number")
+	private Integer columnNumber;
+
+	@JoinColumn(name = "preview_role", foreignKey = @ForeignKey(name = "fk_model_preview_role"))
 	private Role previewRole;
-	
-	@JoinColumn(name="add_role",foreignKey = @ForeignKey(name="fk_model_add_role"))
+
+	@JoinColumn(name = "add_role", foreignKey = @ForeignKey(name = "fk_model_add_role"))
 	private Role addRole;
-	
-	@JoinColumn(name="update_role",foreignKey = @ForeignKey(name="fk_model_update_role"))
+
+	@JoinColumn(name = "update_role", foreignKey = @ForeignKey(name = "fk_model_update_role"))
 	private Role updateRole;
-	
-	@JoinColumn(name="delete_role",foreignKey = @ForeignKey(name="fk_model_delete_role"))
+
+	@JoinColumn(name = "delete_role", foreignKey = @ForeignKey(name = "fk_model_delete_role"))
 	private Role deleteRole;
 
 }

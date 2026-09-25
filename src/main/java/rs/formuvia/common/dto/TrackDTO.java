@@ -16,7 +16,7 @@ import rs.formuvia.utils.RoleList;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@EntityClass(value=Track.class,roles=RoleList.ADMIN)
+@EntityClass(value = Track.class, roles = RoleList.ADMIN)
 public class TrackDTO {
 
 	private UUID id;
@@ -28,15 +28,15 @@ public class TrackDTO {
 	private TrackAction action;
 
 	private LocalDateTime dateTime;
-	
+
 	private UUID appUserId;
-	
+
 	private String appUserUsername;
-	
+
 	private String appUserName;
-	
+
 	private String appUserSurname;
-	
+
 	private String ipAddress;
 
 	private String oldData;

@@ -13,10 +13,10 @@ import rs.formuvia.database.enums.ColumnType;
 public class ChangeDTO {
 
 	private String fieldName;
-	
+
 	private ColumnType columnType;
-	
+
 	private Object oldData;
-	
+
 	private Object newData;
 }

@@ -16,13 +16,21 @@ import rs.formuvia.database.enums.ColumnType;
 public class QueryColumnInfo {
 
 	private String fieldName;
-	
+
 	private String columnName;
 
 	private ColumnType columnType;
-	
-	private List<String> paths=new ArrayList<>();
-	
+
+	private List<String> paths = new ArrayList<>();
+
 	private List<String> tableName = new ArrayList<>();
+
+	public static QueryColumnInfo valueOf(String fieldName, String columnName, ColumnType columnType) {
+		QueryColumnInfo queryColumnInfo = new QueryColumnInfo();
+		queryColumnInfo.setFieldName(fieldName);
+		queryColumnInfo.setColumnName(columnName);
+		queryColumnInfo.setColumnType(columnType);
+		return queryColumnInfo;
+	}
 
 }

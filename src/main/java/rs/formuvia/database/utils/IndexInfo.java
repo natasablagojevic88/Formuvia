@@ -12,8 +12,8 @@ import lombok.Setter;
 public class IndexInfo {
 
 	private String name;
-	
+
 	private String tableName;
-	
+
 	private String columnName;
 }

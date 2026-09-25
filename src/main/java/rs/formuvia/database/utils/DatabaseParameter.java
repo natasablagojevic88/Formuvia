@@ -21,7 +21,7 @@ public class DatabaseParameter {
 
 	private List<QueryDatabaseOrder> orders = new ArrayList<>();
 
-	public static DatabaseParameter valueOf(DatabaseFilter...databaseFilters) {
+	public static DatabaseParameter valueOf(DatabaseFilter... databaseFilters) {
 		DatabaseParameter databaseParameter = new DatabaseParameter();
 		for (DatabaseFilter filter : databaseFilters) {
 			databaseParameter.getFilters().add(filter);

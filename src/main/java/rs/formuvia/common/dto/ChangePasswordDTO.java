@@ -14,7 +14,7 @@ public class ChangePasswordDTO {
 
 	@NotNull
 	private String newPassword;
-	
+
 	@NotNull
 	private String newPasswordAgain;
 }

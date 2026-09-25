@@ -134,7 +134,7 @@ public class CheckTables implements ExecuteQuery<Void> {
 		return databaseService.executeNativeQuery(query, null, String.class, connection);
 	}
 
-	private List<BaseColumnInfo> allColumns(Connection connection) {
+	public static List<BaseColumnInfo> allColumns(Connection connection) {
 		String query = commonService.readQueryFromFile(ALL_COLUMNS_QUERY_FILE);
 		return databaseService.executeNativeQuery(query, null, BaseColumnInfo.class, connection);
 	}

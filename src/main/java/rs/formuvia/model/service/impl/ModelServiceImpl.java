@@ -15,7 +15,7 @@ import rs.formuvia.model.dto.ModelDTO;
 import rs.formuvia.model.dto.ModelTreeDTO;
 import rs.formuvia.model.entity.Model;
 import rs.formuvia.model.service.ModelService;
-import rs.formuvia.model.utils.CreateModel;
+import rs.formuvia.model.utils.UpdateModel;
 import rs.formuvia.model.utils.DeleteModel;
 import rs.formuvia.utils.StringUtils;
 
@@ -40,7 +40,7 @@ public class ModelServiceImpl implements ModelService {
 
 	@Override
 	public ModelDTO getUpdate(ModelDTO modelDTO) {
-		CreateModel createModel = new CreateModel(modelDTO);
+		UpdateModel createModel = new UpdateModel(modelDTO);
 		return databaseService.executeQuery(createModel);
 	}
 

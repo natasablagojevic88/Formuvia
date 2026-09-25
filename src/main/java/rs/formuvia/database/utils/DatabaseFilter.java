@@ -14,7 +14,7 @@ import rs.formuvia.database.enums.SearchOperation;
 public class DatabaseFilter {
 
 	public static DatabaseFilter valueOf(String field, SearchOperation searchOperation, String field1, String field2) {
-		DatabaseFilter databaseFilter=new DatabaseFilter();
+		DatabaseFilter databaseFilter = new DatabaseFilter();
 		databaseFilter.setField(field);
 		databaseFilter.setSearchOperation(searchOperation);
 		databaseFilter.setField1(field1);
@@ -23,15 +23,15 @@ public class DatabaseFilter {
 	}
 
 	public static DatabaseFilter valueOf(String field, SearchOperation searchOperation, String field1) {
-		DatabaseFilter databaseFilter=new DatabaseFilter();
+		DatabaseFilter databaseFilter = new DatabaseFilter();
 		databaseFilter.setField(field);
 		databaseFilter.setSearchOperation(searchOperation);
 		databaseFilter.setField1(field1);
 		return databaseFilter;
 	}
-	
+
 	public static DatabaseFilter valueOf(String field, String field1) {
-		DatabaseFilter databaseFilter=new DatabaseFilter();
+		DatabaseFilter databaseFilter = new DatabaseFilter();
 		databaseFilter.setField(field);
 		databaseFilter.setSearchOperation(SearchOperation.EQUALS);
 		databaseFilter.setField1(field1);

@@ -2,6 +2,8 @@ package rs.formuvia.model.dto;
 
 import java.util.UUID;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -40,23 +42,33 @@ public class ModelDTO {
 
 	private String icon;
 
+	@Min(400)
+	private Integer dialogWidth;
+
+	@Min(1)
+	private Integer rowNumber;
+
+	@Min(1)
+	@Max(12)
+	private Integer columnNumber;
+
 	@ComboboxList(DatabaseListen.listen_role)
 	private UUID previewRoleId;
-	
+
 	private String previewRoleCode;
 
 	@ComboboxList(DatabaseListen.listen_role)
 	private UUID addRoleId;
-	
+
 	private String addRoleCode;
 
 	@ComboboxList(DatabaseListen.listen_role)
 	private UUID updateRoleId;
-	
+
 	private String updateRoleCode;
 
 	@ComboboxList(DatabaseListen.listen_role)
 	private UUID deleteRoleId;
-	
+
 	private String deleteRoleCode;
 }

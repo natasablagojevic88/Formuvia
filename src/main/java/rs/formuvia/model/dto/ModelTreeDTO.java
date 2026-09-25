@@ -62,7 +62,7 @@ public class ModelTreeDTO {
 	private UUID deleteRoleId;
 
 	private String deleteRoleCode;
-	
+
 	@SkipColumn
 	private List<ModelTreeDTO> children = new ArrayList<>();
 }

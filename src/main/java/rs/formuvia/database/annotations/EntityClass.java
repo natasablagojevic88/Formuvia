@@ -11,8 +11,8 @@ import java.lang.annotation.Target;
 public @interface EntityClass {
 
 	Class<?> value();
-	
+
 	String[] roles() default {};
-	
+
 	String saveUrl() default "";
 }

@@ -13,6 +13,6 @@ import rs.formuvia.database.enums.Direction;
 public @interface InitSort {
 
 	int orderNumber() default 1;
-	
+
 	Direction direction() default Direction.ASC;
 }

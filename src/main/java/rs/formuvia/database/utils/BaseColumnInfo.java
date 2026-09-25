@@ -8,6 +8,6 @@ import lombok.Setter;
 public class BaseColumnInfo {
 
 	private String tableName;
-	
+
 	private String columnName;
 }

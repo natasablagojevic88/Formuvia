@@ -36,22 +36,22 @@ public interface DatabaseService {
 	<C> C findById(UUID id, Class<C> resultClass);
 
 	<C> C findById(UUID id, Class<C> resultClass, Connection connection);
-	
+
 	<C> DatabaseTable<C> createTable(DatabaseParameter databaseParameter, Class<C> resultClass);
-	
+
 	<C> DatabaseTable<C> createTable(DatabaseParameter databaseParameter, Class<C> resultClass, Connection connection);
-	
+
 	<C> C save(C entity);
-	
+
 	<C> C save(C entity, Connection connection);
-	
+
 	<C> void delete(C entity);
-	
+
 	<C> void delete(C entity, Connection connection);
-	
+
 	<C> Boolean exists(DatabaseParameter databaseParameter, Class<C> resultClass);
-	
+
 	<C> Boolean exists(DatabaseParameter databaseParameter, Class<C> resultClass, Connection connection);
-	
+
 	AppUser getUser(Connection connection);
 }

@@ -21,31 +21,29 @@ import rs.formuvia.administration.entity.AppUser;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name="token",
-	uniqueConstraints = {@UniqueConstraint(name="token_access_token_unique", columnNames = { "access_token" }),
-			@UniqueConstraint(name="token_refresh_token_unique", columnNames = { "refresh_token" })
-		}
-		)
+@Table(name = "token", uniqueConstraints = {
+		@UniqueConstraint(name = "token_access_token_unique", columnNames = { "access_token" }),
+		@UniqueConstraint(name = "token_refresh_token_unique", columnNames = { "refresh_token" }) })
 public class Token {
 
 	@Id
 	private UUID id;
-	
-	@JoinColumn(name="appuser",nullable = false,foreignKey = @ForeignKey(name="fk_token_appuser"))
+
+	@JoinColumn(name = "appuser", nullable = false, foreignKey = @ForeignKey(name = "fk_token_appuser"))
 	private AppUser appUser;
-	
-	@Column(name="access_token",nullable = false)
+
+	@Column(name = "access_token", nullable = false)
 	private String accessToken;
-	
-	@Column(name="access_token_exipires",nullable = false)
+
+	@Column(name = "access_token_exipires", nullable = false)
 	private LocalDateTime accessTokenExipires;
-	
-	@Column(name="refresh_token",nullable = false)
+
+	@Column(name = "refresh_token", nullable = false)
 	private String refreshToken;
-	
-	@Column(name="refresh_token_exipires",nullable = false)
+
+	@Column(name = "refresh_token_exipires", nullable = false)
 	private LocalDateTime refreshTokenExipires;
-	
+
 	@Column(nullable = false)
 	private Boolean active = true;
 }

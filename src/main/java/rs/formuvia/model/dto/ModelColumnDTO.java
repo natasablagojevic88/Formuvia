@@ -2,6 +2,8 @@ package rs.formuvia.model.dto;
 
 import java.util.UUID;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,40 +23,68 @@ import rs.formuvia.utils.RoleList;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@EntityClass(value=ModelColumn.class,roles = RoleList.ADMIN,saveUrl = ApiRoute.modelColumn)
+@EntityClass(value = ModelColumn.class, roles = RoleList.ADMIN, saveUrl = ApiRoute.modelColumn)
 public class ModelColumnDTO {
 
 	@HideInTable
 	private UUID id;
-	
+
 	@NotNull
 	@ComboboxList(DatabaseListen.listen_model)
 	@HideInTable
 	private UUID modelId;
-	
+
 	@NotNull
 	@InitSort
 	private String code;
-	
+
 	@NotNull
 	private String name;
-	
+
 	@NotNull
 	private ColumnType columnType;
 
 	@HideInTable
 	private Integer length;
-	
+
 	@ComboboxList(DatabaseListen.listen_model)
 	private UUID codebookId;
-	
+
 	@NotNull
 	private Boolean nullable;
-	
+
+	@NotNull
+	private Boolean showInTable;
+
 	@NotNull
 	private Boolean editable;
-	
+
 	@HideInTable
 	private String defaultValueSql;
+
+	@HideInTable
+	private String listOfValuesSql;
+
+	@NotNull
+	private Boolean textArea;
+
+	@Min(1)
+	@NotNull
+	@InitSort
+	private Integer rowIndex;
+
+	@Min(1)
+	@Max(12)
+	@NotNull
+	@InitSort(orderNumber = 2)
+	private Integer columnIndex;
+
+	@Min(1)
+	@Max(12)
+	@NotNull
+	private Integer colspan;
+
+	@NotNull
+	private Boolean inDescriptionForCodebook;
 
 }

@@ -55,8 +55,17 @@ public class ExecuteNativeQueryImpl<C> implements ExecuteQuery<C> {
 				}
 				list.add(object);
 			} else {
-				C object = getValueFromResultSet(resultClass, resultSet.getObject(1), connection);
-				list.add(object);
+				if (resultClass.isArray()) {
+					Object[] objects = new Object[resultSet.getMetaData().getColumnCount()];
+					for (int i = 1; i <= objects.length; i++) {
+						objects[i - 1] = resultSet.getObject(i);
+					}
+					list.add((C) objects);
+				} else {
+					C object = getValueFromResultSet(resultClass, resultSet.getObject(1), connection);
+					list.add(object);
+				}
+
 			}
 		}
 		resultSet.close();

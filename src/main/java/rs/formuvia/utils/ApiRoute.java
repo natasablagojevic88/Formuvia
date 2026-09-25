@@ -27,5 +27,6 @@ public class ApiRoute {
 
 	public static final String modelColumn = "/model-column";
 	public static final String modelColumnId = "/model-column/{id}";
-	public static final String modelColumnTable = "/model-column/table";
+	public static final String modelColumnTable = "/model-column/list/{modelId}";
+
 }

@@ -18,15 +18,15 @@ public class HistoryServiceImpl implements HistoryService {
 
 	@Inject
 	private DatabaseService databaseService;
-	
+
 	@Context
 	private HttpServletRequest httpServletRequest;
 
 	@Override
 	public List<HistoryDTO> getHistory(String className, UUID id) {
-		CreateHistory createHistory=new CreateHistory(httpServletRequest, className, id);
+		CreateHistory createHistory = new CreateHistory(httpServletRequest, className, id);
 		return databaseService.executeQuery(createHistory);
-				
+
 	}
 
 }

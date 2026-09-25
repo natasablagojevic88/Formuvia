@@ -25,6 +25,7 @@ import rs.formuvia.database.utils.TableInfo;
 import rs.formuvia.exceptions.CommonException;
 import rs.formuvia.exceptions.NotNullException;
 import rs.formuvia.exceptions.UniqueException;
+import rs.formuvia.model.dto.ModelColumnDTO;
 import rs.formuvia.model.dto.ModelDTO;
 import rs.formuvia.model.entity.Model;
 import rs.formuvia.model.enums.ModelType;
@@ -32,7 +33,7 @@ import rs.formuvia.utils.InitScriptExecute;
 import rs.formuvia.utils.StringUtils;
 
 @RequiredArgsConstructor
-public class CreateModel implements ExecuteQuery<ModelDTO> {
+public class UpdateModel implements ExecuteQuery<ModelDTO> {
 	private final ModelDTO modelDTO;
 
 	private DatabaseService databaseService = new DatabaseServiceImpl();
@@ -42,7 +43,7 @@ public class CreateModel implements ExecuteQuery<ModelDTO> {
 	private final String PARENT_FOREIGN_KEY_NAME = "fk_#model_name#_parent";
 	private final String MODEL_NAME_REPLACE = "#model_name#";
 	private final String PARENT_INDEX_NAME = "#model_name#_index_parent";
-	private static final Pattern NAME_PARENT = Pattern.compile("^[a-z][a-z0-9_]{0,62}$");
+	private static final Pattern NAME_PARENT = Pattern.compile("^[a-z][a-z0-9_]{0,55}$");
 
 	@Override
 	public ModelDTO execute(Connection connection) throws Exception {
@@ -202,6 +203,38 @@ public class CreateModel implements ExecuteQuery<ModelDTO> {
 		if (modelDTO.getType().equals(ModelType.TABLE) && StringUtils.isNull(modelDTO.getDeleteRoleId())) {
 			throw new NotNullException(UniqueException.findFieldFromList(ModelDTO.class, "deleteRoleId"));
 		}
+
+		if (modelDTO.getType().equals(ModelType.TABLE) && StringUtils.isNull(modelDTO.getDialogWidth())) {
+			throw new NotNullException(UniqueException.findFieldFromList(ModelDTO.class, "dialogWidth"));
+		}
+
+		if (modelDTO.getType().equals(ModelType.TABLE) && StringUtils.isNull(modelDTO.getRowNumber())) {
+			throw new NotNullException(UniqueException.findFieldFromList(ModelDTO.class, "rowNumber"));
+		}
+
+		if (modelDTO.getType().equals(ModelType.TABLE) && StringUtils.isNull(modelDTO.getColumnNumber())) {
+			throw new NotNullException(UniqueException.findFieldFromList(ModelDTO.class, "columnNumber"));
+		}
+
+		if (StringUtils.notNull(modelDTO.getId())) {
+			List<ModelColumnDTO> modelColumnDTOs = this.databaseService.findAll(
+					DatabaseParameter.valueOf(DatabaseFilter.valueOf("modelId", modelDTO.getId().toString())),
+					ModelColumnDTO.class, connection);
+
+			Integer maxColumn = modelColumnDTOs.stream().mapToInt(a -> a.getColumnIndex() + a.getColspan() - 1).max()
+					.orElse(1);
+			if (modelDTO.getColumnNumber() < maxColumn) {
+				throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "wrongColumnNumberColumnInUse",
+						maxColumn);
+			}
+
+			Integer maxRow = modelColumnDTOs.stream().mapToInt(a -> a.getRowIndex()).max().orElse(1);
+
+			if (modelDTO.getRowNumber() < maxRow) {
+				throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "wrongRowNumberRowInUse", maxRow);
+			}
+		}
+
 	}
 
 }
