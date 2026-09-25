@@ -47,8 +47,10 @@ public class LoadStaticData implements ExecuteQuery<Void> {
 	public static void loadStaticDataCodebookModel(UUID modelId, Connection connection) {
 		ModelDTO model = StaticData.models.stream().filter(a -> a.getId().equals(modelId)).findFirst().get();
 		List<ModelColumnDTO> columns = StaticData.modelColumns.stream().filter(a -> a.getModelId().equals(modelId))
-				.filter(a -> a.getInDescriptionForCodebook()).sorted(Comparator.comparing(ModelColumnDTO::getRowIndex))
-				.sorted(Comparator.comparing(ModelColumnDTO::getColumnIndex)).collect(Collectors.toList());
+				.filter(a -> a.getInDescriptionForCodebook())
+				.sorted(Comparator.comparing(ModelColumnDTO::getRowIndex)
+						.thenComparing(Comparator.comparing(ModelColumnDTO::getColumnIndex)))
+				.collect(Collectors.toList());
 		UpdateColumnModel.loadModelStaticList(model, columns, connection);
 	}
 

@@ -70,11 +70,6 @@ public class UpdateColumnModel implements ExecuteQuery<ModelColumnDTO> {
 		Model model = databaseService.findById(modelColumnDTO.getModelId(), Model.class, connection);
 		ModelColumn modelColumn = modelColumnDTO.getId() == null ? new ModelColumn()
 				: databaseService.findById(modelColumnDTO.getId(), ModelColumn.class, connection);
-		List<ModelColumnDTO> list = databaseService.findAll(
-				DatabaseParameter.valueOf(DatabaseFilter.valueOf("modelId", modelColumnDTO.getModelId().toString())),
-				ModelColumnDTO.class, connection);
-		checkColumnModel(model, modelColumnDTO, connection, list);
-
 		if (modelColumnDTO.getId() != null) {
 			if (!modelColumnDTO.getColumnType().equals(modelColumn.getColumnType())) {
 				modelColumnDTO.setColumnType(modelColumn.getColumnType());
@@ -90,6 +85,10 @@ public class UpdateColumnModel implements ExecuteQuery<ModelColumnDTO> {
 				}
 			}
 		}
+		List<ModelColumnDTO> list = databaseService.findAll(
+				DatabaseParameter.valueOf(DatabaseFilter.valueOf("modelId", modelColumnDTO.getModelId().toString())),
+				ModelColumnDTO.class, connection);
+		checkColumnModel(model, modelColumnDTO, connection, list);
 
 		UUID loadTable = checkTableCodebook(modelColumn, modelColumnDTO, connection);
 
@@ -103,6 +102,7 @@ public class UpdateColumnModel implements ExecuteQuery<ModelColumnDTO> {
 		if (loadTable != null) {
 			final ModelDTO codebookModel = databaseService.findById(loadTable, ModelDTO.class, connection);
 			final List<ModelColumnDTO> listColumn = findColumnList(loadTable, connection);
+			connection.commit();
 			new Thread(() -> {
 				loadModelStaticList(codebookModel, listColumn, null);
 			}).start();
@@ -111,7 +111,7 @@ public class UpdateColumnModel implements ExecuteQuery<ModelColumnDTO> {
 		return modelMapper.map(modelColumn, ModelColumnDTO.class);
 	}
 
-	private List<ModelColumnDTO> findColumnList(UUID modelId, Connection connection) {
+	public static List<ModelColumnDTO> findColumnList(UUID modelId, Connection connection) {
 		DatabaseParameter columnDatabaseParameter = new DatabaseParameter();
 		columnDatabaseParameter.getFilters().add(DatabaseFilter.valueOf("modelId", modelId.toString()));
 		columnDatabaseParameter.getOrders().add(QueryDatabaseOrder.valueOf("rowIndex", Direction.ASC));
@@ -130,7 +130,8 @@ public class UpdateColumnModel implements ExecuteQuery<ModelColumnDTO> {
 		if (allColumns.stream()
 				.filter(a -> a.getTableName().equals(tableName) && a.getColumnName().equals(modelColumnDTO.getCode()))
 				.count() > 0) {
-			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "columnAlreadyExists", allColumns);
+			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "columnAlreadyExists",
+					modelColumnDTO.getCode());
 		}
 
 		TableInfo tableInfo = new TableInfo();
@@ -153,7 +154,7 @@ public class UpdateColumnModel implements ExecuteQuery<ModelColumnDTO> {
 			foreignKeyInfo.setColumnName(columnInfo.getName());
 			foreignKeyInfo.setName("fk_" + tableName + "_" + columnInfo.getName());
 			foreignKeyInfo.setTableName(tableName);
-			foreignKeyInfo.setReferenceTable(modelColumn.getModel().getCode());
+			foreignKeyInfo.setReferenceTable(modelColumn.getCodebook().getCode());
 			tableInfo.getForeignKeys().add(foreignKeyInfo);
 		}
 
