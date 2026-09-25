@@ -4,6 +4,8 @@ REST API for Formuvia, built with Java 21 and Jersey (JAX-RS), packaged as a WAR
 
 The web client lives in a separate repository: **FormuviaFront** (Angular).
 
+📖 **[User guide](https://natasablagojevic88.github.io/FormuviaFront/)** – how to use Formuvia, in English and Serbian.
+
 ## Features
 
 - Login with cookie-based sessions (HTTP-only access token, automatically refreshed)
