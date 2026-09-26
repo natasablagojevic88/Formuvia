@@ -57,6 +57,11 @@ public class InitScriptExecute implements ExecuteQuery<Void> {
 					.count() == 0) {
 				createListen(connection, tableName);
 			}
+
+			if (allTrigger.stream().filter(a -> a.getTableName().equals(tableName)
+					&& a.getTriggerName().equals(CheckTables.CREATE_AUDIT_TRIGGER)).count() == 0) {
+				CheckTables.createAuditTrigger(connection, tableName);
+			}
 		}
 
 		return null;

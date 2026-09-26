@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.sql.Connection;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -62,7 +63,7 @@ public class CreateHistory implements ExecuteQuery<List<HistoryDTO>> {
 	}
 
 	private ModelMapper modelMapper = new ModelMapper();
-	private DatabaseService databaseService = new DatabaseServiceImpl();
+	private static DatabaseService databaseService = new DatabaseServiceImpl();
 
 	@Override
 	public List<HistoryDTO> execute(Connection connection) throws Exception {
@@ -75,22 +76,12 @@ public class CreateHistory implements ExecuteQuery<List<HistoryDTO>> {
 
 		commonService.checkRole(roles);
 
-		DatabaseParameter databaseParameter = new DatabaseParameter();
-		databaseParameter.getFilters().add(DatabaseFilter.valueOf("tableName", tableName));
-		databaseParameter.getFilters().add(DatabaseFilter.valueOf("dataId", id.toString()));
-		databaseParameter.getOrders().add(QueryDatabaseOrder.valueOf("dateTime", Direction.DESC));
-
-		List<TrackDTO> tracks = this.databaseService.findAll(databaseParameter, TrackDTO.class, connection);
+		List<TrackDTO> tracks = createListTrackDTOs(tableName, id, connection);
 		List<Field> fields = StaticData.classFields.get(dtoClass).stream()
 				.filter(a -> !a.isAnnotationPresent(SkipColumn.class)).collect(Collectors.toList());
 
 		for (TrackDTO track : tracks) {
-			HistoryDTO historyDTO = new HistoryDTO();
-			historyDTO.setAction(resourceBundleService.getText("TrackAction." + track.getAction().name()));
-			historyDTO.setAppUserName(track.getAppUserName());
-			historyDTO.setAppUserSurname(track.getAppUserSurname());
-			historyDTO.setAppUserUsername(track.getAppUserUsername());
-			historyDTO.setTime(track.getDateTime());
+			HistoryDTO historyDTO = createHistoryDTO(track, resourceBundleService);
 
 			Object oldData = createObjectFromJson(tableClass, track.getOldData(), connection);
 			Object newData = createObjectFromJson(tableClass, track.getNewData(), connection);
@@ -99,7 +90,15 @@ public class CreateHistory implements ExecuteQuery<List<HistoryDTO>> {
 			Object newDataDTO = modelMapper.map(newData, dtoClass);
 
 			for (Field field : fields) {
-				ChangeDTO changeDTO = createChangeDTO(field, field.get(oldDataDTO), field.get(newDataDTO));
+
+				if (field.getDeclaringClass().equals(AppUserDTO.class) && field.getName().equals("password")) {
+					continue;
+				}
+				String fieldName = CustomDefaultExceptionMapper.createFieldName(field);
+				ColumnType columnType = ExecuteNativeQueryImpl.findColumnType(field.getType());
+				columnType = columnType == null ? ColumnType.STRING : columnType;
+				ChangeDTO changeDTO = createChangeDTO(field.get(oldDataDTO), field.get(newDataDTO),
+						this.resourceBundleService, fieldName, columnType);
 
 				if (StringUtils.notNull(changeDTO))
 					historyDTO.getChanges().add(changeDTO);
@@ -108,6 +107,26 @@ public class CreateHistory implements ExecuteQuery<List<HistoryDTO>> {
 			list.add(historyDTO);
 		}
 		return list;
+	}
+
+	public static HistoryDTO createHistoryDTO(TrackDTO track, ResourceBundleService resourceBundleService) {
+		HistoryDTO historyDTO = new HistoryDTO();
+		historyDTO.setAction(resourceBundleService.getText("TrackAction." + track.getAction().name()));
+		historyDTO.setAppUserName(track.getAppUserName());
+		historyDTO.setAppUserSurname(track.getAppUserSurname());
+		historyDTO.setAppUserUsername(track.getAppUserUsername());
+		historyDTO.setTime(track.getDateTime());
+		return historyDTO;
+	}
+
+	public static List<TrackDTO> createListTrackDTOs(String tableName, UUID id, Connection connection) {
+		DatabaseParameter databaseParameter = new DatabaseParameter();
+		databaseParameter.getFilters().add(DatabaseFilter.valueOf("tableName", tableName));
+		databaseParameter.getFilters().add(DatabaseFilter.valueOf("dataId", id.toString()));
+		databaseParameter.getOrders().add(QueryDatabaseOrder.valueOf("dateTime", Direction.DESC));
+
+		List<TrackDTO> tracks = databaseService.findAll(databaseParameter, TrackDTO.class, connection);
+		return tracks;
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -124,9 +143,7 @@ public class CreateHistory implements ExecuteQuery<List<HistoryDTO>> {
 			return object;
 		}
 
-		JsonReader jsonReader = Json.createReader(new StringReader(jsonText));
-		JsonObject jsonObject = jsonReader.readObject();
-
+		JsonObject jsonObject = createJsonObject(jsonText);
 		for (Field field : fields) {
 			String columnName = AppStartUpImpl.findColumnName(field);
 
@@ -134,51 +151,16 @@ public class CreateHistory implements ExecuteQuery<List<HistoryDTO>> {
 				continue;
 			}
 
-			Object value = null;
-			switch (jsonObject.get(columnName).getValueType()) {
-			case NULL:
+			Object value = getObjectFromJson(jsonObject, columnName);
+			if (StringUtils.isNull(value)) {
 				continue;
-
-			case STRING:
-				value = ((JsonString) jsonObject.get(columnName)).getString();
-				break;
-			default: {
-				value = jsonObject.get(columnName).toString();
-			}
-
 			}
 
 			ColumnType columnType = ExecuteNativeQueryImpl.findColumnType(field.getType());
 
 			if (columnType != null) {
 				try {
-					switch (columnType) {
-					case BIGDECIMAL:
-						BigDecimal bigDecimalValue = new BigDecimal(value.toString());
-						field.set(object, bigDecimalValue);
-						break;
-					case BOOLEAN:
-						field.set(object, Boolean.valueOf(value.toString()));
-						break;
-					case INTEGER:
-						field.set(object, Integer.valueOf(value.toString()));
-						break;
-					case LOCALDATE:
-						field.set(object, LocalDate.parse(value.toString()));
-						break;
-					case LOCALDATETIME:
-						field.set(object, LocalDateTime.parse(value.toString()));
-						break;
-					case LONG:
-						field.set(object, Long.valueOf(value.toString()));
-						break;
-					case STRING:
-						field.set(object, value.toString());
-						break;
-					case UUID:
-						field.set(object, UUID.fromString(value.toString()));
-						break;
-					}
+					field.set(object, convertObjectByType(columnType, value));
 				} catch (Exception e) {
 					throw new WebApplicationException(e);
 				}
@@ -193,8 +175,8 @@ public class CreateHistory implements ExecuteQuery<List<HistoryDTO>> {
 					}
 				} else {
 					try {
-						field.set(object, this.databaseService.findById(UUID.fromString(value.toString()),
-								field.getType(), connection));
+						field.set(object, databaseService.findById(UUID.fromString(value.toString()), field.getType(),
+								connection));
 					} catch (Exception e) {
 						try {
 							field.set(object, null);
@@ -210,19 +192,62 @@ public class CreateHistory implements ExecuteQuery<List<HistoryDTO>> {
 		return object;
 	}
 
-	private ChangeDTO createChangeDTO(Field field, Object oldData, Object newData) {
+	public static Object getObjectFromJson(JsonObject jsonObject, String fieldName) {
+		Object value = null;
+		switch (jsonObject.get(fieldName).getValueType()) {
+		case NULL:
+			return null;
+
+		case STRING:
+			value = ((JsonString) jsonObject.get(fieldName)).getString();
+			return value;
+		default: {
+			value = jsonObject.get(fieldName).toString();
+			return value;
+		}
+
+		}
+	}
+
+	public static Object convertObjectByType(ColumnType columnType, Object value) {
+		switch (columnType) {
+		case BIGDECIMAL:
+			BigDecimal bigDecimalValue = new BigDecimal(value.toString());
+			return bigDecimalValue;
+		case BOOLEAN:
+			return Boolean.valueOf(value.toString());
+		case INTEGER:
+			return Integer.valueOf(value.toString());
+		case LOCALDATE:
+			return LocalDate.parse(value.toString());
+		case LOCALDATETIME:
+			return LocalDateTime.parse(value.toString());
+		case LOCALTIME:
+			return LocalTime.parse(value.toString());
+		case LONG:
+			return Long.valueOf(value.toString());
+		case STRING:
+			return value.toString();
+		case UUID:
+			return UUID.fromString(value.toString());
+		}
+		return null;
+	}
+
+	public static JsonObject createJsonObject(String jsonText) {
+		JsonReader jsonReader = Json.createReader(new StringReader(jsonText));
+		return jsonReader.readObject();
+	}
+
+	public static ChangeDTO createChangeDTO(Object oldData, Object newData, ResourceBundleService resourceBundleService,
+			String fieldName, ColumnType columnType) {
 		if (StringUtils.isNull(oldData) && StringUtils.isNull(newData)) {
 			return null;
 		}
 
-		if (field.getDeclaringClass().equals(AppUserDTO.class) && field.getName().equals("password")) {
-			return null;
-		}
-
 		ChangeDTO changeDTO = new ChangeDTO();
-		changeDTO.setFieldName(this.resourceBundleService.getText(CustomDefaultExceptionMapper.createFieldName(field)));
-		ColumnType columnType = ExecuteNativeQueryImpl.findColumnType(field.getType());
-		changeDTO.setColumnType(columnType == null ? ColumnType.STRING : columnType);
+		changeDTO.setFieldName(resourceBundleService.getText(fieldName));
+		changeDTO.setColumnType(columnType);
 		if (StringUtils.isNull(oldData) && StringUtils.notNull(newData)) {
 			changeDTO.setNewData(newData);
 			return changeDTO;

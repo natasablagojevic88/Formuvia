@@ -22,6 +22,7 @@ public class CreateTable implements ExecuteQuery<Void> {
 	private static final String STRING_TYPE = "varchar";
 	private static final String DATE_TYPE = "date";
 	private static final String DATE_TIME_TYPE = "timestamp";
+	private static final String TIME_TYPE = "time";
 	private static final String LONG_TYPE = "int8";
 	public static final String ID_DEFAULT = "uuidv7()";
 	private static final String UUID_DEFAULT = "uuid";
@@ -85,6 +86,8 @@ public class CreateTable implements ExecuteQuery<Void> {
 				break;
 			case LOCALDATETIME:
 				bufferedWriter.write(DATE_TIME_TYPE);
+			case LOCALTIME:
+				bufferedWriter.write(TIME_TYPE);
 				break;
 			case LONG:
 				bufferedWriter.write(LONG_TYPE);

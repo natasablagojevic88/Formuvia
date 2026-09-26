@@ -81,7 +81,7 @@ public class CreateModelTable implements ExecuteQuery<DatabaseTable<LinkedHashMa
 		databaseTable.setSaveUrl(ApiRoute.modelPreviewUpdate.replace(SessionServiceImpl.MODEL_NAME_TO_REPLACE,
 				modelDTO.getId().toString()));
 
-		addColumn(modelDTO, databaseTable, parentId, this.resourceBundleService);
+		addColumn(modelDTO, databaseTable, this.resourceBundleService);
 
 		QueryTableInfo queryTableInfo = new QueryTableInfo();
 		queryTableInfo.setName(modelDTO.getCode());
@@ -105,47 +105,18 @@ public class CreateModelTable implements ExecuteQuery<DatabaseTable<LinkedHashMa
 		return databaseTable;
 	}
 
-	public static void addColumn(ModelDTO modelDTO, DatabaseTable<?> databaseTable, UUID parentId,
+	public static void addColumn(ModelDTO modelDTO, DatabaseTable<?> databaseTable,
 			ResourceBundleService resourceBundleService) {
-
-		List<ModelColumnDTO> columns = LoadStaticData.findColumnsByModelId(modelDTO.getId());
-
-		DatabaseColumn idDatabaseColumn = new DatabaseColumn();
-		idDatabaseColumn.setColumnType(ColumnType.UUID);
-		idDatabaseColumn.setDescription(resourceBundleService.getText(idColumnName));
-		idDatabaseColumn.setEditable(false);
-		idDatabaseColumn.setFieldName(SqlQueryWriterServiceImpl.defaultIdColumn);
-		idDatabaseColumn.setRequired(false);
-		databaseTable.getAllColumns().add(idDatabaseColumn);
-
-		if (StringUtils.notNull(parentId)) {
-			DatabaseColumn parentDatabaseColumn = new DatabaseColumn();
-			parentDatabaseColumn.setColumnType(ColumnType.UUID);
-			parentDatabaseColumn.setDescription(UpdateModel.PARENT_COLUMN_NAME);
-			parentDatabaseColumn.setEditable(false);
-			parentDatabaseColumn.setFieldName(UpdateModel.PARENT_COLUMN_NAME);
-			parentDatabaseColumn.setRequired(false);
-			databaseTable.getAllColumns().add(parentDatabaseColumn);
-		}
-
-		for (ModelColumnDTO column : columns) {
-			DatabaseColumn databaseColumn = new DatabaseColumn();
-			databaseColumn.setColumnType(column.getColumnType());
-			databaseColumn.setDescription(resourceBundleService.getText(column.getName()));
-			databaseColumn.setEditable(column.getEditable());
-			databaseColumn.setFieldName(column.getCode());
-			if (StringUtils.notNull(column.getCodebookId())) {
-				databaseColumn.setListOfValues(
-						StaticData.modelCodebook.get(column.getCodebookId()) == null ? new ArrayList<>()
-								: StaticData.modelCodebook.get(column.getCodebookId()));
-			}
-			databaseColumn.setRequired(!column.getNullable());
-
+		List<DatabaseColumn> databaseColumns = getColumnsForModel(modelDTO, resourceBundleService);
+		for (DatabaseColumn databaseColumn : databaseColumns) {
 			databaseTable.getAllColumns().add(databaseColumn);
 
-			if (column.getShowInTable()) {
+			if (StaticData.modelColumns.stream().filter(a -> a.getModelId().equals(modelDTO.getId()))
+					.filter(a -> a.getCode().equals(databaseColumn.getFieldName())).filter(a -> a.getShowInTable())
+					.count() > 0) {
 				databaseTable.getColumn().add(databaseColumn);
 			}
+
 		}
 	}
 
@@ -168,5 +139,45 @@ public class CreateModelTable implements ExecuteQuery<DatabaseTable<LinkedHashMa
 		}
 
 		return listItems;
+	}
+
+	public static List<DatabaseColumn> getColumnsForModel(ModelDTO modelDTO,
+			ResourceBundleService resourceBundleService) {
+		List<ModelColumnDTO> columns = LoadStaticData.findColumnsByModelId(modelDTO.getId());
+		List<DatabaseColumn> list = new ArrayList<>();
+		DatabaseColumn idDatabaseColumn = new DatabaseColumn();
+		idDatabaseColumn.setColumnType(ColumnType.UUID);
+		idDatabaseColumn.setDescription(resourceBundleService.getText(idColumnName));
+		idDatabaseColumn.setEditable(false);
+		idDatabaseColumn.setFieldName(SqlQueryWriterServiceImpl.defaultIdColumn);
+		idDatabaseColumn.setRequired(false);
+		list.add(idDatabaseColumn);
+
+		if (UpdateObject.tableHasParent(modelDTO)) {
+			DatabaseColumn parentDatabaseColumn = new DatabaseColumn();
+			parentDatabaseColumn.setColumnType(ColumnType.UUID);
+			parentDatabaseColumn.setDescription(UpdateModel.PARENT_COLUMN_NAME);
+			parentDatabaseColumn.setEditable(false);
+			parentDatabaseColumn.setFieldName(UpdateModel.PARENT_COLUMN_NAME);
+			parentDatabaseColumn.setRequired(false);
+			list.add(parentDatabaseColumn);
+		}
+
+		for (ModelColumnDTO column : columns) {
+			DatabaseColumn databaseColumn = new DatabaseColumn();
+			databaseColumn.setColumnType(column.getColumnType());
+			databaseColumn.setDescription(resourceBundleService.getText(column.getName()));
+			databaseColumn.setEditable(column.getEditable());
+			databaseColumn.setFieldName(column.getCode());
+			if (StringUtils.notNull(column.getCodebookId())) {
+				databaseColumn.setListOfValues(
+						StaticData.modelCodebook.get(column.getCodebookId()) == null ? new ArrayList<>()
+								: StaticData.modelCodebook.get(column.getCodebookId()));
+			}
+			databaseColumn.setRequired(!column.getNullable());
+
+			list.add(databaseColumn);
+		}
+		return list;
 	}
 }

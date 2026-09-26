@@ -75,7 +75,7 @@ public class ExportTableServiceImpl implements ExportTableService {
 				sheet.setDefaultColumnStyle(index, ExcelUtils.booleanExcelStyle(wb));
 				break;
 			}
-			case STRING, UUID:
+			case STRING, UUID, LOCALTIME:
 				sheet.setDefaultColumnStyle(index, ExcelUtils.stringExcelStyle(wb));
 				break;
 

@@ -73,6 +73,10 @@ public class ExecuteNativeQueryImpl<C> implements ExecuteQuery<C> {
 							objects[i - 1] = ((java.sql.Timestamp) objects[i - 1]).toLocalDateTime();
 						}
 
+						if (objects[i - 1] instanceof java.sql.Time) {
+							objects[i - 1] = ((java.sql.Time) objects[i - 1]).toLocalTime();
+						}
+
 					}
 					list.add((C) objects);
 				} else if (resultClass.equals(Object.class)) {
@@ -128,6 +132,9 @@ public class ExecuteNativeQueryImpl<C> implements ExecuteQuery<C> {
 		case LOCALDATETIME:
 			java.sql.Timestamp timestamp = (Timestamp) value;
 			return (T) timestamp.toLocalDateTime();
+		case LOCALTIME:
+			java.sql.Time time = (java.sql.Time) value;
+			return (T) time.toLocalTime();
 		case LONG:
 			number = (Number) value;
 			return (T) Long.valueOf(number.longValue());

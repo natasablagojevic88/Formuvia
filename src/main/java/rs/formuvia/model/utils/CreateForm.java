@@ -1,5 +1,6 @@
 package rs.formuvia.model.utils;
 
+import java.net.HttpURLConnection;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -23,6 +24,7 @@ import rs.formuvia.database.utils.ExecuteQuery;
 import rs.formuvia.database.utils.LoadStaticData;
 import rs.formuvia.database.utils.QueryColumnInfo;
 import rs.formuvia.database.utils.QueryTableInfo;
+import rs.formuvia.exceptions.CommonException;
 import rs.formuvia.model.dto.ModelColumnDTO;
 import rs.formuvia.model.dto.ModelColumnPreviewDTO;
 import rs.formuvia.model.dto.ModelDTO;
@@ -57,7 +59,7 @@ public class CreateForm implements ExecuteQuery<List<ModelColumnPreviewDTO>> {
 		LinkedHashMap<String, Object> values = new LinkedHashMap<String, Object>();
 
 		if (StringUtils.notNull(id)) {
-			values = findObjectById(id, parent, modelDTO, connection);
+			values = findObjectById(id, modelDTO, connection, this.resourceBundleService);
 		}
 
 		List<ModelColumnPreviewDTO> list = new ArrayList<>();
@@ -135,13 +137,13 @@ public class CreateForm implements ExecuteQuery<List<ModelColumnPreviewDTO>> {
 		return modelColumnPreviewDTO;
 	}
 
-	private LinkedHashMap<String, Object> findObjectById(UUID id, UUID parentId, ModelDTO modelDTO,
-			Connection connection) {
+	public static LinkedHashMap<String, Object> findObjectById(UUID id, ModelDTO modelDTO, Connection connection,
+			ResourceBundleService resourceBundleService) {
 		QueryTableInfo queryTableInfo = new QueryTableInfo();
 		queryTableInfo.setName(modelDTO.getCode());
 
 		DatabaseTable<?> databaseTable = new DatabaseTable<>();
-		CreateModelTable.addColumn(modelDTO, databaseTable, parentId, resourceBundleService);
+		CreateModelTable.addColumn(modelDTO, databaseTable, resourceBundleService);
 
 		DatabaseParameter databaseParameter = DatabaseServiceImpl.createFindByIdParameters(id);
 
@@ -156,6 +158,6 @@ public class CreateForm implements ExecuteQuery<List<ModelColumnPreviewDTO>> {
 			return list.getFirst();
 		}
 
-		return null;
+		throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "noDataFound", modelDTO.getId() + ":" + id);
 	}
 }

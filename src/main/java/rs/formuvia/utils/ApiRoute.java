@@ -35,5 +35,7 @@ public class ApiRoute {
 	public static final String modelPreviewFormWithId = "/preview/form/{modelId}/{id}";
 	public static final String modelPreviewFormWithParent = "/preview/form/{modelId}/parent/{parent}";
 	public static final String modelPreviewUpdate = "/preview/update/{modelId}";
+	public static final String modelPreviewDelete = "/preview/delete/{modelId}/{id}";
+	public static final String modelPreviewHistory = "/preview/history/{modelId}/{id}";
 
 }

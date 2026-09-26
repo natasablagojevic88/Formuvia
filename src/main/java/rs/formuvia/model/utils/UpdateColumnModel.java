@@ -323,6 +323,10 @@ public class UpdateColumnModel implements ExecuteQuery<ModelColumnDTO> {
 			modelColumnDTO.setTextArea(false);
 		}
 
+		if (modelColumnDTO.getColumnType().equals(ColumnType.BOOLEAN)) {
+			modelColumnDTO.setListOfValuesSql(null);
+		}
+
 		if (modelColumnDTO.getColumnType().equals(ColumnType.UUID)) {
 			modelColumnDTO.setInDescriptionForCodebook(false);
 		}

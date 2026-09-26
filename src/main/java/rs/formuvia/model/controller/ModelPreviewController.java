@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -20,6 +21,7 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import rs.formuvia.common.dto.HistoryDTO;
 import rs.formuvia.database.utils.DatabaseParameter;
 import rs.formuvia.database.utils.DatabaseTable;
 import rs.formuvia.model.dto.ModelColumnPreviewDTO;
@@ -116,5 +118,34 @@ public class ModelPreviewController {
 	public Response getUpdate(LinkedHashMap<String, Object> object,
 			@Parameter(description = "Identifier of the model whose record is stored", required = true) @PathParam("modelId") UUID modelId) {
 		return Response.ok(modelPreviewService.getUpdate(modelId, object)).build();
+	}
+
+	@DELETE
+	@Path(ApiRoute.modelPreviewDelete)
+	@Operation(operationId = "getModelPreviewDelete", summary = "Delete a record", description = "Deletes one record from the table of the given model. Rows of its subtables go with it, because the link to the parent record is created with ON DELETE CASCADE; a record another table points to as a codebook value cannot be deleted, and the request is refused. Requires a valid session and the delete role of the model.", responses = {
+			@ApiResponse(responseCode = "204", description = "Record deleted"),
+			@ApiResponse(responseCode = "400", description = "Unknown model, or the record cannot be deleted because another table points to it", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "403", description = "Current user does not have the delete role of this model", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
+	public Response getUpdate(
+			@Parameter(description = "Identifier of the model whose record is deleted", required = true) @PathParam("modelId") UUID modelId,
+			@Parameter(description = "Identifier of the record to delete", required = true) @PathParam("id") UUID id) {
+		modelPreviewService.getDelete(modelId, id);
+		return Response.noContent().build();
+	}
+
+	@GET
+	@Path(ApiRoute.modelPreviewHistory)
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "getModelPreviewHistory", summary = "Get history of a record", description = "Returns the changes of one record of a model table, newest first, the same way the history of a built-in table is returned: the action (added, changed or deleted, translated to the language of the request), the time, the user that made the change, and the fields that actually changed with their old and new value. Field names are the labels from the model, and values are read according to the data type of the column, so dates, numbers and codebook values come back in the same shape as in the table. Requires a valid session and the view role of the model.", responses = {
+			@ApiResponse(responseCode = "200", description = "Changes of the record, newest first; an empty list when nothing has been changed yet", content = @Content(mediaType = MediaType.APPLICATION_JSON, array = @ArraySchema(schema = @Schema(implementation = HistoryDTO.class)))),
+			@ApiResponse(responseCode = "400", description = "Unknown model, or the history cannot be read", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "403", description = "Current user does not have the view role of this model", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
+	public Response getHistory(
+			@Parameter(description = "Identifier of the model whose record is read", required = true) @PathParam("modelId") UUID modelId,
+			@Parameter(description = "Identifier of the record whose history is read", required = true) @PathParam("id") UUID id) {
+
+		return Response.ok(modelPreviewService.getHistory(modelId, id)).build();
 	}
 }

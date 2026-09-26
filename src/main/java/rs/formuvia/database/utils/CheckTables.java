@@ -28,8 +28,8 @@ public class CheckTables implements ExecuteQuery<Void> {
 	private static final String FOREIGN_KEY_TYPE_NAME = "FOREIGN_KEY";
 	private static final String CHECKTYPE_NAME = "CHECK";
 	private final List<TableInfo> tableInfos;
-	private final String CREATE_AUDIT_TRIGGER = "create_audit";
-	private final String AUDIT_FILE_QUERY = "audit_function.sql";
+	public static final String CREATE_AUDIT_TRIGGER = "create_audit";
+	private static final String AUDIT_FILE_QUERY = "audit_function.sql";
 
 	@Override
 	public Void execute(Connection connection) throws Exception {
@@ -38,7 +38,6 @@ public class CheckTables implements ExecuteQuery<Void> {
 		List<BaseIndexInfo> baseIndexInfos = allIndexes(connection);
 		List<BaseConstraintInfo> baseConstraintInfos = allConstraintInfos(connection);
 		List<TriggerInfo> triggerInfos = allTriggerInfos(connection);
-		String queryTemplate = commonService.readQueryFromFile(AUDIT_FILE_QUERY);
 
 		for (TableInfo tableInfo : this.tableInfos) {
 			if (allTable.stream().filter(a -> a.equals(tableInfo.getName())).count() == 0) {
@@ -114,19 +113,24 @@ public class CheckTables implements ExecuteQuery<Void> {
 
 			if (triggerInfos.stream().filter(a -> a.getTableName().equals(tableInfo.getName())
 					&& a.getTriggerName().equals(CREATE_AUDIT_TRIGGER)).count() == 0) {
-				String query = new String(queryTemplate.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
-				query = query.replaceAll(InitScriptExecute.ADDITIONAL_SCHEMA_TO_REPLACE,
-						InitScriptExecute.additionalSchemaName());
-				query = query.replaceAll(InitScriptExecute.CURRENT_SCHEMA_TO_REPLACE,
-						InitScriptExecute.findCurrentSchema(databaseService, connection));
-				query = query.replaceAll(InitScriptExecute.TABLE_NAME_TO_REPLACE, tableInfo.getName());
 
-				databaseService.executeUpdateQuery(query, null, connection);
-
+				createAuditTrigger(connection, tableInfo.getName());
 			}
 
 		}
 		return null;
+	}
+
+	public static void createAuditTrigger(Connection connection, String tableName) {
+		String queryTemplate = commonService.readQueryFromFile(AUDIT_FILE_QUERY);
+		String query = new String(queryTemplate.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
+		query = query.replaceAll(InitScriptExecute.ADDITIONAL_SCHEMA_TO_REPLACE,
+				InitScriptExecute.additionalSchemaName());
+		query = query.replaceAll(InitScriptExecute.CURRENT_SCHEMA_TO_REPLACE,
+				InitScriptExecute.findCurrentSchema(databaseService, connection));
+		query = query.replaceAll(InitScriptExecute.TABLE_NAME_TO_REPLACE, tableName);
+
+		databaseService.executeUpdateQuery(query, null, connection);
 	}
 
 	public static List<String> allTable(Connection connection) {

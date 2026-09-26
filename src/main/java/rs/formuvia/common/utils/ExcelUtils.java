@@ -133,7 +133,7 @@ public class ExcelUtils {
 		case LOCALDATETIME:
 			xssfCell.setCellValue(LocalDateTime.parse(value.toString()));
 			break;
-		case STRING, UUID:
+		case STRING, UUID, LOCALTIME:
 			if (listOfValues.isEmpty()) {
 				xssfCell.setCellValue(value.toString());
 			} else {

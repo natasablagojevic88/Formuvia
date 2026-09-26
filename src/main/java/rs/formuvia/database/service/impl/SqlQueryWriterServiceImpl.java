@@ -5,6 +5,7 @@ import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -365,6 +366,9 @@ public class SqlQueryWriterServiceImpl implements SqlQueryWriterService {
 			case LOCALDATETIME:
 				objects = createLocalDateTimeParameters(databaseFilter);
 				break;
+			case LOCALTIME:
+				objects = createLocalTimeParameters(databaseFilter);
+				break;
 			case LONG:
 				objects = createLongParameters(databaseFilter);
 				break;
@@ -495,6 +499,29 @@ public class SqlQueryWriterServiceImpl implements SqlQueryWriterService {
 		default: {
 			objects = new Object[1];
 			objects[0] = LocalDateTime.parse(databaseFilter.getField1());
+			break;
+		}
+		}
+
+		return objects;
+	}
+
+	private Object[] createLocalTimeParameters(DatabaseFilter databaseFilter) {
+		Object[] objects = null;
+		switch (databaseFilter.getSearchOperation()) {
+		case BETWEEN: {
+			objects = new Object[2];
+			objects[0] = LocalTime.parse(databaseFilter.getField1());
+			objects[1] = LocalTime.parse(databaseFilter.getField2());
+			break;
+		}
+		case IS_NULL, IS_NOT_NULL: {
+			objects = new Object[0];
+			break;
+		}
+		default: {
+			objects = new Object[1];
+			objects[0] = LocalTime.parse(databaseFilter.getField1());
 			break;
 		}
 		}

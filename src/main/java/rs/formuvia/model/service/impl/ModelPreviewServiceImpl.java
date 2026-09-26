@@ -9,6 +9,7 @@ import org.jvnet.hk2.annotations.Service;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.core.Context;
+import rs.formuvia.common.dto.HistoryDTO;
 import rs.formuvia.database.service.DatabaseService;
 import rs.formuvia.database.utils.DatabaseParameter;
 import rs.formuvia.database.utils.DatabaseTable;
@@ -16,7 +17,9 @@ import rs.formuvia.model.dto.ModelColumnPreviewDTO;
 import rs.formuvia.model.dto.ModelDTO;
 import rs.formuvia.model.service.ModelPreviewService;
 import rs.formuvia.model.utils.CreateForm;
+import rs.formuvia.model.utils.CreateModelHistory;
 import rs.formuvia.model.utils.CreateModelTable;
+import rs.formuvia.model.utils.DeleteObject;
 import rs.formuvia.model.utils.UpdateObject;
 import rs.formuvia.utils.StaticData;
 
@@ -51,6 +54,19 @@ public class ModelPreviewServiceImpl implements ModelPreviewService {
 	public LinkedHashMap<String, Object> getUpdate(UUID modelId, LinkedHashMap<String, Object> object) {
 		UpdateObject updateObject = new UpdateObject(this.httpServletRequest, object, modelId);
 		return this.databaseService.executeQuery(updateObject);
+	}
+
+	@Override
+	public void getDelete(UUID modelId, UUID id) {
+		DeleteObject deleteObject = new DeleteObject(this.httpServletRequest, modelId, id);
+		this.databaseService.executeQuery(deleteObject);
+
+	}
+
+	@Override
+	public List<HistoryDTO> getHistory(UUID modelId, UUID id) {
+		CreateModelHistory createModelHistory = new CreateModelHistory(httpServletRequest, modelId, id);
+		return this.databaseService.executeQuery(createModelHistory);
 	}
 
 }

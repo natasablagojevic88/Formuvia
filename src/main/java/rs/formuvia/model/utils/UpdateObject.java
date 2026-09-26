@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.sql.Connection;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -13,7 +14,9 @@ import java.util.UUID;
 
 import jakarta.servlet.http.HttpServletRequest;
 import rs.formuvia.common.service.CommonService;
+import rs.formuvia.common.service.ResourceBundleService;
 import rs.formuvia.common.service.impl.CommonServiceImpl;
+import rs.formuvia.common.service.impl.ResourceBundleServiceImpl;
 import rs.formuvia.database.enums.ColumnType;
 import rs.formuvia.database.service.DatabaseService;
 import rs.formuvia.database.service.SqlQueryWriterService;
@@ -35,12 +38,14 @@ public class UpdateObject implements ExecuteQuery<LinkedHashMap<String, Object>>
 	private SqlQueryWriterService sqlQueryWriterService = new SqlQueryWriterServiceImpl();
 	private CommonService commonService;
 	private DatabaseService databaseService = new DatabaseServiceImpl();
+	private ResourceBundleService resourceBundleService;
 
 	public UpdateObject(HttpServletRequest httpServletRequest, LinkedHashMap<String, Object> object, UUID modelId) {
 		this.httpServletRequest = httpServletRequest;
 		this.object = object;
 		this.modelId = modelId;
 		this.commonService = new CommonServiceImpl(this.httpServletRequest);
+		this.resourceBundleService = new ResourceBundleServiceImpl(this.httpServletRequest);
 	}
 
 	@Override
@@ -52,6 +57,8 @@ public class UpdateObject implements ExecuteQuery<LinkedHashMap<String, Object>>
 
 		if (StringUtils.notNull(object.get(SqlQueryWriterServiceImpl.defaultIdColumn))) {
 			insert = false;
+			CreateForm.findObjectById(UUID.fromString(object.get(SqlQueryWriterServiceImpl.defaultIdColumn).toString()),
+					modelDTO, connection, this.resourceBundleService);
 		}
 
 		String query = null;
@@ -69,7 +76,7 @@ public class UpdateObject implements ExecuteQuery<LinkedHashMap<String, Object>>
 		return createMapFromArray(result, columns);
 	}
 
-	private List<ModelColumnDTO> findColumns(ModelDTO modelDTO) {
+	public static List<ModelColumnDTO> findColumns(ModelDTO modelDTO) {
 		List<ModelColumnDTO> list = new ArrayList<>();
 		list.add(ModelColumnDTO.valueOf(SqlQueryWriterServiceImpl.defaultIdColumn, ColumnType.UUID));
 
@@ -87,7 +94,7 @@ public class UpdateObject implements ExecuteQuery<LinkedHashMap<String, Object>>
 		return list.stream().map(a -> a.getCode()).toArray(String[]::new);
 	}
 
-	private Boolean tableHasParent(ModelDTO modelDTO) {
+	public static Boolean tableHasParent(ModelDTO modelDTO) {
 		ModelDTO parentModel = ModelPreviewServiceImpl.findModel(modelDTO.getParentId());
 
 		return parentModel.getType().equals(ModelType.TABLE);
@@ -122,6 +129,9 @@ public class UpdateObject implements ExecuteQuery<LinkedHashMap<String, Object>>
 				break;
 			case LOCALDATETIME:
 				parameters.put(index, LocalDateTime.parse(value.toString()));
+				break;
+			case LOCALTIME:
+				parameters.put(index, LocalTime.parse(value.toString()));
 				break;
 			case LONG:
 				parameters.put(index, new BigDecimal(value.toString()).longValue());
