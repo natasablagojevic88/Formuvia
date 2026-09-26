@@ -7,13 +7,13 @@ import java.sql.Connection;
 import lombok.RequiredArgsConstructor;
 import rs.formuvia.database.service.DatabaseService;
 import rs.formuvia.database.service.impl.DatabaseServiceImpl;
+import rs.formuvia.database.service.impl.SqlQueryWriterServiceImpl;
 
 @RequiredArgsConstructor
 public class CreateForeignKey implements ExecuteQuery<Void> {
 	private final ForeignKeyInfo foreignKeyInfo;
 
 	private DatabaseService databaseService = new DatabaseServiceImpl();
-	private static final String ID_COLUMN_NAME = "id";
 
 	@Override
 	public Void execute(Connection connection) throws Exception {
@@ -38,7 +38,7 @@ public class CreateForeignKey implements ExecuteQuery<Void> {
 		bufferedWriter.write("REFERENCES ");
 		bufferedWriter.write(foreignKeyInfo.getReferenceTable());
 		bufferedWriter.write("(");
-		bufferedWriter.write(ID_COLUMN_NAME);
+		bufferedWriter.write(SqlQueryWriterServiceImpl.defaultIdColumn);
 		bufferedWriter.write(")");
 		if (foreignKeyInfo.getCascadeDelete()) {
 			bufferedWriter.newLine();

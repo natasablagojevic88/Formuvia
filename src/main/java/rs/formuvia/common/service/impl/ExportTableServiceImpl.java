@@ -48,7 +48,9 @@ public class ExportTableServiceImpl implements ExportTableService {
 		XSSFRow row = sheet.createRow(0);
 		ExcelUtils.createTableTitleCell(wb, row, 0, databaseTable.getName());
 
-		sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, databaseTable.getColumn().size() - 1));
+		if (databaseTable.getColumn().size() > 1) {
+			sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, databaseTable.getColumn().size() - 1));
+		}
 
 		row = sheet.createRow(1);
 
@@ -89,7 +91,7 @@ public class ExportTableServiceImpl implements ExportTableService {
 			for (DatabaseColumn column : databaseTable.getColumn()) {
 				rowIndex++;
 				ExcelUtils.createCell(wb, row, rowIndex, column.getColumnType(), resourceBundleService,
-						map.get(column.getFieldName()));
+						map.get(column.getFieldName()), column.getListOfValues());
 			}
 
 		}

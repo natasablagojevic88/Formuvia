@@ -40,7 +40,6 @@ import rs.formuvia.database.utils.ExecuteNativeQueryImpl;
 import rs.formuvia.database.utils.ExecuteQuery;
 import rs.formuvia.database.utils.GenerateQueryFromDTO;
 import rs.formuvia.database.utils.QueryDatabaseOrder;
-import rs.formuvia.exceptions.ForbiddenException;
 import rs.formuvia.utils.CustomDefaultExceptionMapper;
 import rs.formuvia.utils.StaticData;
 import rs.formuvia.utils.StringUtils;
@@ -74,16 +73,8 @@ public class CreateHistory implements ExecuteQuery<List<HistoryDTO>> {
 
 		String[] roles = dtoClass.getAnnotation(EntityClass.class).roles();
 
-		boolean hasRole = false;
-		for (String role : roles) {
-			if (commonService.getRoles().contains(role)) {
-				hasRole = true;
-				break;
-			}
-		}
-		if (!hasRole) {
-			throw new ForbiddenException();
-		}
+		commonService.checkRole(roles);
+
 		DatabaseParameter databaseParameter = new DatabaseParameter();
 		databaseParameter.getFilters().add(DatabaseFilter.valueOf("tableName", tableName));
 		databaseParameter.getFilters().add(DatabaseFilter.valueOf("dataId", id.toString()));

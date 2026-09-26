@@ -39,7 +39,7 @@ public class UpdateModel implements ExecuteQuery<ModelDTO> {
 	private DatabaseService databaseService = new DatabaseServiceImpl();
 	private ModelMapper modelMapper = new ModelMapper();
 
-	private final String PARENT_COLUMN_NAME = "parent";
+	public static final String PARENT_COLUMN_NAME = "parent";
 	private final String PARENT_FOREIGN_KEY_NAME = "fk_#model_name#_parent";
 	private final String MODEL_NAME_REPLACE = "#model_name#";
 	private final String PARENT_INDEX_NAME = "#model_name#_index_parent";

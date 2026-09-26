@@ -15,6 +15,7 @@ import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Context;
 import rs.formuvia.administration.entity.AppUser;
 import rs.formuvia.common.service.CommonService;
+import rs.formuvia.exceptions.ForbiddenException;
 import rs.formuvia.utils.CustomContainerRequestFilter;
 import rs.formuvia.utils.StaticData;
 import rs.formuvia.utils.StringUtils;
@@ -118,6 +119,27 @@ public class CommonServiceImpl implements CommonService {
 		}
 
 		return (Set<String>) httpServletRequest.getAttribute(CustomContainerRequestFilter.ROLE_ATTRIBUTE);
+	}
+
+	@Override
+	public void checkRole(String... roles) {
+
+		if (!hasRole(roles)) {
+			throw new ForbiddenException();
+		}
+
+	}
+
+	@Override
+	public Boolean hasRole(String... roles) {
+		boolean hasRole = false;
+		for (String role : roles) {
+			if (getRoles().contains(role)) {
+				hasRole = true;
+				break;
+			}
+		}
+		return hasRole;
 	}
 
 }

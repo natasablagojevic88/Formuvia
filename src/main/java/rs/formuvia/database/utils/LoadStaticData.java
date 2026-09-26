@@ -14,6 +14,7 @@ import rs.formuvia.database.service.DatabaseService;
 import rs.formuvia.database.service.impl.DatabaseServiceImpl;
 import rs.formuvia.model.dto.ModelColumnDTO;
 import rs.formuvia.model.dto.ModelDTO;
+import rs.formuvia.model.service.impl.ModelPreviewServiceImpl;
 import rs.formuvia.model.utils.UpdateColumnModel;
 import rs.formuvia.utils.StaticData;
 import rs.formuvia.utils.StringUtils;
@@ -45,13 +46,26 @@ public class LoadStaticData implements ExecuteQuery<Void> {
 	}
 
 	public static void loadStaticDataCodebookModel(UUID modelId, Connection connection) {
-		ModelDTO model = StaticData.models.stream().filter(a -> a.getId().equals(modelId)).findFirst().get();
+		ModelDTO model = ModelPreviewServiceImpl.findModel(modelId);
+		List<ModelColumnDTO> columns = findColumnsByModelIdWithDesc(modelId);
+		UpdateColumnModel.loadModelStaticList(model, columns, connection);
+	}
+
+	public static List<ModelColumnDTO> findColumnsByModelId(UUID modelId) {
+		List<ModelColumnDTO> columns = StaticData.modelColumns.stream().filter(a -> a.getModelId().equals(modelId))
+				.sorted(Comparator.comparing(ModelColumnDTO::getRowIndex)
+						.thenComparing(Comparator.comparing(ModelColumnDTO::getColumnIndex)))
+				.collect(Collectors.toList());
+		return columns;
+	}
+
+	public static List<ModelColumnDTO> findColumnsByModelIdWithDesc(UUID modelId) {
 		List<ModelColumnDTO> columns = StaticData.modelColumns.stream().filter(a -> a.getModelId().equals(modelId))
 				.filter(a -> a.getInDescriptionForCodebook())
 				.sorted(Comparator.comparing(ModelColumnDTO::getRowIndex)
 						.thenComparing(Comparator.comparing(ModelColumnDTO::getColumnIndex)))
 				.collect(Collectors.toList());
-		UpdateColumnModel.loadModelStaticList(model, columns, connection);
+		return columns;
 	}
 
 }

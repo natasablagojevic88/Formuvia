@@ -233,7 +233,7 @@ public class DatabaseServiceImpl implements DatabaseService {
 		}
 	}
 
-	private DatabaseParameter createFindByIdParameters(UUID id) {
+	public static DatabaseParameter createFindByIdParameters(UUID id) {
 		DatabaseParameter databaseParameter = new DatabaseParameter();
 		databaseParameter.setPageSize(1);
 		databaseParameter.getFilters().add(new DatabaseFilter(SqlQueryWriterServiceImpl.defaultIdColumn,

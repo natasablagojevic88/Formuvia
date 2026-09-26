@@ -16,6 +16,8 @@ public class DatabaseTable<C> {
 
 	private String name;
 
+	private String description;
+
 	private String className;
 
 	private String saveUrl;

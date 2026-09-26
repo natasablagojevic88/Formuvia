@@ -3,6 +3,7 @@ package rs.formuvia.common.utils;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.Font;
@@ -15,6 +16,7 @@ import org.apache.poi.xssf.usermodel.XSSFCreationHelper;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import rs.formuvia.common.dto.ComboboxDTO;
 import rs.formuvia.common.service.ResourceBundleService;
 import rs.formuvia.common.service.impl.ResourceBundleServiceImpl;
 import rs.formuvia.database.enums.ColumnType;
@@ -102,7 +104,7 @@ public class ExcelUtils {
 	}
 
 	public static XSSFCell createCell(XSSFWorkbook workbook, XSSFRow row, int index, ColumnType columnType,
-			ResourceBundleService resourceBundleService, Object value) {
+			ResourceBundleService resourceBundleService, Object value, List<ComboboxDTO> listOfValues) {
 		XSSFCell xssfCell = row.createCell(index);
 		if (StringUtils.isNull(value))
 			return xssfCell;
@@ -132,7 +134,16 @@ public class ExcelUtils {
 			xssfCell.setCellValue(LocalDateTime.parse(value.toString()));
 			break;
 		case STRING, UUID:
-			xssfCell.setCellValue(value.toString());
+			if (listOfValues.isEmpty()) {
+				xssfCell.setCellValue(value.toString());
+			} else {
+				xssfCell.setCellValue(
+						listOfValues.stream().filter(a -> a.getValue().toString().equals(value.toString())).findFirst()
+								.orElse(null).getOption());
+
+				;
+			}
+
 			break;
 
 		}
@@ -141,9 +152,9 @@ public class ExcelUtils {
 	}
 
 	public static XSSFCell createCell(XSSFWorkbook workbook, XSSFRow row, int index, ColumnType columnType,
-			Object value) {
+			Object value, List<ComboboxDTO> listOfValues) {
 		ResourceBundleService resourceBundleService = new ResourceBundleServiceImpl();
-		return createCell(workbook, row, index, columnType, resourceBundleService, value);
+		return createCell(workbook, row, index, columnType, resourceBundleService, value, listOfValues);
 	}
 
 }

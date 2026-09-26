@@ -20,6 +20,7 @@ import rs.formuvia.database.enums.ColumnType;
 import rs.formuvia.database.service.DatabaseService;
 import rs.formuvia.database.service.impl.DatabaseServiceImpl;
 import rs.formuvia.utils.StaticData;
+import rs.formuvia.utils.StringUtils;
 
 @RequiredArgsConstructor
 public class ExecuteNativeQueryImpl<C> implements ExecuteQuery<C> {
@@ -59,8 +60,23 @@ public class ExecuteNativeQueryImpl<C> implements ExecuteQuery<C> {
 					Object[] objects = new Object[resultSet.getMetaData().getColumnCount()];
 					for (int i = 1; i <= objects.length; i++) {
 						objects[i - 1] = resultSet.getObject(i);
+
+						if (StringUtils.isNull(objects[i - 1])) {
+							continue;
+						}
+
+						if (objects[i - 1] instanceof java.sql.Date) {
+							objects[i - 1] = ((java.sql.Date) objects[i - 1]).toLocalDate();
+						}
+
+						if (objects[i - 1] instanceof java.sql.Timestamp) {
+							objects[i - 1] = ((java.sql.Timestamp) objects[i - 1]).toLocalDateTime();
+						}
+
 					}
 					list.add((C) objects);
+				} else if (resultClass.equals(Object.class)) {
+					list.add((C) resultSet.getObject(1));
 				} else {
 					C object = getValueFromResultSet(resultClass, resultSet.getObject(1), connection);
 					list.add(object);

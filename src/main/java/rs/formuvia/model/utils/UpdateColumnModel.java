@@ -48,6 +48,7 @@ import rs.formuvia.model.dto.ModelColumnDTO;
 import rs.formuvia.model.dto.ModelDTO;
 import rs.formuvia.model.entity.Model;
 import rs.formuvia.model.entity.ModelColumn;
+import rs.formuvia.model.service.impl.ModelPreviewServiceImpl;
 import rs.formuvia.quartz.jobs.DatabaseListenCheckConnectionJob;
 import rs.formuvia.utils.StaticData;
 import rs.formuvia.utils.StringUtils;
@@ -224,7 +225,7 @@ public class UpdateColumnModel implements ExecuteQuery<ModelColumnDTO> {
 			return;
 		}
 		Logger logger = LogManager.getLogger(UpdateColumnModel.class);
-		ModelDTO modelDTO = StaticData.models.stream().filter(a -> a.getId().equals(modelId)).findFirst().get();
+		ModelDTO modelDTO = ModelPreviewServiceImpl.findModel(modelId);
 
 		try {
 			PreparedStatement preparedStatement = StaticData.databaseListenConnection.prepareStatement(

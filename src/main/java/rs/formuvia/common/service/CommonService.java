@@ -20,4 +20,8 @@ public interface CommonService {
 	String getIpAdress();
 
 	Set<String> getRoles();
+
+	void checkRole(String... roles);
+
+	Boolean hasRole(String... roles);
 }

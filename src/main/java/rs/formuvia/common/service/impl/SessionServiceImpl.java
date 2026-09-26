@@ -1,7 +1,9 @@
 package rs.formuvia.common.service.impl;
 
 import java.net.HttpURLConnection;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.jvnet.hk2.annotations.Service;
 
@@ -16,6 +18,8 @@ import rs.formuvia.common.service.ResourceBundleService;
 import rs.formuvia.common.service.SessionService;
 import rs.formuvia.database.service.DatabaseService;
 import rs.formuvia.exceptions.CommonException;
+import rs.formuvia.model.dto.ModelDTO;
+import rs.formuvia.utils.ApiRoute;
 import rs.formuvia.utils.MenuInfo;
 import rs.formuvia.utils.StaticData;
 import rs.formuvia.utils.StringUtils;
@@ -34,6 +38,8 @@ public class SessionServiceImpl implements SessionService {
 	@Inject
 	private DatabaseService databaseService;
 
+	private final String MODEL_NAME_TO_REPLACE = "{modelId}";
+
 	@Override
 	public UserInfoDTO getUserInfo() {
 		AppUser appUser = commonService.getUser();
@@ -49,7 +55,38 @@ public class SessionServiceImpl implements SessionService {
 			loadMenu(roles, userInfo, menuInfo, null);
 		}
 
+		loadMenuFromModel(userInfo);
+
 		return userInfo;
+	}
+
+	private void loadMenuFromModel(UserInfoDTO userInfo) {
+
+		List<ModelDTO> modelWithoutParent = StaticData.models.stream().filter(a -> StringUtils.isNull(a.getParentId()))
+				.collect(Collectors.toList());
+		for (ModelDTO modelDTO : modelWithoutParent) {
+			MenuDTO menuDTO = new MenuDTO();
+			menuDTO.setIcon(modelDTO.getIcon());
+			menuDTO.setName(resourceBundleService.getText(modelDTO.getName()));
+			loadModelChildren(modelDTO, menuDTO);
+			if (!menuDTO.getChildren().isEmpty()) {
+				userInfo.getMenu().add(menuDTO);
+			}
+		}
+	}
+
+	private void loadModelChildren(ModelDTO modelDTO, MenuDTO parentMenu) {
+		List<ModelDTO> childrenModel = StaticData.models.stream().filter(a -> StringUtils.notNull(a.getParentId()))
+				.filter(a -> a.getParentId().equals(modelDTO.getId()))
+				.filter(a -> commonService.hasRole(a.getPreviewRoleCode())).collect(Collectors.toList());
+		for (ModelDTO childModel : childrenModel) {
+			MenuDTO menuDTO = new MenuDTO();
+			menuDTO.setIcon(childModel.getIcon());
+			menuDTO.setName(resourceBundleService.getText(childModel.getName()));
+			menuDTO.setUrl(ApiRoute.modelPreviewTable.replace(MODEL_NAME_TO_REPLACE, childModel.getId().toString()));
+
+			parentMenu.getChildren().add(menuDTO);
+		}
 	}
 
 	private void loadMenu(Set<String> roles, UserInfoDTO userInfo, MenuInfo menuInfo, MenuDTO parent) {

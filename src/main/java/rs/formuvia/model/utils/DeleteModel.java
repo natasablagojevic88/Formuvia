@@ -25,7 +25,8 @@ public class DeleteModel implements ExecuteQuery<Void> {
 	public Void execute(Connection connection) throws Exception {
 		Model model = this.databaseService.findById(id, Model.class, connection);
 
-		if (this.databaseService.exists(DatabaseParameter.valueOf(DatabaseFilter.valueOf("parent", id.toString())),
+		if (this.databaseService.exists(
+				DatabaseParameter.valueOf(DatabaseFilter.valueOf(UpdateModel.PARENT_COLUMN_NAME, id.toString())),
 				Model.class, connection)) {
 			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "modelHasChildren", null);
 		}

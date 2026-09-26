@@ -62,17 +62,21 @@ public class CreateDatabaseTable<C> implements ExecuteQuery<DatabaseTable<C>> {
 		Map<Integer, Object> parameters = sqlQueryWriterService.createParameters(databaseParameter.getFilters());
 		Long total = this.databaseService.executeNativeQuery(totalQuery, parameters, Long.class, connection).getFirst();
 		databaseTable.setTotal(total);
-		if (total == 0) {
-			databaseTable.setNumberOfPages(0);
-		} else {
-			Long numberOfPages = total / this.databaseParameter.getPageSize();
 
-			if (total % this.databaseParameter.getPageSize() != 0)
+		databaseTable.setNumberOfPages(numberOfPages(total, databaseParameter.getPageSize()));
+		return databaseTable;
+	}
+
+	public static Integer numberOfPages(Long total, Integer pageSize) {
+		Long numberOfPages = 0L;
+		if (total != 0) {
+			numberOfPages = total / pageSize;
+
+			if (total % pageSize != 0)
 				numberOfPages = numberOfPages + 1;
 
-			databaseTable.setNumberOfPages(numberOfPages.intValue());
 		}
-		return databaseTable;
+		return numberOfPages.intValue();
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
