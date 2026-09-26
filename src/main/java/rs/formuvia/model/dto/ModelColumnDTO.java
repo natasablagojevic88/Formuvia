@@ -87,4 +87,11 @@ public class ModelColumnDTO {
 	@NotNull
 	private Boolean inDescriptionForCodebook;
 
+	public static ModelColumnDTO valueOf(String code, ColumnType columnType) {
+		ModelColumnDTO modelColumnDTO = new ModelColumnDTO();
+		modelColumnDTO.setCode(code);
+		modelColumnDTO.setColumnType(columnType);
+		return modelColumnDTO;
+	}
+
 }

@@ -38,7 +38,7 @@ public class SessionServiceImpl implements SessionService {
 	@Inject
 	private DatabaseService databaseService;
 
-	private final String MODEL_NAME_TO_REPLACE = "{modelId}";
+	public static final String MODEL_NAME_TO_REPLACE = "{modelId}";
 
 	@Override
 	public UserInfoDTO getUserInfo() {

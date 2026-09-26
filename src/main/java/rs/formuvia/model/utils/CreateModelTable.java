@@ -12,6 +12,7 @@ import rs.formuvia.common.service.CommonService;
 import rs.formuvia.common.service.ResourceBundleService;
 import rs.formuvia.common.service.impl.CommonServiceImpl;
 import rs.formuvia.common.service.impl.ResourceBundleServiceImpl;
+import rs.formuvia.common.service.impl.SessionServiceImpl;
 import rs.formuvia.database.enums.ColumnType;
 import rs.formuvia.database.enums.Direction;
 import rs.formuvia.database.service.DatabaseService;
@@ -31,6 +32,7 @@ import rs.formuvia.database.utils.QueryTableInfo;
 import rs.formuvia.model.dto.ModelColumnDTO;
 import rs.formuvia.model.dto.ModelDTO;
 import rs.formuvia.model.service.impl.ModelPreviewServiceImpl;
+import rs.formuvia.utils.ApiRoute;
 import rs.formuvia.utils.StaticData;
 import rs.formuvia.utils.StringUtils;
 
@@ -76,6 +78,8 @@ public class CreateModelTable implements ExecuteQuery<DatabaseTable<LinkedHashMa
 		databaseTable.setDescription(StringUtils.hasText(modelDTO.getDescription())
 				? resourceBundleService.getText(modelDTO.getDescription())
 				: null);
+		databaseTable.setSaveUrl(ApiRoute.modelPreviewUpdate.replace(SessionServiceImpl.MODEL_NAME_TO_REPLACE,
+				modelDTO.getId().toString()));
 
 		addColumn(modelDTO, databaseTable, parentId, this.resourceBundleService);
 

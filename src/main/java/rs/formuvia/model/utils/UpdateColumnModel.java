@@ -21,7 +21,10 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.AllColumns;
+import net.sf.jsqlparser.statement.select.ParenthesedSelect;
+import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SetOperationList;
 import rs.formuvia.common.dto.ComboboxDTO;
 import rs.formuvia.database.enums.ColumnType;
 import rs.formuvia.database.enums.Direction;
@@ -334,15 +337,22 @@ public class UpdateColumnModel implements ExecuteQuery<ModelColumnDTO> {
 				} else {
 
 					Select selectQuery = (Select) statement;
-					boolean hasStar = selectQuery.getPlainSelect().getSelectItems().stream()
+					List<PlainSelect> selects = plainSelects(selectQuery);
+
+					if (selects.isEmpty()) {
+						throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "invalidQuery",
+								modelColumnDTO.getListOfValuesSql());
+					}
+
+					boolean hasStar = selects.stream().flatMap(a -> a.getSelectItems().stream())
 							.anyMatch(a -> a.getExpression() instanceof AllColumns);
 
 					if (hasStar) {
 						throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "selectStarNotAllowed",
-								modelColumnDTO.getDefaultValueSql());
+								modelColumnDTO.getListOfValuesSql());
 					}
 
-					if (selectQuery.getPlainSelect().getSelectItems().size() != 1) {
+					if (selects.stream().anyMatch(a -> a.getSelectItems().size() != 1)) {
 						throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "selectMustHave1Column",
 								modelColumnDTO.getDefaultValueSql());
 					}
@@ -364,7 +374,14 @@ public class UpdateColumnModel implements ExecuteQuery<ModelColumnDTO> {
 							modelColumnDTO.getListOfValuesSql());
 				} else {
 					Select selectQuery = (Select) statement;
-					boolean hasStar = selectQuery.getPlainSelect().getSelectItems().stream()
+					List<PlainSelect> selects = plainSelects(selectQuery);
+
+					if (selects.isEmpty()) {
+						throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "invalidQuery",
+								modelColumnDTO.getListOfValuesSql());
+					}
+
+					boolean hasStar = selects.stream().flatMap(a -> a.getSelectItems().stream())
 							.anyMatch(a -> a.getExpression() instanceof AllColumns);
 
 					if (hasStar) {
@@ -372,7 +389,12 @@ public class UpdateColumnModel implements ExecuteQuery<ModelColumnDTO> {
 								modelColumnDTO.getListOfValuesSql());
 					}
 
-					if (selectQuery.getPlainSelect().getSelectItems().size() != 2) {
+					if (hasStar) {
+						throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "selectStarNotAllowed",
+								modelColumnDTO.getListOfValuesSql());
+					}
+
+					if (selects.stream().anyMatch(a -> a.getSelectItems().size() != 2)) {
 						throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "selectMustHave2Column",
 								modelColumnDTO.getListOfValuesSql());
 					}
@@ -385,6 +407,20 @@ public class UpdateColumnModel implements ExecuteQuery<ModelColumnDTO> {
 
 		}
 
+	}
+
+	private List<PlainSelect> plainSelects(Select select) {
+		List<PlainSelect> list = new ArrayList<>();
+
+		if (select instanceof SetOperationList) {
+			((SetOperationList) select).getSelects().forEach(a -> list.addAll(plainSelects(a)));
+		} else if (select instanceof ParenthesedSelect) {
+			list.addAll(plainSelects(((ParenthesedSelect) select).getSelect()));
+		} else if (select instanceof PlainSelect) {
+			list.add((PlainSelect) select);
+		}
+
+		return list;
 	}
 
 }

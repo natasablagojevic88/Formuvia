@@ -1,5 +1,6 @@
 package rs.formuvia.model.service.impl;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -16,6 +17,7 @@ import rs.formuvia.model.dto.ModelDTO;
 import rs.formuvia.model.service.ModelPreviewService;
 import rs.formuvia.model.utils.CreateForm;
 import rs.formuvia.model.utils.CreateModelTable;
+import rs.formuvia.model.utils.UpdateObject;
 import rs.formuvia.utils.StaticData;
 
 @Service
@@ -43,6 +45,12 @@ public class ModelPreviewServiceImpl implements ModelPreviewService {
 	public List<ModelColumnPreviewDTO> getForm(UUID modelId, UUID id, UUID parent) {
 		CreateForm createForm = new CreateForm(httpServletRequest, modelId, id, parent);
 		return this.databaseService.executeQuery(createForm);
+	}
+
+	@Override
+	public LinkedHashMap<String, Object> getUpdate(UUID modelId, LinkedHashMap<String, Object> object) {
+		UpdateObject updateObject = new UpdateObject(this.httpServletRequest, object, modelId);
+		return this.databaseService.executeQuery(updateObject);
 	}
 
 }

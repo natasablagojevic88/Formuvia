@@ -1,5 +1,6 @@
 package rs.formuvia.model.service;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -12,5 +13,7 @@ public interface ModelPreviewService {
 	DatabaseTable<?> getTable(DatabaseParameter databaseParameter, UUID modelId, UUID parentId);
 
 	List<ModelColumnPreviewDTO> getForm(UUID modelId, UUID id, UUID parent);
+
+	LinkedHashMap<String, Object> getUpdate(UUID modelId, LinkedHashMap<String, Object> object);
 
 }

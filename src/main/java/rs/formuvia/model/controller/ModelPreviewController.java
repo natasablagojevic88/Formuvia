@@ -1,5 +1,6 @@
 package rs.formuvia.model.controller;
 
+import java.util.LinkedHashMap;
 import java.util.UUID;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -65,20 +66,11 @@ public class ModelPreviewController {
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path(ApiRoute.modelPreviewForm)
-	@Operation(
-			operationId = "getModelPreviewForm",
-			summary = "Get an empty form of a model",
-			description = "Returns the fields of the entry form for a new record of the given model. Every field carries its code, its translated label, the data type, the length, whether it is required and whether it may be changed, and its place in the dialog (row, column and width in columns), so the client can draw the form exactly as it was designed. A field linked to a codebook carries listOfValues with the records of that codebook; a field with its own query carries the values that query returns. Fields with a default value query come back already filled. The first item is the identifier, which is empty for a new record. Requires a valid session and the view role of the model.",
-			responses = {
-			@ApiResponse(responseCode = "200", description = "Fields of the empty form",
-					content = @Content(mediaType = MediaType.APPLICATION_JSON,
-							array = @ArraySchema(schema = @Schema(implementation = ModelColumnPreviewDTO.class)))),
-			@ApiResponse(responseCode = "400", description = "Unknown model, or the record does not exist",
-					content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
-			@ApiResponse(responseCode = "401", description = "No valid session",
-					content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
-			@ApiResponse(responseCode = "403", description = "Current user does not have the view role of this model",
-					content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
+	@Operation(operationId = "getModelPreviewForm", summary = "Get an empty form of a model", description = "Returns the fields of the entry form for a new record of the given model. Every field carries its code, its translated label, the data type, the length, whether it is required and whether it may be changed, and its place in the dialog (row, column and width in columns), so the client can draw the form exactly as it was designed. A field linked to a codebook carries listOfValues with the records of that codebook; a field with its own query carries the values that query returns. Fields with a default value query come back already filled. The first item is the identifier, which is empty for a new record. Requires a valid session and the view role of the model.", responses = {
+			@ApiResponse(responseCode = "200", description = "Fields of the empty form", content = @Content(mediaType = MediaType.APPLICATION_JSON, array = @ArraySchema(schema = @Schema(implementation = ModelColumnPreviewDTO.class)))),
+			@ApiResponse(responseCode = "400", description = "Unknown model, or the record does not exist", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "403", description = "Current user does not have the view role of this model", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
 	public Response getForm(
 			@Parameter(description = "Identifier of the model whose form is read", required = true) @PathParam("modelId") UUID modelId) {
 		return Response.ok(modelPreviewService.getForm(modelId, null, null)).build();
@@ -87,20 +79,11 @@ public class ModelPreviewController {
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path(ApiRoute.modelPreviewFormWithId)
-	@Operation(
-			operationId = "getModelPreviewFormById",
-			summary = "Get the form of one record",
-			description = "The same as the empty form, but every field carries the value of the given record. Default values and field queries are not run here, because they belong to entering a new record; a field linked to a codebook still carries the codebook records, so the client can show the label instead of the identifier.",
-			responses = {
-			@ApiResponse(responseCode = "200", description = "Fields of the form, filled with the values of the record",
-					content = @Content(mediaType = MediaType.APPLICATION_JSON,
-							array = @ArraySchema(schema = @Schema(implementation = ModelColumnPreviewDTO.class)))),
-			@ApiResponse(responseCode = "400", description = "Unknown model, or the record does not exist",
-					content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
-			@ApiResponse(responseCode = "401", description = "No valid session",
-					content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
-			@ApiResponse(responseCode = "403", description = "Current user does not have the view role of this model",
-					content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
+	@Operation(operationId = "getModelPreviewFormById", summary = "Get the form of one record", description = "The same as the empty form, but every field carries the value of the given record. Default values and field queries are not run here, because they belong to entering a new record; a field linked to a codebook still carries the codebook records, so the client can show the label instead of the identifier.", responses = {
+			@ApiResponse(responseCode = "200", description = "Fields of the form, filled with the values of the record", content = @Content(mediaType = MediaType.APPLICATION_JSON, array = @ArraySchema(schema = @Schema(implementation = ModelColumnPreviewDTO.class)))),
+			@ApiResponse(responseCode = "400", description = "Unknown model, or the record does not exist", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "403", description = "Current user does not have the view role of this model", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
 	public Response getForm(
 			@Parameter(description = "Identifier of the model whose form is read", required = true) @PathParam("modelId") UUID modelId,
 			@Parameter(description = "Identifier of the record whose values fill the form", required = true) @PathParam("id") UUID id) {
@@ -109,25 +92,29 @@ public class ModelPreviewController {
 
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	@Path(ApiRoute.modelPreviewFormWithIdAndParent)
-	@Operation(
-			operationId = "getModelPreviewFormByIdAndParent",
-			summary = "Get the form of a subtable record",
-			description = "The same as the form of one record, with one field added: the link to the record of the parent table. This is what a subtable uses, so that a new row already knows which parent record it belongs to.",
-			responses = {
-			@ApiResponse(responseCode = "200", description = "Fields of the form, with the link to the parent record",
-					content = @Content(mediaType = MediaType.APPLICATION_JSON,
-							array = @ArraySchema(schema = @Schema(implementation = ModelColumnPreviewDTO.class)))),
-			@ApiResponse(responseCode = "400", description = "Unknown model, or the record does not exist",
-					content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
-			@ApiResponse(responseCode = "401", description = "No valid session",
-					content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
-			@ApiResponse(responseCode = "403", description = "Current user does not have the view role of this model",
-					content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
-	public Response getForm(
+	@Path(ApiRoute.modelPreviewFormWithParent)
+	@Operation(operationId = "getModelPreviewFormByParent", summary = "Get an empty form of a subtable", description = "Returns the empty form for a new record of a subtable: the same fields as the empty form of the model, plus the link to the record of the parent table, already filled in, so the new row knows which record it belongs to. Default values and field queries run here as they do for any new record. An existing record of a subtable is read through the form of one record, because its link to the parent is already stored.", responses = {
+			@ApiResponse(responseCode = "200", description = "Fields of the empty form, with the link to the parent record", content = @Content(mediaType = MediaType.APPLICATION_JSON, array = @ArraySchema(schema = @Schema(implementation = ModelColumnPreviewDTO.class)))),
+			@ApiResponse(responseCode = "400", description = "Unknown model, or the record does not exist", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "403", description = "Current user does not have the view role of this model", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
+	public Response getFormWithParent(
 			@Parameter(description = "Identifier of the model whose form is read", required = true) @PathParam("modelId") UUID modelId,
-			@Parameter(description = "Identifier of the record whose values fill the form", required = true) @PathParam("id") UUID id,
 			@Parameter(description = "Identifier of the record in the parent table", required = true) @PathParam("parent") UUID parent) {
-		return Response.ok(modelPreviewService.getForm(modelId, id, parent)).build();
+		return Response.ok(modelPreviewService.getForm(modelId, null, parent)).build();
+	}
+
+	@POST
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Path(ApiRoute.modelPreviewUpdate)
+	@Operation(operationId = "getModelPreviewUpdate", summary = "Add or change a record", description = "Stores one record of the table of the given model. The body is the record itself, field code to value, as the form describes it: the identifier under id, empty for a new record and filled when an existing one is changed; the link to the record of the parent table under parent, for a subtable; and every field of the form under its own code. Values follow the data type of the field, a date as yyyy-MM-dd, a date and time as yyyy-MM-ddTHH:mm, a field linked to a codebook as the identifier of the chosen record, and an empty field as null. Fields the form marks as not editable are sent back unchanged. The stored record is returned, with the identifier of a newly added one, so the client can refresh that row without reading the whole table again. Adding requires the add role of the model, changing the update role.", requestBody = @RequestBody(description = "Record as field code to value, with id empty for a new record", required = true, content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = "object", description = "Field code to value"))), responses = {
+			@ApiResponse(responseCode = "200", description = "Stored record, with its identifier", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = "object", description = "Field code to value"))),
+			@ApiResponse(responseCode = "400", description = "A required field is empty, a value does not fit the type or the length of its field, or the record being changed no longer exists", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "403", description = "Current user does not have the role for adding or changing data in this model", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
+	public Response getUpdate(LinkedHashMap<String, Object> object,
+			@Parameter(description = "Identifier of the model whose record is stored", required = true) @PathParam("modelId") UUID modelId) {
+		return Response.ok(modelPreviewService.getUpdate(modelId, object)).build();
 	}
 }
