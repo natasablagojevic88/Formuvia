@@ -86,6 +86,7 @@ public class CreateTable implements ExecuteQuery<Void> {
 				break;
 			case LOCALDATETIME:
 				bufferedWriter.write(DATE_TIME_TYPE);
+				break;
 			case LOCALTIME:
 				bufferedWriter.write(TIME_TYPE);
 				break;

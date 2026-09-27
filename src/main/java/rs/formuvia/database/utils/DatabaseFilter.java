@@ -38,6 +38,15 @@ public class DatabaseFilter {
 		return databaseFilter;
 	}
 
+	public static DatabaseFilter valueOf(String field, String field1, ColumnType columnType) {
+		DatabaseFilter databaseFilter = new DatabaseFilter();
+		databaseFilter.setField(field);
+		databaseFilter.setSearchOperation(SearchOperation.EQUALS);
+		databaseFilter.setField1(field1);
+		databaseFilter.setColumnType(columnType);
+		return databaseFilter;
+	}
+
 	private String field;
 
 	private SearchOperation searchOperation;

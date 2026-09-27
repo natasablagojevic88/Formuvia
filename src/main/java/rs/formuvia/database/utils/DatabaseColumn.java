@@ -26,5 +26,7 @@ public class DatabaseColumn {
 
 	private Boolean required = false;
 
+	private Boolean inDescription = false;
+
 	List<ComboboxDTO> listOfValues = new ArrayList<>();
 }

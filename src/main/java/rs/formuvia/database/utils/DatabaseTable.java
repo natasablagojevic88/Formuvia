@@ -32,4 +32,6 @@ public class DatabaseTable<C> {
 
 	private List<DatabaseColumn> allColumns = new ArrayList<>();
 
+	private List<DatabaseSubTable> subTables = new ArrayList<>();
+
 }

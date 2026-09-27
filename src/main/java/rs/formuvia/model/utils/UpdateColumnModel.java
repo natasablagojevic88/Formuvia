@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -219,7 +220,8 @@ public class UpdateColumnModel implements ExecuteQuery<ModelColumnDTO> {
 		if (!StaticData.modelsToListen.contains(model.getId())) {
 			initListen(model.getId());
 		}
-		StaticData.modelCodebook.put(model.getId(), values);
+		StaticData.modelCodebook.put(model.getId(),
+				values.stream().sorted(Comparator.comparing(ComboboxDTO::getOption)).collect(Collectors.toList()));
 
 	}
 

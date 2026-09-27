@@ -2,10 +2,12 @@ package rs.formuvia.model.utils;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import jakarta.servlet.http.HttpServletRequest;
 import rs.formuvia.common.service.CommonService;
@@ -23,6 +25,7 @@ import rs.formuvia.database.utils.CreateDatabaseTable;
 import rs.formuvia.database.utils.DatabaseColumn;
 import rs.formuvia.database.utils.DatabaseFilter;
 import rs.formuvia.database.utils.DatabaseParameter;
+import rs.formuvia.database.utils.DatabaseSubTable;
 import rs.formuvia.database.utils.DatabaseTable;
 import rs.formuvia.database.utils.ExecuteQuery;
 import rs.formuvia.database.utils.LoadStaticData;
@@ -69,8 +72,8 @@ public class CreateModelTable implements ExecuteQuery<DatabaseTable<LinkedHashMa
 		}
 
 		if (StringUtils.notNull(this.parentId)) {
-			this.databaseParameter.getFilters()
-					.add(DatabaseFilter.valueOf(UpdateModel.PARENT_COLUMN_NAME, this.parentId.toString()));
+			this.databaseParameter.getFilters().add(
+					DatabaseFilter.valueOf(UpdateModel.PARENT_COLUMN_NAME, this.parentId.toString(), ColumnType.UUID));
 		}
 
 		DatabaseTable<LinkedHashMap<String, Object>> databaseTable = new DatabaseTable<>();
@@ -101,8 +104,16 @@ public class CreateModelTable implements ExecuteQuery<DatabaseTable<LinkedHashMa
 		databaseTable.setNumberOfPages(CreateDatabaseTable.numberOfPages(total, databaseParameter.getPageSize()));
 
 		databaseTable.getAllColumns().removeIf(a -> a.getFieldName().equals(UpdateModel.PARENT_COLUMN_NAME));
-
+		databaseTable.setSubTables(findSubTable(modelDTO, resourceBundleService));
 		return databaseTable;
+	}
+
+	private List<DatabaseSubTable> findSubTable(ModelDTO modelDTO, ResourceBundleService resourceBundleService) {
+		return StaticData.models.stream().filter(a -> StringUtils.notNull(a.getParentId()))
+				.filter(a -> a.getParentId().equals(modelDTO.getId()))
+				.map(a -> new DatabaseSubTable(this.resourceBundleService.getText(a.getName()), a.getId(), a.getIcon()))
+				.sorted(Comparator.comparing(DatabaseSubTable::getName)).collect(Collectors.toList());
+
 	}
 
 	public static void addColumn(ModelDTO modelDTO, DatabaseTable<?> databaseTable,
@@ -169,6 +180,7 @@ public class CreateModelTable implements ExecuteQuery<DatabaseTable<LinkedHashMa
 			databaseColumn.setDescription(resourceBundleService.getText(column.getName()));
 			databaseColumn.setEditable(column.getEditable());
 			databaseColumn.setFieldName(column.getCode());
+			databaseColumn.setInDescription(column.getInDescriptionForCodebook());
 			if (StringUtils.notNull(column.getCodebookId())) {
 				databaseColumn.setListOfValues(
 						StaticData.modelCodebook.get(column.getCodebookId()) == null ? new ArrayList<>()
