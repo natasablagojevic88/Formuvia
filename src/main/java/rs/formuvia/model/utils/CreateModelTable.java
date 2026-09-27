@@ -29,11 +29,14 @@ import rs.formuvia.database.utils.DatabaseSubTable;
 import rs.formuvia.database.utils.DatabaseTable;
 import rs.formuvia.database.utils.ExecuteQuery;
 import rs.formuvia.database.utils.LoadStaticData;
+import rs.formuvia.database.utils.ParentListOfValues;
 import rs.formuvia.database.utils.QueryColumnInfo;
 import rs.formuvia.database.utils.QueryDatabaseOrder;
 import rs.formuvia.database.utils.QueryTableInfo;
 import rs.formuvia.model.dto.ModelColumnDTO;
 import rs.formuvia.model.dto.ModelDTO;
+import rs.formuvia.model.dto.ObjectFormDTO;
+import rs.formuvia.model.enums.ModelType;
 import rs.formuvia.model.service.impl.ModelPreviewServiceImpl;
 import rs.formuvia.utils.ApiRoute;
 import rs.formuvia.utils.StaticData;
@@ -105,12 +108,16 @@ public class CreateModelTable implements ExecuteQuery<DatabaseTable<LinkedHashMa
 
 		databaseTable.getAllColumns().removeIf(a -> a.getFieldName().equals(UpdateModel.PARENT_COLUMN_NAME));
 		databaseTable.setSubTables(findSubTable(modelDTO, resourceBundleService));
+		databaseTable.setHasAdd(commonService.hasRole(modelDTO.getAddRoleCode()));
+		databaseTable.setHasUpdate(commonService.hasRole(modelDTO.getUpdateRoleCode()));
+		databaseTable.setHasDelete(commonService.hasRole(modelDTO.getDeleteRoleCode()));
 		return databaseTable;
 	}
 
 	private List<DatabaseSubTable> findSubTable(ModelDTO modelDTO, ResourceBundleService resourceBundleService) {
 		return StaticData.models.stream().filter(a -> StringUtils.notNull(a.getParentId()))
 				.filter(a -> a.getParentId().equals(modelDTO.getId()))
+				.filter(a -> commonService.hasRole(a.getPreviewRoleCode()))
 				.map(a -> new DatabaseSubTable(this.resourceBundleService.getText(a.getName()), a.getId(), a.getIcon()))
 				.sorted(Comparator.comparing(DatabaseSubTable::getName)).collect(Collectors.toList());
 
@@ -118,7 +125,7 @@ public class CreateModelTable implements ExecuteQuery<DatabaseTable<LinkedHashMa
 
 	public static void addColumn(ModelDTO modelDTO, DatabaseTable<?> databaseTable,
 			ResourceBundleService resourceBundleService) {
-		List<DatabaseColumn> databaseColumns = getColumnsForModel(modelDTO, resourceBundleService);
+		List<DatabaseColumn> databaseColumns = getColumnsForModel(modelDTO, resourceBundleService, databaseTable);
 		for (DatabaseColumn databaseColumn : databaseColumns) {
 			databaseTable.getAllColumns().add(databaseColumn);
 
@@ -153,7 +160,7 @@ public class CreateModelTable implements ExecuteQuery<DatabaseTable<LinkedHashMa
 	}
 
 	public static List<DatabaseColumn> getColumnsForModel(ModelDTO modelDTO,
-			ResourceBundleService resourceBundleService) {
+			ResourceBundleService resourceBundleService, DatabaseTable<?> databaseTable) {
 		List<ModelColumnDTO> columns = LoadStaticData.findColumnsByModelId(modelDTO.getId());
 		List<DatabaseColumn> list = new ArrayList<>();
 		DatabaseColumn idDatabaseColumn = new DatabaseColumn();
@@ -182,14 +189,68 @@ public class CreateModelTable implements ExecuteQuery<DatabaseTable<LinkedHashMa
 			databaseColumn.setFieldName(column.getCode());
 			databaseColumn.setInDescription(column.getInDescriptionForCodebook());
 			if (StringUtils.notNull(column.getCodebookId())) {
+				databaseColumn.setModelId(column.getCodebookId());
 				databaseColumn.setListOfValues(
 						StaticData.modelCodebook.get(column.getCodebookId()) == null ? new ArrayList<>()
 								: StaticData.modelCodebook.get(column.getCodebookId()));
+				List<ParentListOfValues> parentListOfValues = new ArrayList<>();
+				createParentList(parentListOfValues, column.getCodebookId(), resourceBundleService, databaseTable,
+						null);
+				databaseColumn.setParentList(parentListOfValues);
 			}
 			databaseColumn.setRequired(!column.getNullable());
 
 			list.add(databaseColumn);
 		}
 		return list;
+	}
+
+	public static void createParentList(List<ParentListOfValues> parentListOfValues, UUID modelId,
+			ResourceBundleService resourceBundleService, DatabaseTable<?> databaseTable, ObjectFormDTO objectFormDTO) {
+
+		ModelDTO parent = findParentTable(modelId);
+
+		if (StringUtils.isNull(parent)) {
+			return;
+		}
+
+		ParentListOfValues parentListOfValue = new ParentListOfValues();
+		parentListOfValue.setChild(modelId);
+		parentListOfValue.setParent(parent.getId());
+		parentListOfValue.setName(resourceBundleService.getText(parent.getName()));
+		parentListOfValues.add(parentListOfValue);
+		if (databaseTable != null) {
+			if (databaseTable.getParentCodebook().get(parent.getId()) == null) {
+				databaseTable.getParentCodebook().put(parent.getId(),
+						StaticData.modelCodebook.get(parent.getId()) == null ? new ArrayList<>()
+								: StaticData.modelCodebook.get(parent.getId()));
+			}
+		}
+
+		if (objectFormDTO != null) {
+			if (objectFormDTO.getParentCodebook().get(parent.getId()) == null) {
+				objectFormDTO.getParentCodebook().put(parent.getId(),
+						StaticData.modelCodebook.get(parent.getId()) == null ? new ArrayList<>()
+								: StaticData.modelCodebook.get(parent.getId()));
+			}
+		}
+
+		createParentList(parentListOfValues, parent.getId(), resourceBundleService, databaseTable, objectFormDTO);
+
+	}
+
+	public static ModelDTO findParentTable(UUID modelId) {
+		ModelDTO modelDTO = ModelPreviewServiceImpl.findModel(modelId);
+		if (StringUtils.isNull(modelDTO.getParentId())) {
+			return null;
+		}
+
+		ModelDTO parent = ModelPreviewServiceImpl.findModel(modelDTO.getParentId());
+
+		if (parent.getType().equals(ModelType.MENU)) {
+			return null;
+		}
+
+		return parent;
 	}
 }

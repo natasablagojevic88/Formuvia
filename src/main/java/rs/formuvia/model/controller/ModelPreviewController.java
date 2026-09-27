@@ -24,7 +24,7 @@ import jakarta.ws.rs.core.Response;
 import rs.formuvia.common.dto.HistoryDTO;
 import rs.formuvia.database.utils.DatabaseParameter;
 import rs.formuvia.database.utils.DatabaseTable;
-import rs.formuvia.model.dto.ModelColumnPreviewDTO;
+import rs.formuvia.model.dto.ObjectFormDTO;
 import rs.formuvia.model.service.ModelPreviewService;
 import rs.formuvia.utils.ApiRoute;
 import rs.formuvia.utils.ErrorDetail;
@@ -68,8 +68,8 @@ public class ModelPreviewController {
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path(ApiRoute.modelPreviewForm)
-	@Operation(operationId = "getModelPreviewForm", summary = "Get an empty form of a model", description = "Returns the fields of the entry form for a new record of the given model. Every field carries its code, its translated label, the data type, the length, whether it is required and whether it may be changed, and its place in the dialog (row, column and width in columns), so the client can draw the form exactly as it was designed. A field linked to a codebook carries listOfValues with the records of that codebook; a field with its own query carries the values that query returns. Fields with a default value query come back already filled. The first item is the identifier, which is empty for a new record. Requires a valid session and the view role of the model.", responses = {
-			@ApiResponse(responseCode = "200", description = "Fields of the empty form", content = @Content(mediaType = MediaType.APPLICATION_JSON, array = @ArraySchema(schema = @Schema(implementation = ModelColumnPreviewDTO.class)))),
+	@Operation(operationId = "getModelPreviewForm", summary = "Get an empty form of a model", description = "Returns the fields of the entry form for a new record of the given model. Every field carries its code, its translated label, the data type, the length, whether it is required and whether it may be changed, and its place in the dialog (row, column and width in columns), so the client can draw the form exactly as it was designed. A field linked to a codebook carries listOfValues with the records of that codebook; a field with its own query carries the values that query returns. When that codebook is itself a subtable, the field also carries parentListOfValues, the levels above it, and the records of those levels come once each in parentCodebook, keyed by the model they belong to. Fields with a default value query come back already filled. The first item is the identifier, which is empty for a new record. Requires a valid session and the view role of the model.", responses = {
+			@ApiResponse(responseCode = "200", description = "Fields of the empty form, with the records of the codebooks above them", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ObjectFormDTO.class))),
 			@ApiResponse(responseCode = "400", description = "Unknown model, or the record does not exist", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
 			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
 			@ApiResponse(responseCode = "403", description = "Current user does not have the view role of this model", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
@@ -82,7 +82,7 @@ public class ModelPreviewController {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path(ApiRoute.modelPreviewFormWithId)
 	@Operation(operationId = "getModelPreviewFormById", summary = "Get the form of one record", description = "The same as the empty form, but every field carries the value of the given record. Default values and field queries are not run here, because they belong to entering a new record; a field linked to a codebook still carries the codebook records, so the client can show the label instead of the identifier.", responses = {
-			@ApiResponse(responseCode = "200", description = "Fields of the form, filled with the values of the record", content = @Content(mediaType = MediaType.APPLICATION_JSON, array = @ArraySchema(schema = @Schema(implementation = ModelColumnPreviewDTO.class)))),
+			@ApiResponse(responseCode = "200", description = "Fields of the form filled with the values of the record, with the records of the codebooks above them", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ObjectFormDTO.class))),
 			@ApiResponse(responseCode = "400", description = "Unknown model, or the record does not exist", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
 			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
 			@ApiResponse(responseCode = "403", description = "Current user does not have the view role of this model", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
@@ -96,7 +96,7 @@ public class ModelPreviewController {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path(ApiRoute.modelPreviewFormWithParent)
 	@Operation(operationId = "getModelPreviewFormByParent", summary = "Get an empty form of a subtable", description = "Returns the empty form for a new record of a subtable: the same fields as the empty form of the model, plus the link to the record of the parent table, already filled in, so the new row knows which record it belongs to. Default values and field queries run here as they do for any new record. An existing record of a subtable is read through the form of one record, because its link to the parent is already stored.", responses = {
-			@ApiResponse(responseCode = "200", description = "Fields of the empty form, with the link to the parent record", content = @Content(mediaType = MediaType.APPLICATION_JSON, array = @ArraySchema(schema = @Schema(implementation = ModelColumnPreviewDTO.class)))),
+			@ApiResponse(responseCode = "200", description = "Fields of the empty form with the link to the parent record, and the records of the codebooks above them", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ObjectFormDTO.class))),
 			@ApiResponse(responseCode = "400", description = "Unknown model, or the record does not exist", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
 			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
 			@ApiResponse(responseCode = "403", description = "Current user does not have the view role of this model", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
@@ -147,5 +147,20 @@ public class ModelPreviewController {
 			@Parameter(description = "Identifier of the record whose history is read", required = true) @PathParam("id") UUID id) {
 
 		return Response.ok(modelPreviewService.getHistory(modelId, id)).build();
+	}
+
+	@GET
+	@Path(ApiRoute.modelPreviewRow)
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "getModelPreviewRow", summary = "Get one row of a model table", description = "Returns a single record of the table of the given model, in the same shape as a row of the table listing: field code to value, with the identifier and, for a subtable, the link to the parent record. The client uses it to refresh one row without reading the whole page again, for instance when coming back from a subtable. Requires a valid session and the view role of the model.", responses = {
+			@ApiResponse(responseCode = "200", description = "The record, as one row of the table", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = "object", description = "Field code to value"))),
+			@ApiResponse(responseCode = "400", description = "Unknown model, or the record no longer exists", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "403", description = "Current user does not have the view role of this model", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
+	public Response getRow(
+			@Parameter(description = "Identifier of the model whose record is read", required = true) @PathParam("modelId") UUID modelId,
+			@Parameter(description = "Identifier of the record", required = true) @PathParam("id") UUID id) {
+
+		return Response.ok(modelPreviewService.getRow(modelId, id)).build();
 	}
 }

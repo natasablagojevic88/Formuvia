@@ -57,8 +57,12 @@ public class UpdateObject implements ExecuteQuery<LinkedHashMap<String, Object>>
 
 		if (StringUtils.notNull(object.get(SqlQueryWriterServiceImpl.defaultIdColumn))) {
 			insert = false;
-			CreateForm.findObjectById(UUID.fromString(object.get(SqlQueryWriterServiceImpl.defaultIdColumn).toString()),
-					modelDTO, connection, this.resourceBundleService);
+			LinkedHashMap<String, Object> current = CreateForm.findObjectById(
+					UUID.fromString(object.get(SqlQueryWriterServiceImpl.defaultIdColumn).toString()), modelDTO,
+					connection, this.resourceBundleService);
+			if (StringUtils.notNull(current.get(UpdateModel.PARENT_COLUMN_NAME))) {
+				object.put(UpdateModel.PARENT_COLUMN_NAME, current.get(UpdateModel.PARENT_COLUMN_NAME));
+			}
 		}
 
 		String query = null;

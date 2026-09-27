@@ -8,10 +8,10 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import jakarta.annotation.security.RolesAllowed;
@@ -246,7 +246,8 @@ public class CustomContainerRequestFilter implements ContainerRequestFilter {
 		List<String> roles = StaticData.appUserRoles.stream()
 				.filter(a -> a.getAppUserUsername().equals(appUser.getUsername())).map(a -> a.getRoleCode())
 				.collect(Collectors.toList());
-		Set<String> rolesAll = new HashSet<>(roles);
+		Set<String> rolesAll = ConcurrentHashMap.newKeySet();
+		rolesAll.addAll(roles);
 		if (roles.stream().filter(a -> a.equals(RoleList.ADMIN)).count() > 0) {
 			StaticData.classFields.get(RoleList.class).forEach(a -> {
 				RoleList roleList = new RoleList();

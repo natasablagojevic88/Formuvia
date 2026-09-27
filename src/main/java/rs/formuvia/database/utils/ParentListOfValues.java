@@ -1,4 +1,4 @@
-package rs.formuvia.common.dto;
+package rs.formuvia.database.utils;
 
 import java.util.UUID;
 
@@ -11,17 +11,11 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ComboboxDTO {
+public class ParentListOfValues {
 
-	private Object value;
+	private String name;
 
-	private String option;
+	private UUID child;
 
 	private UUID parent;
-
-	public ComboboxDTO(Object value, String option) {
-		this.value = value;
-		this.option = option;
-	}
-
 }

@@ -22,17 +22,19 @@ import rs.formuvia.database.utils.DatabaseParameter;
 import rs.formuvia.database.utils.DatabaseTable;
 import rs.formuvia.database.utils.ExecuteQuery;
 import rs.formuvia.database.utils.LoadStaticData;
+import rs.formuvia.database.utils.ParentListOfValues;
 import rs.formuvia.database.utils.QueryColumnInfo;
 import rs.formuvia.database.utils.QueryTableInfo;
 import rs.formuvia.exceptions.CommonException;
 import rs.formuvia.model.dto.ModelColumnDTO;
 import rs.formuvia.model.dto.ModelColumnPreviewDTO;
 import rs.formuvia.model.dto.ModelDTO;
+import rs.formuvia.model.dto.ObjectFormDTO;
 import rs.formuvia.model.service.impl.ModelPreviewServiceImpl;
 import rs.formuvia.utils.StaticData;
 import rs.formuvia.utils.StringUtils;
 
-public class CreateForm implements ExecuteQuery<List<ModelColumnPreviewDTO>> {
+public class CreateForm implements ExecuteQuery<ObjectFormDTO> {
 	private final HttpServletRequest httpServletRequest;
 	private final UUID modelId;
 	private final UUID id;
@@ -52,8 +54,8 @@ public class CreateForm implements ExecuteQuery<List<ModelColumnPreviewDTO>> {
 	}
 
 	@Override
-	public List<ModelColumnPreviewDTO> execute(Connection connection) throws Exception {
-
+	public ObjectFormDTO execute(Connection connection) throws Exception {
+		ObjectFormDTO objectFormDTO = new ObjectFormDTO();
 		ModelDTO modelDTO = ModelPreviewServiceImpl.findModel(modelId);
 		commonService.checkRole(modelDTO.getPreviewRoleCode());
 		LinkedHashMap<String, Object> values = new LinkedHashMap<String, Object>();
@@ -90,7 +92,13 @@ public class CreateForm implements ExecuteQuery<List<ModelColumnPreviewDTO>> {
 			}
 
 			if (StringUtils.notNull(column.getCodebookId())) {
+				modelColumnPreviewDTO.setModelId(column.getCodebookId());
 				modelColumnPreviewDTO.setListOfValues(StaticData.modelCodebook.get(column.getCodebookId()));
+
+				List<ParentListOfValues> parentListOfValues = new ArrayList<>();
+				CreateModelTable.createParentList(parentListOfValues, column.getCodebookId(), resourceBundleService,
+						null, objectFormDTO);
+				modelColumnPreviewDTO.setParentListOfValues(parentListOfValues);
 			}
 
 			if (StringUtils.isNull(id) && StringUtils.hasText(column.getListOfValuesSql())) {
@@ -110,7 +118,8 @@ public class CreateForm implements ExecuteQuery<List<ModelColumnPreviewDTO>> {
 			list.add(modelColumnPreviewDTO);
 
 		}
-		return list;
+		objectFormDTO.setFields(list);
+		return objectFormDTO;
 	}
 
 	private ModelColumnPreviewDTO idColumn() {

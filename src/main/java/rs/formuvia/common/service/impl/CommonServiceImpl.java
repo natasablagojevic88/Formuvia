@@ -2,9 +2,9 @@ package rs.formuvia.common.service.impl;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -111,11 +111,11 @@ public class CommonServiceImpl implements CommonService {
 	@Override
 	public Set<String> getRoles() {
 		if (httpServletRequest == null) {
-			return new HashSet<>();
+			return ConcurrentHashMap.newKeySet();
 		}
 
 		if (StringUtils.isNull(httpServletRequest.getAttribute(CustomContainerRequestFilter.ROLE_ATTRIBUTE))) {
-			return new HashSet<>();
+			return ConcurrentHashMap.newKeySet();
 		}
 
 		return (Set<String>) httpServletRequest.getAttribute(CustomContainerRequestFilter.ROLE_ATTRIBUTE);

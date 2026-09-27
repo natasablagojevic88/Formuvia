@@ -46,7 +46,7 @@ public class CreateModelHistory implements ExecuteQuery<List<HistoryDTO>> {
 		this.commonService.checkRole(modelDTO.getPreviewRoleCode());
 		String tableName = modelDTO.getCode();
 		List<TrackDTO> tracks = CreateHistory.createListTrackDTOs(tableName, id, connection);
-		List<DatabaseColumn> columns = CreateModelTable.getColumnsForModel(modelDTO, resourceBundleService);
+		List<DatabaseColumn> columns = CreateModelTable.getColumnsForModel(modelDTO, resourceBundleService, null);
 		for (TrackDTO track : tracks) {
 			HistoryDTO historyDTO = CreateHistory.createHistoryDTO(track, resourceBundleService);
 

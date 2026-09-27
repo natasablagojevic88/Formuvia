@@ -56,6 +56,10 @@ public class UpdateModel implements ExecuteQuery<ModelDTO> {
 			}
 		}
 
+		if (StringUtils.notNull(modelDTO.getId()) && StringUtils.notNull(model.getParent())) {
+			modelDTO.setParentId(model.getParent().getId());
+		}
+
 		checkModel(modelDTO, connection);
 
 		modelMapper.map(modelDTO, model);
@@ -223,16 +227,20 @@ public class UpdateModel implements ExecuteQuery<ModelDTO> {
 
 			Integer maxColumn = modelColumnDTOs.stream().mapToInt(a -> a.getColumnIndex() + a.getColspan() - 1).max()
 					.orElse(1);
-			if (modelDTO.getColumnNumber() < maxColumn) {
-				throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "wrongColumnNumberColumnInUse",
-						maxColumn);
+			if (StringUtils.notNull(modelDTO.getColumnNumber())) {
+				if (modelDTO.getColumnNumber() < maxColumn) {
+					throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "wrongColumnNumberColumnInUse",
+							maxColumn);
+				}
 			}
 
 			Integer maxRow = modelColumnDTOs.stream().mapToInt(a -> a.getRowIndex()).max().orElse(1);
-
-			if (modelDTO.getRowNumber() < maxRow) {
-				throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "wrongRowNumberRowInUse", maxRow);
+			if (StringUtils.notNull(modelDTO.getRowNumber())) {
+				if (modelDTO.getRowNumber() < maxRow) {
+					throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "wrongRowNumberRowInUse", maxRow);
+				}
 			}
+
 		}
 
 	}

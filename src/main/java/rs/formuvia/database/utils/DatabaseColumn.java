@@ -2,6 +2,7 @@ package rs.formuvia.database.utils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -28,5 +29,10 @@ public class DatabaseColumn {
 
 	private Boolean inDescription = false;
 
+	private UUID modelId;
+
 	List<ComboboxDTO> listOfValues = new ArrayList<>();
+
+	List<ParentListOfValues> parentList = new ArrayList<>();
+
 }

@@ -6,10 +6,10 @@ import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -121,8 +121,9 @@ public class UpdateColumnModel implements ExecuteQuery<ModelColumnDTO> {
 		columnDatabaseParameter.getFilters().add(DatabaseFilter.valueOf("modelId", modelId.toString()));
 		columnDatabaseParameter.getOrders().add(QueryDatabaseOrder.valueOf("rowIndex", Direction.ASC));
 		columnDatabaseParameter.getOrders().add(QueryDatabaseOrder.valueOf("columnIndex", Direction.ASC));
-		List<ModelColumnDTO> columnDTOs = databaseService.findAll(columnDatabaseParameter, ModelColumnDTO.class,
-				connection);
+		List<ModelColumnDTO> columnDTOs = connection == null
+				? databaseService.findAll(columnDatabaseParameter, ModelColumnDTO.class)
+				: databaseService.findAll(columnDatabaseParameter, ModelColumnDTO.class, connection);
 		List<ModelColumnDTO> columnsWithDesc = columnDTOs.stream().filter(a -> a.getInDescriptionForCodebook())
 				.collect(Collectors.toList());
 
@@ -196,7 +197,15 @@ public class UpdateColumnModel implements ExecuteQuery<ModelColumnDTO> {
 
 		QueryTableInfo queryTableInfo = new QueryTableInfo();
 		queryTableInfo.setName(model.getCode());
-		queryTableInfo.getColumns().add(QueryColumnInfo.valueOf("id", "id", ColumnType.UUID));
+		queryTableInfo.getColumns().add(QueryColumnInfo.valueOf(SqlQueryWriterServiceImpl.defaultIdColumn,
+				SqlQueryWriterServiceImpl.defaultIdColumn, ColumnType.UUID));
+
+		Boolean hasParent = UpdateObject.tableHasParent(model);
+
+		if (hasParent) {
+			queryTableInfo.getColumns().add(QueryColumnInfo.valueOf(UpdateModel.PARENT_COLUMN_NAME,
+					UpdateModel.PARENT_COLUMN_NAME, ColumnType.UUID));
+		}
 
 		for (ModelColumnDTO modelColumnDTO : columnsWithDesc) {
 			queryTableInfo.getColumns().add(QueryColumnInfo.valueOf(modelColumnDTO.getCode(), modelColumnDTO.getCode(),
@@ -209,19 +218,32 @@ public class UpdateColumnModel implements ExecuteQuery<ModelColumnDTO> {
 		List<ComboboxDTO> values = new ArrayList<>();
 		for (Object[] item : objects) {
 			UUID value = UUID.fromString(item[0].toString());
-			String option = item.length == 1 ? value.toString() : Arrays.asList(item).stream().skip(1).map(a -> {
-				if (StringUtils.isNull(a))
-					return "";
-				else
-					return " " + a.toString();
-			}).collect(Collectors.joining()).trim();
-			values.add(new ComboboxDTO(value, option));
+			Integer columnToSkip = hasParent ? 2 : 1;
+			String option = item.length == columnToSkip ? value.toString()
+					: Arrays.asList(item).stream().skip(columnToSkip).map(a -> {
+						if (StringUtils.isNull(a))
+							return "";
+						else
+							return " " + a.toString();
+					}).collect(Collectors.joining()).trim();
+			UUID parent = hasParent ? UUID.fromString(item[1].toString()) : null;
+
+			values.add(new ComboboxDTO(value, option, parent));
 		}
 		if (!StaticData.modelsToListen.contains(model.getId())) {
 			initListen(model.getId());
 		}
+
 		StaticData.modelCodebook.put(model.getId(),
 				values.stream().sorted(Comparator.comparing(ComboboxDTO::getOption)).collect(Collectors.toList()));
+
+		if (hasParent) {
+			ModelDTO findParent = CreateModelTable.findParentTable(model.getId());
+			if (StaticData.modelCodebook.get(findParent.getId()) == null) {
+				List<ModelColumnDTO> listColumn = findColumnList(findParent.getId(), connection);
+				loadModelStaticList(findParent, listColumn, connection);
+			}
+		}
 
 	}
 
@@ -240,6 +262,14 @@ public class UpdateColumnModel implements ExecuteQuery<ModelColumnDTO> {
 			StaticData.modelsToListen.add(modelId);
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
+		}
+
+		Boolean hasParent = UpdateObject.tableHasParent(ModelPreviewServiceImpl.findModel(modelId));
+		if (hasParent) {
+			ModelDTO findParent = CreateModelTable.findParentTable(modelId);
+			if (!StaticData.modelsToListen.contains(findParent.getId())) {
+				initListen(findParent.getId());
+			}
 		}
 
 	}
@@ -262,7 +292,7 @@ public class UpdateColumnModel implements ExecuteQuery<ModelColumnDTO> {
 						return !a.getId().equals(modelColumnDTO.getId());
 				}).collect(Collectors.toList());
 
-		Set<Integer> usedIndex = new HashSet<>();
+		Set<Integer> usedIndex = ConcurrentHashMap.newKeySet();
 		for (ModelColumnDTO columnDTO : listInRow) {
 			for (int i = columnDTO.getColumnIndex(); i <= columnDTO.getColumnIndex() + columnDTO.getColspan()
 					- 1; i++) {

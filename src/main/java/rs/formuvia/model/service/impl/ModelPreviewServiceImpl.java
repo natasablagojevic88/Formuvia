@@ -1,5 +1,6 @@
 package rs.formuvia.model.service.impl;
 
+import java.net.HttpURLConnection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.UUID;
@@ -13,13 +14,15 @@ import rs.formuvia.common.dto.HistoryDTO;
 import rs.formuvia.database.service.DatabaseService;
 import rs.formuvia.database.utils.DatabaseParameter;
 import rs.formuvia.database.utils.DatabaseTable;
-import rs.formuvia.model.dto.ModelColumnPreviewDTO;
+import rs.formuvia.exceptions.CommonException;
 import rs.formuvia.model.dto.ModelDTO;
+import rs.formuvia.model.dto.ObjectFormDTO;
 import rs.formuvia.model.service.ModelPreviewService;
 import rs.formuvia.model.utils.CreateForm;
 import rs.formuvia.model.utils.CreateModelHistory;
 import rs.formuvia.model.utils.CreateModelTable;
 import rs.formuvia.model.utils.DeleteObject;
+import rs.formuvia.model.utils.ObjectRow;
 import rs.formuvia.model.utils.UpdateObject;
 import rs.formuvia.utils.StaticData;
 
@@ -33,7 +36,8 @@ public class ModelPreviewServiceImpl implements ModelPreviewService {
 	private HttpServletRequest httpServletRequest;
 
 	public static ModelDTO findModel(UUID modelId) {
-		return StaticData.models.stream().filter(a -> a.getId().equals(modelId)).findFirst().get();
+		return StaticData.models.stream().filter(a -> a.getId().equals(modelId)).findFirst()
+				.orElseThrow(() -> new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "noDataFound", modelId));
 	}
 
 	@Override
@@ -45,7 +49,7 @@ public class ModelPreviewServiceImpl implements ModelPreviewService {
 	}
 
 	@Override
-	public List<ModelColumnPreviewDTO> getForm(UUID modelId, UUID id, UUID parent) {
+	public ObjectFormDTO getForm(UUID modelId, UUID id, UUID parent) {
 		CreateForm createForm = new CreateForm(httpServletRequest, modelId, id, parent);
 		return this.databaseService.executeQuery(createForm);
 	}
@@ -67,6 +71,12 @@ public class ModelPreviewServiceImpl implements ModelPreviewService {
 	public List<HistoryDTO> getHistory(UUID modelId, UUID id) {
 		CreateModelHistory createModelHistory = new CreateModelHistory(httpServletRequest, modelId, id);
 		return this.databaseService.executeQuery(createModelHistory);
+	}
+
+	@Override
+	public LinkedHashMap<String, Object> getRow(UUID modelId, UUID id) {
+		ObjectRow objectRow = new ObjectRow(httpServletRequest, id, modelId);
+		return this.databaseService.executeQuery(objectRow);
 	}
 
 }

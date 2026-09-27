@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.core.Context;
 import rs.formuvia.common.service.CommonService;
 import rs.formuvia.common.service.ResourceBundleService;
+import rs.formuvia.utils.StringUtils;
 
 @Service
 public class ResourceBundleServiceImpl implements ResourceBundleService {
@@ -32,6 +33,9 @@ public class ResourceBundleServiceImpl implements ResourceBundleService {
 
 	@Override
 	public String getText(String key) {
+		if (StringUtils.isNull(key)) {
+			return "";
+		}
 		commonService = commonService == null ? new CommonServiceImpl(httpServletRequest) : commonService;
 
 		ResourceBundle resourceBundle = null;

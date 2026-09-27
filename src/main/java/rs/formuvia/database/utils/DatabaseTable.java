@@ -2,11 +2,15 @@ package rs.formuvia.database.utils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import rs.formuvia.common.dto.ComboboxDTO;
 
 @Setter
 @Getter
@@ -22,6 +26,12 @@ public class DatabaseTable<C> {
 
 	private String saveUrl;
 
+	private Boolean hasAdd = true;
+
+	private Boolean hasUpdate = true;
+
+	private Boolean hasDelete = true;
+
 	private List<DatabaseColumn> column = new ArrayList<>();
 
 	private List<C> list = new ArrayList<>();
@@ -33,5 +43,7 @@ public class DatabaseTable<C> {
 	private List<DatabaseColumn> allColumns = new ArrayList<>();
 
 	private List<DatabaseSubTable> subTables = new ArrayList<>();
+
+	private Map<UUID, List<ComboboxDTO>> parentCodebook = new ConcurrentHashMap<>();
 
 }
