@@ -101,6 +101,11 @@ public class AppStartUpImpl implements AppStartUp {
 
 		try {
 			StaticData.appProperties.load(applicationPropertiesInputStream);
+
+			if (System.getProperty(CUSTOM_APP_PATH) != null) {
+				StaticData.appProperties.put(CUSTOM_APP_PATH, System.getProperty(CUSTOM_APP_PATH));
+			}
+
 			if (StringUtils.hasText(StaticData.appProperties.get(CUSTOM_APP_PATH).toString())) {
 				File file = new File(StaticData.appProperties.get(CUSTOM_APP_PATH).toString());
 				if (file.exists()) {
