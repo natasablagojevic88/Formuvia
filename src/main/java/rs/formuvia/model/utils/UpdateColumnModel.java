@@ -443,6 +443,26 @@ public class UpdateColumnModel implements ExecuteQuery<ModelColumnDTO> {
 
 		}
 
+		if (StringUtils.notNull(modelColumnDTO.getInitSortOrder())) {
+			if (StringUtils.isNull(modelColumnDTO.getInitSortDirection())) {
+				throw new NotNullException(
+						UniqueException.findFieldFromList(ModelColumnDTO.class, "initSortDirection"));
+			}
+			DatabaseParameter checkSortUnique = DatabaseParameter.valueOf(
+					new DatabaseFilter[] { DatabaseFilter.valueOf("modelId", modelColumnDTO.getModelId().toString()),
+							DatabaseFilter.valueOf("initSortOrder", modelColumnDTO.getInitSortOrder().toString()) });
+			if (StringUtils.notNull(modelColumnDTO.getId())) {
+				checkSortUnique.getFilters().add(
+						DatabaseFilter.valueOf("id", SearchOperation.NOT_EQUALS, modelColumnDTO.getId().toString()));
+			}
+			if (databaseService.exists(checkSortUnique, ModelColumnDTO.class, connection)) {
+				throw new UniqueException(UniqueException.findFieldFromList(ModelColumnDTO.class, "initSortOrder"),
+						modelColumnDTO.getInitSortOrder().toString());
+			}
+		} else {
+			modelColumnDTO.setInitSortDirection(null);
+		}
+
 	}
 
 	private List<PlainSelect> plainSelects(Select select) {

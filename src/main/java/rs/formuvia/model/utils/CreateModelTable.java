@@ -70,9 +70,17 @@ public class CreateModelTable implements ExecuteQuery<DatabaseTable<LinkedHashMa
 		ModelDTO modelDTO = ModelPreviewServiceImpl.findModel(modelId);
 		commonService.checkRole(modelDTO.getPreviewRoleCode());
 		if (this.databaseParameter.getOrders().isEmpty()) {
-			this.databaseParameter.getOrders()
-					.add(new QueryDatabaseOrder(SqlQueryWriterServiceImpl.defaultIdColumn, Direction.DESC));
+			List<ModelColumnDTO> initSortColumns = StaticData.modelColumns.stream()
+					.filter(a -> a.getModelId().equals(modelId)).filter(a -> StringUtils.notNull(a.getInitSortOrder()))
+					.sorted(Comparator.comparing(ModelColumnDTO::getInitSortOrder)).collect(Collectors.toList());
+			for (ModelColumnDTO modelColumnDTO : initSortColumns) {
+				this.databaseParameter.getOrders().add(
+						QueryDatabaseOrder.valueOf(modelColumnDTO.getCode(), modelColumnDTO.getInitSortDirection()));
+			}
+
 		}
+		this.databaseParameter.getOrders()
+				.add(new QueryDatabaseOrder(SqlQueryWriterServiceImpl.defaultIdColumn, Direction.DESC));
 
 		if (StringUtils.notNull(this.parentId)) {
 			this.databaseParameter.getFilters().add(

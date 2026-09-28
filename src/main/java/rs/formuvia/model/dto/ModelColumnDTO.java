@@ -14,6 +14,7 @@ import rs.formuvia.database.annotations.EntityClass;
 import rs.formuvia.database.annotations.HideInTable;
 import rs.formuvia.database.annotations.InitSort;
 import rs.formuvia.database.enums.ColumnType;
+import rs.formuvia.database.enums.Direction;
 import rs.formuvia.model.entity.ModelColumn;
 import rs.formuvia.utils.ApiRoute;
 import rs.formuvia.utils.DatabaseListen;
@@ -83,6 +84,10 @@ public class ModelColumnDTO {
 	@Max(12)
 	@NotNull
 	private Integer colspan;
+
+	private Integer initSortOrder;
+
+	private Direction initSortDirection;
 
 	@NotNull
 	private Boolean inDescriptionForCodebook;

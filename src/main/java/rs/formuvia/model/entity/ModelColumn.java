@@ -17,6 +17,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import rs.formuvia.database.enums.ColumnType;
+import rs.formuvia.database.enums.Direction;
 
 @Setter
 @Getter
@@ -24,7 +25,8 @@ import rs.formuvia.database.enums.ColumnType;
 @AllArgsConstructor
 @Entity
 @Table(name = "model_column", uniqueConstraints = {
-		@UniqueConstraint(columnNames = { "model", "code" }, name = "model_column_unique1") }, indexes = {
+		@UniqueConstraint(columnNames = { "model", "code" }, name = "model_column_unique1"),
+		@UniqueConstraint(columnNames = { "model", "init_sort_order" }, name = "model_column_unique2") }, indexes = {
 				@Index(columnList = "model", name = "model_column_model_index"),
 				@Index(columnList = "codebook", name = "model_column_codebook_index") })
 public class ModelColumn {
@@ -77,6 +79,12 @@ public class ModelColumn {
 
 	@Column(nullable = false)
 	private Integer colspan;
+
+	@Column(name = "init_sort_order")
+	private Integer initSortOrder;
+
+	@Column(name = "init_sort_direction")
+	private Direction initSortDirection;
 
 	@Column(name = "in_description_for_codebook", nullable = false)
 	private Boolean inDescriptionForCodebook;
