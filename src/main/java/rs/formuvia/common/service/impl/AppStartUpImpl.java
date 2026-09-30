@@ -69,6 +69,7 @@ public class AppStartUpImpl implements AppStartUp {
 	private final String MENU_FILE = "menu.xml";
 	private DatabaseService databaseService = new DatabaseServiceImpl();
 	private final String DUPLICATE_CLASS_NAME_MESSAGE = "Duplicate class name: ";
+	private final String HOME_PATH = "${user.home}";
 
 	@Override
 	public void loadClass() {
@@ -118,6 +119,15 @@ public class AppStartUpImpl implements AppStartUp {
 				String key = enumeration.nextElement().toString();
 				if (System.getProperty(key) != null) {
 					StaticData.appProperties.put(key, System.getProperty(key));
+				}
+			}
+
+			if (StringUtils.hasText(StaticData.appProperties.getProperty(FileUploadServiceImpl.PATH_FILE_PARAMETER))) {
+				if (StaticData.appProperties.getProperty(FileUploadServiceImpl.PATH_FILE_PARAMETER)
+						.contains(HOME_PATH)) {
+					String filePath = StaticData.appProperties.getProperty(FileUploadServiceImpl.PATH_FILE_PARAMETER);
+					StaticData.appProperties.put(FileUploadServiceImpl.PATH_FILE_PARAMETER,
+							filePath.replace(HOME_PATH, System.getProperty("user.home")));
 				}
 			}
 		} catch (IOException e) {

@@ -20,6 +20,7 @@ import rs.formuvia.administration.entity.AppUser;
 import rs.formuvia.common.dto.ComboboxDTO;
 import rs.formuvia.model.dto.ModelColumnDTO;
 import rs.formuvia.model.dto.ModelDTO;
+import rs.formuvia.model.dto.ModelFileDTO;
 
 public class StaticData {
 
@@ -41,6 +42,7 @@ public class StaticData {
 	public static List<RoleDTO> roles = new ArrayList<>();
 	public static List<ModelDTO> models = new ArrayList<>();
 	public static List<ModelColumnDTO> modelColumns = new ArrayList<>();
+	public static List<ModelFileDTO> modelFiles = new ArrayList<>();
 
 	public static Map<UUID, List<ComboboxDTO>> modelCodebook = new ConcurrentHashMap<>();
 	public static Set<UUID> modelsToListen = ConcurrentHashMap.newKeySet();

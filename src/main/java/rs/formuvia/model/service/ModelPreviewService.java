@@ -4,6 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.UUID;
 
+import jakarta.ws.rs.core.Response;
 import rs.formuvia.common.dto.HistoryDTO;
 import rs.formuvia.database.utils.DatabaseParameter;
 import rs.formuvia.database.utils.DatabaseTable;
@@ -22,5 +23,7 @@ public interface ModelPreviewService {
 	List<HistoryDTO> getHistory(UUID modelId, UUID id);
 
 	LinkedHashMap<String, Object> getRow(UUID modelId, UUID id);
+
+	Response getDownloadFile(UUID modelId, UUID id, String columnName);
 
 }

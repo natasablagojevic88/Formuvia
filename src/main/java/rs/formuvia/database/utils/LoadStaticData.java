@@ -14,6 +14,7 @@ import rs.formuvia.database.service.DatabaseService;
 import rs.formuvia.database.service.impl.DatabaseServiceImpl;
 import rs.formuvia.model.dto.ModelColumnDTO;
 import rs.formuvia.model.dto.ModelDTO;
+import rs.formuvia.model.dto.ModelFileDTO;
 import rs.formuvia.model.service.impl.ModelPreviewServiceImpl;
 import rs.formuvia.model.utils.UpdateColumnModel;
 import rs.formuvia.utils.StaticData;
@@ -30,6 +31,7 @@ public class LoadStaticData implements ExecuteQuery<Void> {
 		StaticData.roles = this.databaseService.findAll(null, RoleDTO.class, connection);
 		StaticData.models = this.databaseService.findAll(null, ModelDTO.class, connection);
 		StaticData.modelColumns = this.databaseService.findAll(null, ModelColumnDTO.class, connection);
+		StaticData.modelFiles = this.databaseService.findAll(null, ModelFileDTO.class, connection);
 
 		Set<UUID> columnsWithCodebook = columnWithCodebook();
 

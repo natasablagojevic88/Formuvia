@@ -16,6 +16,7 @@ The web client lives in a separate repository: **FormuviaFront** (Angular).
 - Model: menus and tables defined through the application; a new table is created in the database, with separate roles for viewing, adding, editing and deleting its data
 - Data in those tables: listing with paging, filtering and sorting, the form definition for one record, the history of a record, and adding, changing and deleting a record, each guarded by the role the model defines for that action
 - Form designer: the fields of a table are defined through the application – data type, position in the entry dialog, default value and list of values (each given as a single `SELECT`, validated before it is saved), and a link to another table used as a codebook, which creates the foreign key in the database; deleting a field drops its column
+- File upload: a file of a record is stored on the file system under `files.path`, in a folder of the date it arrived, and the record keeps the identifier it was stored under (column type `FILE`)
 - Multilingual texts: English (`en-US`), Serbian Latin (`sr-Latn-RS`), Serbian Cyrillic (`sr-RS`)
 - Database schema is created and updated automatically on startup – no manual migrations
 - Scheduled jobs (Quartz), e.g. cleanup of expired sessions
@@ -67,6 +68,7 @@ Most important settings:
 | `cookie.access.token.duration.minutes` | Access token lifetime | `10` |
 | `cookie.refresh.token.duration.minutes` | Session lifetime | `10080` (7 days) |
 | `forward.ip-adress.header` | Header with the client IP when behind a reverse proxy | `X-Real-IP` |
+| `files.path` | Folder where uploaded files are stored; `${user.home}` is replaced with the home of the user running the server | `${user.home}/.formuvia-files` |
 
 Logs are written to the console and to `~/.logs/formuvia.log`. Change the location with `-Dlog.path=/path/to/formuvia.log`.
 

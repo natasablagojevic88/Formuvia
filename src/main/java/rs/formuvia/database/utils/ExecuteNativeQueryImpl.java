@@ -19,6 +19,7 @@ import rs.formuvia.database.annotations.SkipColumn;
 import rs.formuvia.database.enums.ColumnType;
 import rs.formuvia.database.service.DatabaseService;
 import rs.formuvia.database.service.impl.DatabaseServiceImpl;
+import rs.formuvia.model.entity.ModelFile;
 import rs.formuvia.utils.StaticData;
 import rs.formuvia.utils.StringUtils;
 
@@ -142,6 +143,9 @@ public class ExecuteNativeQueryImpl<C> implements ExecuteQuery<C> {
 			return (T) value.toString();
 		case UUID:
 			return (T) value;
+		case FILE:
+			Object resultObject = this.databaseService.findById((UUID) value, ModelFile.class, connection);
+			return (T) resultObject;
 
 		}
 

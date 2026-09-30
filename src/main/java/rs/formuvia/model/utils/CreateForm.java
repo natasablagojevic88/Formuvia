@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import jakarta.servlet.http.HttpServletRequest;
 import rs.formuvia.common.dto.ComboboxDTO;
+import rs.formuvia.common.dto.FileUploadDTO;
 import rs.formuvia.common.service.CommonService;
 import rs.formuvia.common.service.ResourceBundleService;
 import rs.formuvia.common.service.impl.CommonServiceImpl;
@@ -29,6 +30,7 @@ import rs.formuvia.exceptions.CommonException;
 import rs.formuvia.model.dto.ModelColumnDTO;
 import rs.formuvia.model.dto.ModelColumnPreviewDTO;
 import rs.formuvia.model.dto.ModelDTO;
+import rs.formuvia.model.dto.ModelFileDTO;
 import rs.formuvia.model.dto.ObjectFormDTO;
 import rs.formuvia.model.service.impl.ModelPreviewServiceImpl;
 import rs.formuvia.utils.StaticData;
@@ -42,7 +44,7 @@ public class CreateForm implements ExecuteQuery<ObjectFormDTO> {
 
 	private CommonService commonService;
 	private ResourceBundleService resourceBundleService;
-	private DatabaseService databaseService = new DatabaseServiceImpl();
+	private static DatabaseService databaseService = new DatabaseServiceImpl();
 
 	public CreateForm(HttpServletRequest httpServletRequest, UUID modelId, UUID id, UUID parent) {
 		this.httpServletRequest = httpServletRequest;
@@ -80,6 +82,7 @@ public class CreateForm implements ExecuteQuery<ObjectFormDTO> {
 			modelColumnPreviewDTO.setColumnIndex(column.getColumnIndex());
 			modelColumnPreviewDTO.setColumnType(column.getColumnType());
 			modelColumnPreviewDTO.setEditable(column.getEditable());
+			modelColumnPreviewDTO.setShowable(column.getShowable());
 			modelColumnPreviewDTO.setLength(column.getLength());
 			modelColumnPreviewDTO.setName(this.resourceBundleService.getText(column.getName()));
 			modelColumnPreviewDTO.setNullable(column.getNullable());
@@ -102,24 +105,46 @@ public class CreateForm implements ExecuteQuery<ObjectFormDTO> {
 			}
 
 			if (StringUtils.isNull(id) && StringUtils.hasText(column.getListOfValuesSql())) {
-				List<Object[]> objects = this.databaseService.executeNativeQuery(column.getListOfValuesSql(), null,
+				List<Object[]> objects = databaseService.executeNativeQuery(column.getListOfValuesSql(), null,
 						Object[].class, connection);
 				modelColumnPreviewDTO
 						.setListOfValues(objects.stream().map(a -> new ComboboxDTO(a[0], a[1].toString())).toList());
 			}
 
 			if (StringUtils.isNull(id) && StringUtils.hasText(column.getDefaultValueSql())) {
-				List<Object> defaultValue = this.databaseService.executeNativeQuery(column.getDefaultValueSql(), null,
+				List<Object> defaultValue = databaseService.executeNativeQuery(column.getDefaultValueSql(), null,
 						Object.class, connection);
 				if (!defaultValue.isEmpty()) {
 					modelColumnPreviewDTO.setValue(defaultValue.getFirst());
 				}
 			}
+
+			if (modelColumnPreviewDTO.getColumnType().equals(ColumnType.FILE)
+					&& StringUtils.notNull(modelColumnPreviewDTO.getValue())) {
+				UUID fileValue = (UUID) modelColumnPreviewDTO.getValue();
+
+				modelColumnPreviewDTO.setValue(findModelFileDtoFromId(fileValue, connection, false));
+
+			}
+
 			list.add(modelColumnPreviewDTO);
 
 		}
 		objectFormDTO.setFields(list);
 		return objectFormDTO;
+	}
+
+	public static FileUploadDTO findModelFileDtoFromId(UUID id, Connection connection, Boolean fromBase) {
+		ModelFileDTO modelFileDTO = null;
+		if ((StaticData.modelFiles.stream().filter(a -> a.getId().equals(id)).count() > 0) & (!fromBase)) {
+			modelFileDTO = StaticData.modelFiles.stream().filter(a -> a.getId().equals(id)).findFirst().get();
+		} else {
+			modelFileDTO = databaseService
+					.findAll(DatabaseServiceImpl.createFindByIdParameters(id), ModelFileDTO.class, connection)
+					.getFirst();
+		}
+
+		return new FileUploadDTO(null, id, modelFileDTO.getFileName(), modelFileDTO.getMimeType());
 	}
 
 	private ModelColumnPreviewDTO idColumn() {

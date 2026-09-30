@@ -77,7 +77,7 @@ public class CreateSave<C> implements ExecuteQuery<C> {
 		for (Field field : fields) {
 			ColumnType columnType = ExecuteNativeQueryImpl.findColumnType(field.getType());
 			index++;
-			if (columnType != null) {
+			if (columnType != null && (!columnType.equals(ColumnType.FILE))) {
 				parameters.put(index, field.get(entity));
 			} else {
 				Object value = field.get(entity);

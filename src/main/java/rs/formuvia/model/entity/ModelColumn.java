@@ -62,6 +62,9 @@ public class ModelColumn {
 	@Column(nullable = false)
 	private Boolean editable;
 
+	@Column(nullable = false)
+	private Boolean showable;
+
 	@Column(name = "default_value_sql")
 	private String defaultValueSql;
 

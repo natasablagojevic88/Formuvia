@@ -10,6 +10,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import jakarta.servlet.http.HttpServletRequest;
+import rs.formuvia.common.dto.ComboboxDTO;
+import rs.formuvia.common.dto.FileUploadDTO;
 import rs.formuvia.common.service.CommonService;
 import rs.formuvia.common.service.ResourceBundleService;
 import rs.formuvia.common.service.impl.CommonServiceImpl;
@@ -160,6 +162,12 @@ public class CreateModelTable implements ExecuteQuery<DatabaseTable<LinkedHashMa
 			for (DatabaseColumn column : databaseTable.getAllColumns()) {
 				index++;
 				item.put(column.getFieldName(), objects[index]);
+
+				if (column.getColumnType().equals(ColumnType.FILE) && StringUtils.notNull(objects[index])) {
+					UUID modelFileId = UUID.fromString(objects[index].toString());
+					FileUploadDTO fileUploadDTO = CreateForm.findModelFileDtoFromId(modelFileId, connection, true);
+					column.getListOfValues().add(new ComboboxDTO(fileUploadDTO.getId(), fileUploadDTO.getFileName()));
+				}
 			}
 			listItems.add(item);
 		}

@@ -60,6 +60,9 @@ public class ModelColumnDTO {
 	@NotNull
 	private Boolean editable;
 
+	@NotNull
+	private Boolean showable;
+
 	@HideInTable
 	private String defaultValueSql;
 

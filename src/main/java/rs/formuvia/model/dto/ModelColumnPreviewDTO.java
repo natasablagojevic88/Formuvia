@@ -30,6 +30,8 @@ public class ModelColumnPreviewDTO {
 
 	private Boolean editable;
 
+	private Boolean showable;
+
 	private Object value;
 
 	private UUID modelId;

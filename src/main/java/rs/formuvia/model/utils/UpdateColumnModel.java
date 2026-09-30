@@ -17,6 +17,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.modelmapper.ModelMapper;
 
+import jakarta.persistence.Table;
 import lombok.RequiredArgsConstructor;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
@@ -52,6 +53,7 @@ import rs.formuvia.model.dto.ModelColumnDTO;
 import rs.formuvia.model.dto.ModelDTO;
 import rs.formuvia.model.entity.Model;
 import rs.formuvia.model.entity.ModelColumn;
+import rs.formuvia.model.entity.ModelFile;
 import rs.formuvia.model.service.impl.ModelPreviewServiceImpl;
 import rs.formuvia.quartz.jobs.DatabaseListenCheckConnectionJob;
 import rs.formuvia.utils.StaticData;
@@ -161,6 +163,16 @@ public class UpdateColumnModel implements ExecuteQuery<ModelColumnDTO> {
 			foreignKeyInfo.setName("fk_" + tableName + "_" + columnInfo.getName());
 			foreignKeyInfo.setTableName(tableName);
 			foreignKeyInfo.setReferenceTable(modelColumn.getCodebook().getCode());
+			tableInfo.getForeignKeys().add(foreignKeyInfo);
+		}
+
+		if (modelColumnDTO.getColumnType().equals(ColumnType.FILE)) {
+			ForeignKeyInfo foreignKeyInfo = new ForeignKeyInfo();
+			foreignKeyInfo.setCascadeDelete(false);
+			foreignKeyInfo.setColumnName(columnInfo.getName());
+			foreignKeyInfo.setName("fk_" + tableName + "_" + columnInfo.getName());
+			foreignKeyInfo.setTableName(tableName);
+			foreignKeyInfo.setReferenceTable(ModelFile.class.getAnnotation(Table.class).name());
 			tableInfo.getForeignKeys().add(foreignKeyInfo);
 		}
 
@@ -361,6 +373,17 @@ public class UpdateColumnModel implements ExecuteQuery<ModelColumnDTO> {
 
 		if (modelColumnDTO.getColumnType().equals(ColumnType.UUID)) {
 			modelColumnDTO.setInDescriptionForCodebook(false);
+		} else {
+			modelColumnDTO.setCodebookId(null);
+		}
+
+		if (modelColumnDTO.getColumnType().equals(ColumnType.FILE)) {
+			modelColumnDTO.setDefaultValueSql(null);
+			modelColumnDTO.setInDescriptionForCodebook(null);
+			modelColumnDTO.setInitSortDirection(null);
+			modelColumnDTO.setInitSortOrder(null);
+			modelColumnDTO.setListOfValuesSql(null);
+			modelColumnDTO.setTextArea(false);
 		}
 
 		if (StringUtils.hasText(modelColumnDTO.getDefaultValueSql())) {

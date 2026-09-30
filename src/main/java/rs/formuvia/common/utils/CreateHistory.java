@@ -230,6 +230,8 @@ public class CreateHistory implements ExecuteQuery<List<HistoryDTO>> {
 			return value.toString();
 		case UUID:
 			return UUID.fromString(value.toString());
+		case FILE:
+			return UUID.fromString(value.toString());
 		}
 		return null;
 	}

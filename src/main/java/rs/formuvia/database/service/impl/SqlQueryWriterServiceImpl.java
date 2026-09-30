@@ -378,6 +378,8 @@ public class SqlQueryWriterServiceImpl implements SqlQueryWriterService {
 			case UUID:
 				objects = createUUIDParameters(databaseFilter);
 				break;
+			case FILE:
+				continue;
 
 			}
 

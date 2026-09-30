@@ -100,6 +100,9 @@ public class CreateTable implements ExecuteQuery<Void> {
 			case UUID:
 				bufferedWriter.write(UUID_DEFAULT);
 				break;
+			case FILE:
+				bufferedWriter.write(UUID_DEFAULT);
+				break;
 
 			}
 		}

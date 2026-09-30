@@ -28,11 +28,11 @@ import rs.formuvia.utils.CustomContainerRequestFilter;
 public class ExportTableServiceImpl implements ExportTableService {
 
 	private final String EXCEL_CONTENT_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-	private final String CONTENT_DISPOSITION = "Content-Disposition";
+	private static final String CONTENT_DISPOSITION = "Content-Disposition";
 	private final String EXPORT_FILE_NAME = "export.xlsx";
-	private final String CONTENT_DISPOTION_TEXT = "\"attachment; filename*=UTF-8''";
+	private static final String CONTENT_DISPOTION_TEXT = "\"attachment; filename*=UTF-8''";
 	private final String SHEET_NAME = "export";
-	private final String EXPORT_HEADER = "Access-Control-Expose-Headers";
+	private static final String EXPORT_HEADER = "Access-Control-Expose-Headers";
 
 	@Inject
 	private ResourceBundleService resourceBundleService;
@@ -75,7 +75,7 @@ public class ExportTableServiceImpl implements ExportTableService {
 				sheet.setDefaultColumnStyle(index, ExcelUtils.booleanExcelStyle(wb));
 				break;
 			}
-			case STRING, UUID, LOCALTIME:
+			case STRING, UUID, LOCALTIME, FILE:
 				sheet.setDefaultColumnStyle(index, ExcelUtils.stringExcelStyle(wb));
 				break;
 
@@ -110,10 +110,10 @@ public class ExportTableServiceImpl implements ExportTableService {
 			throw new WebApplicationException(e);
 		}
 
-		return createExcelResponse(baos.toByteArray(), EXPORT_FILE_NAME);
+		return createExcelResponse(baos.toByteArray(), EXPORT_FILE_NAME, EXCEL_CONTENT_TYPE);
 	}
 
-	private Response createExcelResponse(byte[] bytes, String filename) {
+	public static Response createExcelResponse(byte[] bytes, String filename, String contentType) {
 		String encodedName = null;
 		try {
 			encodedName = URLEncoder.encode(filename, StandardCharsets.UTF_8.displayName()).replace("+", "%20");
@@ -121,7 +121,7 @@ public class ExportTableServiceImpl implements ExportTableService {
 			throw new WebApplicationException(e);
 		}
 		Response response = Response.status(HttpURLConnection.HTTP_OK)
-				.header(CustomContainerRequestFilter.CONTENT_TYPE, EXCEL_CONTENT_TYPE)
+				.header(CustomContainerRequestFilter.CONTENT_TYPE, contentType)
 				.header(EXPORT_HEADER, CONTENT_DISPOSITION)
 				.header(CONTENT_DISPOSITION, CONTENT_DISPOTION_TEXT + encodedName).entity(bytes).build();
 		return response;

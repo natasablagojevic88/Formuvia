@@ -10,6 +10,7 @@ import org.jvnet.hk2.annotations.Service;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.Response;
 import rs.formuvia.common.dto.HistoryDTO;
 import rs.formuvia.database.service.DatabaseService;
 import rs.formuvia.database.utils.DatabaseParameter;
@@ -22,6 +23,7 @@ import rs.formuvia.model.utils.CreateForm;
 import rs.formuvia.model.utils.CreateModelHistory;
 import rs.formuvia.model.utils.CreateModelTable;
 import rs.formuvia.model.utils.DeleteObject;
+import rs.formuvia.model.utils.DownloadModelFile;
 import rs.formuvia.model.utils.ObjectRow;
 import rs.formuvia.model.utils.UpdateObject;
 import rs.formuvia.utils.StaticData;
@@ -77,6 +79,12 @@ public class ModelPreviewServiceImpl implements ModelPreviewService {
 	public LinkedHashMap<String, Object> getRow(UUID modelId, UUID id) {
 		ObjectRow objectRow = new ObjectRow(httpServletRequest, id, modelId);
 		return this.databaseService.executeQuery(objectRow);
+	}
+
+	@Override
+	public Response getDownloadFile(UUID modelId, UUID id, String columnName) {
+		DownloadModelFile downloadModelFile = new DownloadModelFile(httpServletRequest, modelId, id, columnName);
+		return this.databaseService.executeQuery(downloadModelFile);
 	}
 
 }

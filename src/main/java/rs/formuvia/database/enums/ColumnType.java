@@ -6,11 +6,13 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.UUID;
 
+import rs.formuvia.model.entity.ModelFile;
+
 public enum ColumnType {
 
 	STRING(String.class), BOOLEAN(Boolean.class), BIGDECIMAL(BigDecimal.class), LONG(Long.class),
 	INTEGER(Integer.class), LOCALDATE(LocalDate.class), LOCALDATETIME(LocalDateTime.class), LOCALTIME(LocalTime.class),
-	UUID(UUID.class);
+	UUID(UUID.class), FILE(ModelFile.class);
 
 	public Class<?> typeClass;
 
