@@ -127,7 +127,7 @@ public class ModelPreviewController {
 			@ApiResponse(responseCode = "400", description = "Unknown model, or the record cannot be deleted because another table points to it", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
 			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
 			@ApiResponse(responseCode = "403", description = "Current user does not have the delete role of this model", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
-	public Response getUpdate(
+	public Response getDelete(
 			@Parameter(description = "Identifier of the model whose record is deleted", required = true) @PathParam("modelId") UUID modelId,
 			@Parameter(description = "Identifier of the record to delete", required = true) @PathParam("id") UUID id) {
 		modelPreviewService.getDelete(modelId, id);

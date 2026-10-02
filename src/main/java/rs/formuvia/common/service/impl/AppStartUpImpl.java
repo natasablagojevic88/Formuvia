@@ -103,11 +103,15 @@ public class AppStartUpImpl implements AppStartUp {
 		try {
 			StaticData.appProperties.load(applicationPropertiesInputStream);
 
-			if (System.getProperty(CUSTOM_APP_PATH) != null) {
+			if (StringUtils.notNull(System.getenv(CUSTOM_APP_PATH))) {
+				StaticData.appProperties.put(CUSTOM_APP_PATH, System.getenv(CUSTOM_APP_PATH));
+			}
+
+			if (StringUtils.notNull(System.getProperty(CUSTOM_APP_PATH))) {
 				StaticData.appProperties.put(CUSTOM_APP_PATH, System.getProperty(CUSTOM_APP_PATH));
 			}
 
-			if (StringUtils.hasText(StaticData.appProperties.get(CUSTOM_APP_PATH).toString())) {
+			if (StringUtils.notNull(StaticData.appProperties.get(CUSTOM_APP_PATH))) {
 				File file = new File(StaticData.appProperties.get(CUSTOM_APP_PATH).toString());
 				if (file.exists()) {
 					StaticData.appProperties.load(new FileInputStream(file));
@@ -117,7 +121,11 @@ public class AppStartUpImpl implements AppStartUp {
 			Enumeration<Object> enumeration = StaticData.appProperties.keys();
 			while (enumeration.hasMoreElements()) {
 				String key = enumeration.nextElement().toString();
-				if (System.getProperty(key) != null) {
+				if (StringUtils.notNull(System.getenv(key))) {
+					StaticData.appProperties.put(key, System.getenv(key));
+				}
+
+				if (StringUtils.notNull(System.getProperty(key))) {
 					StaticData.appProperties.put(key, System.getProperty(key));
 				}
 			}

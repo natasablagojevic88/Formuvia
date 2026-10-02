@@ -44,7 +44,7 @@ public class FileUploadServiceImpl implements FileUploadService {
 
 		String filePath = StaticData.appProperties.getProperty(PATH_FILE_PARAMETER);
 		if (!StringUtils.hasText(filePath)) {
-			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "noFilePathInProperties: ",
+			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "noFilePathInProperties",
 					PATH_FILE_PARAMETER);
 		}
 

@@ -47,11 +47,20 @@ Tables, constraints, indexes and the default admin user are created automaticall
 Default settings are in `resources/application.properties`. Do not put real passwords there – override values in one of these ways:
 
 - **External properties file** – set `custom.properties.path` to the path of a file containing only the keys you want to override.
+- **Environment variables** – any key can be overridden by a variable of the same name, e.g. `files.path=/data/formuvia`. This is the way to configure the application in a container:
+
+  ```sh
+  docker run -e "database.password=secret" -e "files.path=/data/formuvia" ...
+  ```
+
+  A name with dots cannot be exported from a shell script (`export database.password=…` is not a valid identifier there), so in `setenv.sh` use a system property instead.
 - **JVM system properties** – any key can be overridden with `-D<key>=<value>`, e.g. in Tomcat's `bin/setenv.sh`:
 
   ```sh
   CATALINA_OPTS="$CATALINA_OPTS -Ddatabase.password=secret -Dadmin.default.password=secret"
   ```
+
+The order is: `application.properties` from the WAR, then the external file, then environment variables, then system properties – so `-D` always wins. Only a key that is already known – from `application.properties` or from the external file – can be overridden this way.
 
 Most important settings:
 

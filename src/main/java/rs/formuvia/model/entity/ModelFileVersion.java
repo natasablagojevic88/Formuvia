@@ -9,7 +9,7 @@ import jakarta.persistence.ForeignKey;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
@@ -41,7 +41,7 @@ public class ModelFileVersion {
 	private String path;
 
 	@JoinColumn(nullable = false, name = "model_file", foreignKey = @ForeignKey(name = "fk_model_file_version_model_file"))
-	@ManyToMany(cascade = CascadeType.REMOVE)
+	@ManyToOne(cascade = CascadeType.REMOVE)
 	private ModelFile modelFile;
 
 	@Column(nullable = false)
