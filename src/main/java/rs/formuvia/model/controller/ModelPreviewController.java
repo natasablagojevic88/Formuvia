@@ -179,4 +179,18 @@ public class ModelPreviewController {
 
 		return modelPreviewService.getDownloadFile(modelId, id, columnName);
 	}
+
+	@GET
+	@Path(ApiRoute.modelPreviewDownloadTemplate)
+	@Produces(MediaType.APPLICATION_OCTET_STREAM)
+	@Operation(operationId = "getModelPreviewTemplate", summary = "Download the entry template of a model table", description = "Returns an empty Excel file (.xlsx) for entering data into the table of the given model, named after the model. The first row carries the code of each column and is hidden, so the import recognises the columns even if the user renames or moves them; the second row carries the translated labels, red when the field is required. Only the fields that may be changed are taken, without the ones holding a file, in the order they stand on the entry form. Each column gets the format and the width of its data type, and a check on what may be typed: a number, a date, a time, or a value chosen from a list. Fields linked to a codebook, a list of values or yes/no are offered as a drop-down whose values sit on hidden sheets of the same file. The sheet is protected so the labels and the codes cannot be overwritten, while the entry area stays open. The file name is in the Content-Disposition header, which is exposed to the browser for cross-origin requests.", responses = {
+			@ApiResponse(responseCode = "200", description = "Excel template, with the file name in the Content-Disposition header", content = @Content(mediaType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", schema = @Schema(type = "string", format = "binary"))),
+			@ApiResponse(responseCode = "400", description = "Unknown model", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "403", description = "Current user does not have the role this model requires for the template", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
+	public Response getModelTemplateDownload(
+			@Parameter(description = "Identifier of the model whose template is read", required = true) @PathParam("modelId") UUID modelId) {
+
+		return modelPreviewService.getModelTemplateDownload(modelId);
+	}
 }

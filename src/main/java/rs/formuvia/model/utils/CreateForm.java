@@ -104,11 +104,9 @@ public class CreateForm implements ExecuteQuery<ObjectFormDTO> {
 				modelColumnPreviewDTO.setParentListOfValues(parentListOfValues);
 			}
 
-			if (StringUtils.isNull(id) && StringUtils.hasText(column.getListOfValuesSql())) {
-				List<Object[]> objects = databaseService.executeNativeQuery(column.getListOfValuesSql(), null,
-						Object[].class, connection);
-				modelColumnPreviewDTO
-						.setListOfValues(objects.stream().map(a -> new ComboboxDTO(a[0], a[1].toString())).toList());
+			if (StringUtils.hasText(column.getListOfValuesSql())) {
+				modelColumnPreviewDTO.setListOfValues(
+						createListOfValues(column.getListOfValuesSql(), connection, resourceBundleService));
 			}
 
 			if (StringUtils.isNull(id) && StringUtils.hasText(column.getDefaultValueSql())) {
@@ -132,6 +130,14 @@ public class CreateForm implements ExecuteQuery<ObjectFormDTO> {
 		}
 		objectFormDTO.setFields(list);
 		return objectFormDTO;
+	}
+
+	public static List<ComboboxDTO> createListOfValues(String listOfValuesQuery, Connection connection,
+			ResourceBundleService resourceBundleService) {
+		List<Object[]> objects = databaseService.executeNativeQuery(listOfValuesQuery, null, Object[].class,
+				connection);
+		return objects.stream().map(a -> new ComboboxDTO(a[0], resourceBundleService.getText(a[1].toString())))
+				.toList();
 	}
 
 	public static FileUploadDTO findModelFileDtoFromId(UUID id, Connection connection, Boolean fromBase) {

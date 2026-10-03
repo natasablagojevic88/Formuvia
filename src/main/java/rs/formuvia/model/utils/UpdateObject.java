@@ -14,6 +14,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.apache.tika.Tika;
 
@@ -71,6 +72,8 @@ public class UpdateObject implements ExecuteQuery<LinkedHashMap<String, Object>>
 		ModelDTO modelDTO = ModelPreviewServiceImpl.findModel(modelId);
 		List<ModelColumnDTO> columns = findColumns(modelDTO);
 
+		checkObject(columns, object, resourceBundleService);
+
 		Boolean insert = true;
 
 		if (StringUtils.notNull(object.get(SqlQueryWriterServiceImpl.defaultIdColumn))) {
@@ -96,6 +99,19 @@ public class UpdateObject implements ExecuteQuery<LinkedHashMap<String, Object>>
 		Object[] result = databaseService.executeNativeQuery(query, parameters, Object[].class, connection).getFirst();
 
 		return createMapFromArray(result, columns);
+	}
+
+	private void checkObject(List<ModelColumnDTO> columns, LinkedHashMap<String, Object> object,
+			ResourceBundleService resourceBundleService) {
+		for (ModelColumnDTO columnDTO : columns.stream().filter(a -> StringUtils.notNull(a.getNullable()))
+				.filter(a -> !a.getNullable()).collect(Collectors.toList())) {
+			if (StringUtils.notNull(object.get(columnDTO.getCode()))) {
+				continue;
+			}
+
+			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "fieldRequired",
+					this.resourceBundleService.getText(columnDTO.getName()));
+		}
 	}
 
 	public static List<ModelColumnDTO> findColumns(ModelDTO modelDTO) {

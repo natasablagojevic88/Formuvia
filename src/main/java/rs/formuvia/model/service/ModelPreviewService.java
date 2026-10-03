@@ -26,4 +26,6 @@ public interface ModelPreviewService {
 
 	Response getDownloadFile(UUID modelId, UUID id, String columnName);
 
+	Response getModelTemplateDownload(UUID modelId);
+
 }

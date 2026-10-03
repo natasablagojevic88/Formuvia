@@ -20,6 +20,7 @@ import jakarta.ws.rs.core.Response;
 import rs.formuvia.common.service.ExportTableService;
 import rs.formuvia.common.service.ResourceBundleService;
 import rs.formuvia.common.utils.ExcelUtils;
+import rs.formuvia.database.enums.ColumnType;
 import rs.formuvia.database.utils.DatabaseColumn;
 import rs.formuvia.database.utils.DatabaseTable;
 import rs.formuvia.utils.CustomContainerRequestFilter;
@@ -27,7 +28,7 @@ import rs.formuvia.utils.CustomContainerRequestFilter;
 @Service
 public class ExportTableServiceImpl implements ExportTableService {
 
-	private final String EXCEL_CONTENT_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+	public static final String EXCEL_CONTENT_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 	private static final String CONTENT_DISPOSITION = "Content-Disposition";
 	private final String EXPORT_FILE_NAME = "export.xlsx";
 	private static final String CONTENT_DISPOTION_TEXT = "\"attachment; filename*=UTF-8''";
@@ -58,29 +59,7 @@ public class ExportTableServiceImpl implements ExportTableService {
 		for (DatabaseColumn column : databaseTable.getColumn()) {
 			index++;
 			ExcelUtils.createTableTitleCell(wb, row, index, column.getDescription());
-			switch (column.getColumnType()) {
-			case BIGDECIMAL:
-				sheet.setDefaultColumnStyle(index, ExcelUtils.decimalExcelStyle(wb));
-				break;
-			case INTEGER, LONG:
-				sheet.setDefaultColumnStyle(index, ExcelUtils.integerExcelStyle(wb));
-				break;
-			case LOCALDATE:
-				sheet.setDefaultColumnStyle(index, ExcelUtils.dateExcelStyle(wb));
-				break;
-			case LOCALDATETIME:
-				sheet.setDefaultColumnStyle(index, ExcelUtils.dateTimeExcelStyle(wb));
-				break;
-			case BOOLEAN: {
-				sheet.setDefaultColumnStyle(index, ExcelUtils.booleanExcelStyle(wb));
-				break;
-			}
-			case STRING, UUID, LOCALTIME, FILE:
-				sheet.setDefaultColumnStyle(index, ExcelUtils.stringExcelStyle(wb));
-				break;
-
-			}
-
+			formatColumnType(column.getColumnType(), sheet, index);
 		}
 		index = 1;
 		for (Object item : databaseTable.getList()) {
@@ -111,6 +90,36 @@ public class ExportTableServiceImpl implements ExportTableService {
 		}
 
 		return createExcelResponse(baos.toByteArray(), EXPORT_FILE_NAME, EXCEL_CONTENT_TYPE);
+	}
+
+	public static void formatColumnType(ColumnType columnType, XSSFSheet sheet, Integer index) {
+		XSSFWorkbook wb = sheet.getWorkbook();
+		switch (columnType) {
+		case BIGDECIMAL:
+			sheet.setDefaultColumnStyle(index, ExcelUtils.decimalExcelStyle(wb));
+			break;
+		case INTEGER, LONG:
+			sheet.setDefaultColumnStyle(index, ExcelUtils.integerExcelStyle(wb));
+			break;
+		case LOCALDATE:
+			sheet.setDefaultColumnStyle(index, ExcelUtils.dateExcelStyle(wb));
+			break;
+		case LOCALDATETIME:
+			sheet.setDefaultColumnStyle(index, ExcelUtils.dateTimeExcelStyle(wb));
+			break;
+		case BOOLEAN: {
+			sheet.setDefaultColumnStyle(index, ExcelUtils.booleanExcelStyle(wb));
+			break;
+		}
+		case LOCALTIME: {
+			sheet.setDefaultColumnStyle(index, ExcelUtils.timeExcelStyle(wb));
+			break;
+		}
+		case STRING, UUID, FILE:
+			sheet.setDefaultColumnStyle(index, ExcelUtils.stringExcelStyle(wb));
+			break;
+
+		}
 	}
 
 	public static Response createExcelResponse(byte[] bytes, String filename, String contentType) {

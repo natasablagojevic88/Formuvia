@@ -39,6 +39,7 @@ public class ApiRoute {
 	public static final String modelPreviewHistory = "/preview/history/{modelId}/{id}";
 	public static final String modelPreviewRow = "/preview/row/{modelId}/{id}";
 	public static final String modelDownloadFile = "/preview/download/{modelId}/{id}/{columnName}";
+	public static final String modelPreviewDownloadTemplate = "/preview/template/download/{modelId}";
 
 	public static final String fileUpload = "/file-upload";
 
