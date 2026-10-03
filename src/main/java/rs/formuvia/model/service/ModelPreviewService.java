@@ -28,4 +28,6 @@ public interface ModelPreviewService {
 
 	Response getModelTemplateDownload(UUID modelId);
 
+	void getModelTemplateUpload(UUID fileUploadDTOId, UUID modelId, UUID parentId);
+
 }

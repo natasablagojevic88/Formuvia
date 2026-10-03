@@ -193,4 +193,36 @@ public class ModelPreviewController {
 
 		return modelPreviewService.getModelTemplateDownload(modelId);
 	}
+
+	@POST
+	@Path(ApiRoute.modelPreviewUploadTemplate)
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "postModelPreviewTemplate", summary = "Import a filled-in template", description = "Reads a filled-in template and writes its rows into the table of the given model. The file is sent beforehand through the file upload, so only its identifier travels here. The file must be the template of this very table: the sheet with the data, the sheet that says which column belongs to which field, and the sheets with the offered values are all read from it, so the import does not depend on the language or on the names in the header. Every row becomes a record, exactly as if it had been entered on the form - the same required fields, the same conversions and the same roles. The whole file is one transaction: the first row the server cannot accept stops the import, nothing is written, and the answer says which row it was and what is wrong with it.", responses = {
+			@ApiResponse(responseCode = "204", description = "Every row was written"),
+			@ApiResponse(responseCode = "400", description = "The file is not an Excel workbook, a sheet or a column the template needs is missing, or a row holds a value the table cannot take; the message says which row", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "403", description = "Current user does not have the role this model requires for the import", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
+	public Response getModelTemplateUpload(
+			@Parameter(description = "Identifier of the model the rows are written into", required = true) @PathParam("modelId") UUID modelId,
+			@Parameter(description = "Identifier the file upload returned for the filled-in template", required = true) @PathParam("fileTemplateId") UUID fileTemplateId) {
+
+		modelPreviewService.getModelTemplateUpload(fileTemplateId, modelId, null);
+		return Response.noContent().build();
+	}
+
+	@POST
+	@Path(ApiRoute.modelPreviewUploadTemplateWithParent)
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "postModelPreviewTemplateByParent", summary = "Import a filled-in template into a subtable", description = "The same as importing a template, except that every row read from the file is tied to one record of the parent table, the way a subtable requires. The link to the parent is not in the file; it is taken from the path, so the same template can be filled in once and imported under different parent records.", responses = {
+			@ApiResponse(responseCode = "204", description = "Every row was written under the given parent record"),
+			@ApiResponse(responseCode = "400", description = "The file is not an Excel workbook, a sheet or a column the template needs is missing, the model is not a subtable, or a row holds a value the table cannot take; the message says which row", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "403", description = "Current user does not have the role this model requires for the import", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
+	public Response getModelTemplateUpload(
+			@Parameter(description = "Identifier of the model the rows are written into", required = true) @PathParam("modelId") UUID modelId,
+			@Parameter(description = "Identifier the file upload returned for the filled-in template", required = true) @PathParam("fileTemplateId") UUID fileTemplateId,
+			@Parameter(description = "Identifier of the record in the parent table the rows belong to", required = true) @PathParam("parentId") UUID parentId) {
+		modelPreviewService.getModelTemplateUpload(fileTemplateId, modelId, parentId);
+		return Response.noContent().build();
+	}
 }

@@ -43,16 +43,16 @@ import rs.formuvia.utils.StringUtils;
 public class ModelTemplateDownload implements ExecuteQuery<Response> {
 	private HttpServletRequest httpServletRequest;
 	private UUID modelId;
-	private final String IMPORT_SHEET_NAME = "import";
+	public static String IMPORT_SHEET_NAME = "import";
 	private final Integer EXCEL_MAXIMUM_ROW_NUMBER = 1048576;
 	private final String MINIMUM_BIG_NUMBER = "-999999999999999";
 	private final String MAXIMUM_BIG_NUMBER = "999999999999999";
-	private final String BOOLEAN_SHEET_NAME = "BOOLEAN_SHEET";
-	private final String COLUMNS_SHEET_NAME = "COLUMNS_SHEET";
+	public static String BOOLEAN_SHEET_NAME = "BOOLEAN_SHEET";
+	public static String COLUMNS_SHEET_NAME = "COLUMNS_SHEET";
 	private final String NUMBER_ERROR = "onlyNumberAllowed";
 	private final String LIST_OF_VALUES_ERROR = "noDataInList";
 	private final String DATE_ERROR = "onlyDateAllowed";
-	private final String TIME_ERROR = "onlyDateAllowed";
+	private final String TIME_ERROR = "onlyTimeAllowed";
 	private final String MINIMUM_DATE = "1900-01-01";
 	private final String MAXIMUM_DATE = "2999-12-31";
 	private final String MINIMUM_TIME = "00:00";
@@ -78,12 +78,7 @@ public class ModelTemplateDownload implements ExecuteQuery<Response> {
 
 		addBooleanSheet(wb, resourseBundleService);
 
-		List<ModelColumnDTO> columns = StaticData.modelColumns.stream().filter(a -> a.getEditable())
-				.filter(a -> a.getModelId().equals(this.modelId))
-				.filter(a -> !a.getColumnType().equals(ColumnType.FILE))
-				.sorted(Comparator.comparing(ModelColumnDTO::getRowIndex)
-						.thenComparing(Comparator.comparing(ModelColumnDTO::getColumnIndex)))
-				.collect(Collectors.toList());
+		List<ModelColumnDTO> columns = findColumnsForExcel(this.modelId);
 
 		List<ComboboxDTO> columnIndexes = columns.stream().map(a -> {
 			return new ComboboxDTO(columns.indexOf(a), a.getId().toString());
@@ -101,6 +96,8 @@ public class ModelTemplateDownload implements ExecuteQuery<Response> {
 				ExcelUtils.createTableTitleRedCell(wb, xssfRow, columnIndex,
 						this.resourseBundleService.getText(modelColumnDTO.getName()));
 			ExportTableServiceImpl.formatColumnType(modelColumnDTO.getColumnType(), xssfSheet, columnIndex);
+			if (ModelTemplateUpload.hasCodebookValue(modelColumnDTO))
+				ExportTableServiceImpl.formatColumnType(ColumnType.STRING, xssfSheet, columnIndex);
 		}
 
 		columnIndex = -1;
@@ -130,6 +127,14 @@ public class ModelTemplateDownload implements ExecuteQuery<Response> {
 
 		return ExportTableServiceImpl.createExcelResponse(baos.toByteArray(), modelDTO.getCode() + ".xlsx",
 				ExportTableServiceImpl.EXCEL_CONTENT_TYPE);
+	}
+
+	public static List<ModelColumnDTO> findColumnsForExcel(UUID modelId) {
+		return StaticData.modelColumns.stream().filter(a -> a.getEditable()).filter(a -> a.getModelId().equals(modelId))
+				.filter(a -> !a.getColumnType().equals(ColumnType.FILE))
+				.sorted(Comparator.comparing(ModelColumnDTO::getRowIndex)
+						.thenComparing(Comparator.comparing(ModelColumnDTO::getColumnIndex)))
+				.collect(Collectors.toList());
 	}
 
 	private void addBooleanSheet(XSSFWorkbook wb, ResourceBundleService resourceBundleService) {

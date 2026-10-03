@@ -25,6 +25,7 @@ import rs.formuvia.model.utils.CreateModelTable;
 import rs.formuvia.model.utils.DeleteObject;
 import rs.formuvia.model.utils.DownloadModelFile;
 import rs.formuvia.model.utils.ModelTemplateDownload;
+import rs.formuvia.model.utils.ModelTemplateUpload;
 import rs.formuvia.model.utils.ObjectRow;
 import rs.formuvia.model.utils.UpdateObject;
 import rs.formuvia.utils.StaticData;
@@ -92,6 +93,14 @@ public class ModelPreviewServiceImpl implements ModelPreviewService {
 	public Response getModelTemplateDownload(UUID modelId) {
 		ModelTemplateDownload modelTemplateDownload = new ModelTemplateDownload(httpServletRequest, modelId);
 		return this.databaseService.executeQuery(modelTemplateDownload);
+	}
+
+	@Override
+	public void getModelTemplateUpload(UUID fileUploadDTOId, UUID modelId, UUID parentId) {
+		ModelTemplateUpload modelTemplateUpload = new ModelTemplateUpload(httpServletRequest, fileUploadDTOId, modelId,
+				parentId);
+		this.databaseService.executeQuery(modelTemplateUpload);
+
 	}
 
 }

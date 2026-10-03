@@ -16,6 +16,7 @@ import jakarta.ws.rs.ext.Provider;
 import rs.formuvia.common.service.ResourceBundleService;
 import rs.formuvia.common.service.impl.LoginServiceImpl;
 import rs.formuvia.exceptions.CommonException;
+import rs.formuvia.exceptions.ExcelImportException;
 import rs.formuvia.exceptions.ForbiddenException;
 import rs.formuvia.exceptions.MaximumException;
 import rs.formuvia.exceptions.MinimumException;
@@ -73,6 +74,10 @@ public class CustomDefaultExceptionMapper implements ExceptionMapper<Throwable> 
 
 		if (lastException.getClass().equals(MaximumException.class)) {
 			return toMaximumException((MaximumException) lastException);
+		}
+
+		if (lastException.getClass().equals(ExcelImportException.class)) {
+			return toExcelImportException((ExcelImportException) lastException);
 		}
 
 		ErrorDetail errorDetail = new ErrorDetail();
@@ -169,6 +174,21 @@ public class CustomDefaultExceptionMapper implements ExceptionMapper<Throwable> 
 		String mesage = fieldName + " - " + this.resourceBundleService.getText(maximumException.getMessage());
 		mesage += ": " + maximumException.getMax().value();
 		errorDetail.setMessage(mesage);
+		return Response.status(errorDetail.getStatus()).entity(errorDetail).build();
+	}
+
+	private Response toExcelImportException(ExcelImportException maximumException) {
+		this.logger.error(maximumException.getMessage() + ":" + maximumException.getRowNumber(), maximumException);
+
+		ErrorDetail errorDetail = new ErrorDetail();
+		String message = this.resourceBundleService.getText("errorInRow");
+		message += ": ";
+		message += maximumException.getRowNumber();
+		message += " - ";
+		ErrorDetail errorDetailException = (ErrorDetail) toResponse(maximumException.getInException()).getEntity();
+		message += errorDetailException.getMessage();
+		errorDetail.setStatus(HttpURLConnection.HTTP_BAD_REQUEST);
+		errorDetail.setMessage(message);
 		return Response.status(errorDetail.getStatus()).entity(errorDetail).build();
 	}
 

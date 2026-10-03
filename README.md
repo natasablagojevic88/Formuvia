@@ -14,6 +14,7 @@ The web client lives in a separate repository: **FormuviaFront** (Angular).
 - Change own password
 - Export of table data to Excel (`.xlsx`)
 - Excel entry template for a table defined through the model: translated column labels (required ones in red), per-type format, width and input check, drop-downs for codebooks, and the mapping of columns to fields - all on hidden sheets of the same file
+- Import of a filled-in template: every row goes through the same checks as an entry on the form, in one transaction - the first row that cannot be accepted stops the import and the answer says which row it was
 - Model: menus and tables defined through the application; a new table is created in the database, with separate roles for viewing, adding, editing and deleting its data
 - Data in those tables: listing with paging, filtering and sorting, the form definition for one record, the history of a record, and adding, changing and deleting a record, each guarded by the role the model defines for that action
 - Form designer: the fields of a table are defined through the application – data type, position in the entry dialog, default value and list of values (each given as a single `SELECT`, validated before it is saved), and a link to another table used as a codebook, which creates the foreign key in the database; deleting a field drops its column

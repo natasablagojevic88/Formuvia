@@ -55,7 +55,7 @@ public class UpdateObject implements ExecuteQuery<LinkedHashMap<String, Object>>
 
 	private SqlQueryWriterService sqlQueryWriterService = new SqlQueryWriterServiceImpl();
 	private CommonService commonService;
-	private DatabaseService databaseService = new DatabaseServiceImpl();
+	private static DatabaseService databaseService = new DatabaseServiceImpl();
 	private ResourceBundleService resourceBundleService;
 	private static Tika tika = new Tika();
 
@@ -211,28 +211,11 @@ public class UpdateObject implements ExecuteQuery<LinkedHashMap<String, Object>>
 
 		String fileName = (String) fileObject.get("fileName");
 
-		FileUpload fileUpload = this.databaseService
-				.findById(UUID.fromString(fileObject.get("fileUploadFile").toString()), FileUpload.class, connection);
+		UUID fileId = UUID.fromString(fileObject.get("fileUploadFile").toString());
+		FileUpload fileUpload = databaseService.findById(fileId, FileUpload.class, connection);
+		File file = createUploadFile(fileUpload, connection, commonService);
 
-		if (!fileUpload.getAppUser().getId().equals(commonService.getUser().getId())) {
-			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "wrongUser", fileUpload.getId());
-		}
-
-		File rootFile = new File(StaticData.appProperties.getProperty(FileUploadServiceImpl.PATH_FILE_PARAMETER));
-		File file = new File(rootFile.getAbsolutePath() + fileUpload.getPath());
-
-		if (!file.exists()) {
-			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "noFile", fileUpload.getPath());
-		}
-
-		String mimeType = null;
-
-		try {
-			mimeType = tika.detect(file);
-		} catch (IOException e) {
-			throw new WebApplicationException(e);
-		}
-
+		String mimeType = findMimeType(file);
 		ModelFile modelFileFromBase = rowId == null ? null
 				: DownloadModelFile.findModelFile(columnName, modelDTO, rowId, connection);
 
@@ -241,14 +224,14 @@ public class UpdateObject implements ExecuteQuery<LinkedHashMap<String, Object>>
 		modelFile.setMimeType(mimeType);
 		modelFile.setPath(fileUpload.getPath());
 
-		modelFile = this.databaseService.save(modelFile, connection);
+		modelFile = databaseService.save(modelFile, connection);
 
 		DatabaseParameter databaseParameter = DatabaseParameter
 				.valueOf(DatabaseFilter.valueOf("modelFileId", modelFile.getId().toString()));
 		databaseParameter.getOrders().add(QueryDatabaseOrder.valueOf("version", Direction.DESC));
 		databaseParameter.setPageSize(1);
 
-		List<ModelFileVersionDTO> modelFileVersionDTOs = this.databaseService.findAll(databaseParameter,
+		List<ModelFileVersionDTO> modelFileVersionDTOs = databaseService.findAll(databaseParameter,
 				ModelFileVersionDTO.class, connection);
 		Integer version = 1;
 
@@ -261,9 +244,35 @@ public class UpdateObject implements ExecuteQuery<LinkedHashMap<String, Object>>
 		modelFileVersion.setModelFile(modelFile);
 		modelFileVersion.setPath(modelFile.getPath());
 		modelFileVersion.setVersion(version);
-		this.databaseService.save(modelFileVersion, connection);
+		databaseService.save(modelFileVersion, connection);
 
 		return modelFile.getId();
+	}
+
+	public static String findMimeType(File file) {
+		String mimeType = null;
+
+		try {
+			mimeType = tika.detect(file);
+		} catch (IOException e) {
+			throw new WebApplicationException(e);
+		}
+		return mimeType;
+	}
+
+	public static File createUploadFile(FileUpload fileUpload, Connection connection, CommonService commonService) {
+
+		if (!fileUpload.getAppUser().getId().equals(commonService.getUser().getId())) {
+			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "wrongUser", fileUpload.getId());
+		}
+
+		File rootFile = new File(StaticData.appProperties.getProperty(FileUploadServiceImpl.PATH_FILE_PARAMETER));
+		File file = new File(rootFile.getAbsolutePath() + fileUpload.getPath());
+
+		if (!file.exists()) {
+			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "noFile", fileUpload.getPath());
+		}
+		return file;
 	}
 
 	private LinkedHashMap<String, Object> createMapFromArray(Object[] objects, List<ModelColumnDTO> columns) {

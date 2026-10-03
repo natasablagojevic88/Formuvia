@@ -379,7 +379,7 @@ public class UpdateColumnModel implements ExecuteQuery<ModelColumnDTO> {
 
 		if (modelColumnDTO.getColumnType().equals(ColumnType.FILE)) {
 			modelColumnDTO.setDefaultValueSql(null);
-			modelColumnDTO.setInDescriptionForCodebook(null);
+			modelColumnDTO.setInDescriptionForCodebook(false);
 			modelColumnDTO.setInitSortDirection(null);
 			modelColumnDTO.setInitSortOrder(null);
 			modelColumnDTO.setListOfValuesSql(null);
