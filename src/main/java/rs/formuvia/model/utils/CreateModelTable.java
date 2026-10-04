@@ -202,6 +202,7 @@ public class CreateModelTable implements ExecuteQuery<DatabaseTable<LinkedHashMa
 			databaseColumn.setColumnType(column.getColumnType());
 			databaseColumn.setDescription(resourceBundleService.getText(column.getName()));
 			databaseColumn.setEditable(column.getEditable());
+			databaseColumn.setLength(column.getLength());
 			databaseColumn.setFieldName(column.getCode());
 			databaseColumn.setInDescription(column.getInDescriptionForCodebook());
 			if (StringUtils.notNull(column.getCodebookId())) {

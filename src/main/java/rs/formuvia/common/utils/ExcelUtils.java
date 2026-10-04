@@ -4,7 +4,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.Font;
@@ -28,6 +30,7 @@ public class ExcelUtils {
 	private static final String EXCEL_DATE_FORMAT = "excel.date.format";
 	private static final String EXCEL_DATE_TIME_FORMAT = "excel.date-time.format";
 	private static final String EXCEL_TIME_FORMAT = "excel.time.format";
+	private static final String DECIMAL_TO_REPLACE = ".00";
 	private static final String DECIMAL_FORMAT = "#,##0.00";
 	private static final String INTEGER_FORMAT = "0";
 	private static final String STRING_FORMAT = "@";
@@ -94,10 +97,20 @@ public class ExcelUtils {
 		return xssfCellStyle;
 	}
 
-	public static XSSFCellStyle decimalExcelStyle(XSSFWorkbook workbook) {
+	public static XSSFCellStyle decimalExcelStyle(XSSFWorkbook workbook, Integer numberOfDecimal) {
+
+		String[] decimalNumber = new String[numberOfDecimal];
+		for (int i = 0; i < numberOfDecimal; i++) {
+			decimalNumber[i] = "0";
+		}
+		String textToReplace = "";
+		if (numberOfDecimal > 0)
+			textToReplace = "." + Arrays.asList(decimalNumber).stream().collect(Collectors.joining());
+		String decimalFormat = DECIMAL_FORMAT.replace(DECIMAL_TO_REPLACE, textToReplace);
+
 		XSSFCellStyle xssfCellStyle = workbook.createCellStyle();
 		XSSFCreationHelper xssfCreationHelper = workbook.getCreationHelper();
-		xssfCellStyle.setDataFormat(xssfCreationHelper.createDataFormat().getFormat(DECIMAL_FORMAT));
+		xssfCellStyle.setDataFormat(xssfCreationHelper.createDataFormat().getFormat(decimalFormat));
 		xssfCellStyle.setAlignment(HorizontalAlignment.RIGHT);
 		xssfCellStyle.setWrapText(true);
 		xssfCellStyle.setLocked(false);
@@ -139,7 +152,8 @@ public class ExcelUtils {
 	}
 
 	public static XSSFCell createCell(XSSFWorkbook workbook, XSSFRow row, int index, ColumnType columnType,
-			ResourceBundleService resourceBundleService, Object value, List<ComboboxDTO> listOfValues) {
+			ResourceBundleService resourceBundleService, Object value, List<ComboboxDTO> listOfValues,
+			Integer numberOfDecimal) {
 		XSSFCell xssfCell = row.createCell(index);
 		if (StringUtils.isNull(value))
 			return xssfCell;
@@ -148,7 +162,7 @@ public class ExcelUtils {
 		case BIGDECIMAL:
 			BigDecimal bigDecimal = new BigDecimal(value.toString());
 			xssfCell.setCellValue(bigDecimal.doubleValue());
-			xssfCell.setCellStyle(decimalExcelStyle(workbook));
+			xssfCell.setCellStyle(decimalExcelStyle(workbook, numberOfDecimal));
 			break;
 		case BOOLEAN:
 			Boolean booleanValue = Boolean.valueOf(value.toString());
@@ -198,8 +212,10 @@ public class ExcelUtils {
 	}
 
 	public static XSSFCell createCellLocked(XSSFWorkbook workbook, XSSFRow row, int index, ColumnType columnType,
-			ResourceBundleService resourceBundleService, Object value, List<ComboboxDTO> listOfValues) {
-		XSSFCell cell = createCell(workbook, row, index, columnType, resourceBundleService, value, listOfValues);
+			ResourceBundleService resourceBundleService, Object value, List<ComboboxDTO> listOfValues,
+			Integer numberOfDecimal) {
+		XSSFCell cell = createCell(workbook, row, index, columnType, resourceBundleService, value, listOfValues,
+				numberOfDecimal);
 		XSSFCellStyle cellStyle = cell.getCellStyle();
 		cellStyle.setLocked(true);
 		cell.setCellStyle(cellStyle);
@@ -207,9 +223,10 @@ public class ExcelUtils {
 	}
 
 	public static XSSFCell createCell(XSSFWorkbook workbook, XSSFRow row, int index, ColumnType columnType,
-			Object value, List<ComboboxDTO> listOfValues) {
+			Object value, List<ComboboxDTO> listOfValues, Integer numberOfDecimal) {
 		ResourceBundleService resourceBundleService = new ResourceBundleServiceImpl();
-		return createCell(workbook, row, index, columnType, resourceBundleService, value, listOfValues);
+		return createCell(workbook, row, index, columnType, resourceBundleService, value, listOfValues,
+				numberOfDecimal);
 	}
 
 }

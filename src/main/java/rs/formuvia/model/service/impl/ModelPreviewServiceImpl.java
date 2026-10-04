@@ -17,13 +17,17 @@ import rs.formuvia.database.utils.DatabaseParameter;
 import rs.formuvia.database.utils.DatabaseTable;
 import rs.formuvia.exceptions.CommonException;
 import rs.formuvia.model.dto.ModelDTO;
+import rs.formuvia.model.dto.ModelFileVersionDTO;
 import rs.formuvia.model.dto.ObjectFormDTO;
 import rs.formuvia.model.service.ModelPreviewService;
 import rs.formuvia.model.utils.CreateForm;
 import rs.formuvia.model.utils.CreateModelHistory;
 import rs.formuvia.model.utils.CreateModelTable;
+import rs.formuvia.model.utils.DeleteFileVersion;
 import rs.formuvia.model.utils.DeleteObject;
+import rs.formuvia.model.utils.DownloadFileVersion;
 import rs.formuvia.model.utils.DownloadModelFile;
+import rs.formuvia.model.utils.ListModelFileVersion;
 import rs.formuvia.model.utils.ModelTemplateDownload;
 import rs.formuvia.model.utils.ModelTemplateUpload;
 import rs.formuvia.model.utils.ObjectRow;
@@ -100,6 +104,28 @@ public class ModelPreviewServiceImpl implements ModelPreviewService {
 		ModelTemplateUpload modelTemplateUpload = new ModelTemplateUpload(httpServletRequest, fileUploadDTOId, modelId,
 				parentId);
 		this.databaseService.executeQuery(modelTemplateUpload);
+
+	}
+
+	@Override
+	public DatabaseTable<ModelFileVersionDTO> getListFileVersion(UUID modelId, UUID id, String columnName) {
+		ListModelFileVersion listModelFileVersion = new ListModelFileVersion(httpServletRequest, modelId, id,
+				columnName);
+		return this.databaseService.executeQuery(listModelFileVersion);
+	}
+
+	@Override
+	public Response getDownloadFileVersion(UUID modelId, UUID id, String columnName, UUID versionId) {
+		DownloadFileVersion downloadFileVersion = new DownloadFileVersion(httpServletRequest, modelId, id, columnName,
+				versionId);
+		return this.databaseService.executeQuery(downloadFileVersion);
+	}
+
+	@Override
+	public void getDeleteFileVersion(UUID modelId, UUID id, String columnName, UUID versionId) {
+		DeleteFileVersion deleteFileVersion = new DeleteFileVersion(httpServletRequest, modelId, id, columnName,
+				versionId);
+		this.databaseService.executeQuery(deleteFileVersion);
 
 	}
 

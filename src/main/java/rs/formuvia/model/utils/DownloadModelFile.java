@@ -51,18 +51,22 @@ public class DownloadModelFile implements ExecuteQuery<Response> {
 		this.commonService.checkRole(modelDTO.getPreviewRoleCode());
 
 		ModelFile modelFile = findModelFile(columnName, modelDTO, id, connection);
-
 		if (StringUtils.isNull(modelFile))
-			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "noFile", id);
+			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "noFileFound", id);
+		return createDownloadResponse(modelFile.getPath(), modelFile.getFileName(), modelFile.getMimeType(),
+				modelFile.getId());
+	}
 
+	public static Response createDownloadResponse(String path, String fileName, String mimeType, UUID id)
+			throws Exception {
 		File rootFile = new File(StaticData.appProperties.getProperty(FileUploadServiceImpl.PATH_FILE_PARAMETER));
-		File file = new File(rootFile.getAbsolutePath() + "/" + modelFile.getPath());
+		File file = new File(rootFile.getAbsolutePath() + "/" + path);
 		if (!file.exists()) {
 			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "noFile", id);
 		}
 
 		return ExportTableServiceImpl.createExcelResponse(Files.readAllBytes(Paths.get(file.getAbsolutePath())),
-				modelFile.getFileName(), modelFile.getMimeType());
+				fileName, mimeType);
 	}
 
 	public static ModelFile findModelFile(String columnName, ModelDTO modelDTO, UUID rowId, Connection connection) {

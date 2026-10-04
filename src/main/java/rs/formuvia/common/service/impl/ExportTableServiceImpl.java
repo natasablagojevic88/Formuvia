@@ -59,7 +59,7 @@ public class ExportTableServiceImpl implements ExportTableService {
 		for (DatabaseColumn column : databaseTable.getColumn()) {
 			index++;
 			ExcelUtils.createTableTitleCell(wb, row, index, column.getDescription());
-			formatColumnType(column.getColumnType(), sheet, index);
+			formatColumnType(column.getColumnType(), sheet, index, column.getLength());
 		}
 		index = 1;
 		for (Object item : databaseTable.getList()) {
@@ -70,7 +70,7 @@ public class ExportTableServiceImpl implements ExportTableService {
 			for (DatabaseColumn column : databaseTable.getColumn()) {
 				rowIndex++;
 				ExcelUtils.createCell(wb, row, rowIndex, column.getColumnType(), resourceBundleService,
-						map.get(column.getFieldName()), column.getListOfValues());
+						map.get(column.getFieldName()), column.getListOfValues(), column.getLength());
 			}
 
 		}
@@ -92,11 +92,12 @@ public class ExportTableServiceImpl implements ExportTableService {
 		return createExcelResponse(baos.toByteArray(), EXPORT_FILE_NAME, EXCEL_CONTENT_TYPE);
 	}
 
-	public static void formatColumnType(ColumnType columnType, XSSFSheet sheet, Integer index) {
+	public static void formatColumnType(ColumnType columnType, XSSFSheet sheet, Integer index,
+			Integer numberOfDecimal) {
 		XSSFWorkbook wb = sheet.getWorkbook();
 		switch (columnType) {
 		case BIGDECIMAL:
-			sheet.setDefaultColumnStyle(index, ExcelUtils.decimalExcelStyle(wb));
+			sheet.setDefaultColumnStyle(index, ExcelUtils.decimalExcelStyle(wb, numberOfDecimal));
 			break;
 		case INTEGER, LONG:
 			sheet.setDefaultColumnStyle(index, ExcelUtils.integerExcelStyle(wb));

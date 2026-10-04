@@ -73,6 +73,10 @@ public class GenerateQueryFromDTO<C> implements ExecuteQuery<C> {
 					databaseFilter.setColumnType(ColumnType.STRING);
 				else
 					databaseFilter.setColumnType(ColumnType.UUID);
+			} else {
+				if (databaseFilter.getColumnType().equals(ColumnType.FILE)) {
+					databaseFilter.setColumnType(ColumnType.UUID);
+				}
 			}
 		}
 	}

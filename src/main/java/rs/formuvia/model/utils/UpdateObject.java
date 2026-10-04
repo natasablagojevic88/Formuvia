@@ -226,14 +226,9 @@ public class UpdateObject implements ExecuteQuery<LinkedHashMap<String, Object>>
 
 		modelFile = databaseService.save(modelFile, connection);
 
-		DatabaseParameter databaseParameter = DatabaseParameter
-				.valueOf(DatabaseFilter.valueOf("modelFileId", modelFile.getId().toString()));
-		databaseParameter.getOrders().add(QueryDatabaseOrder.valueOf("version", Direction.DESC));
-		databaseParameter.setPageSize(1);
-
-		List<ModelFileVersionDTO> modelFileVersionDTOs = databaseService.findAll(databaseParameter,
-				ModelFileVersionDTO.class, connection);
 		Integer version = 1;
+
+		List<ModelFileVersionDTO> modelFileVersionDTOs = findLastestFileVersion(modelFile.getId(), connection);
 
 		if (!modelFileVersionDTOs.isEmpty())
 			version = modelFileVersionDTOs.getFirst().getVersion() + 1;
@@ -244,9 +239,20 @@ public class UpdateObject implements ExecuteQuery<LinkedHashMap<String, Object>>
 		modelFileVersion.setModelFile(modelFile);
 		modelFileVersion.setPath(modelFile.getPath());
 		modelFileVersion.setVersion(version);
+		modelFileVersion.setCreationDate(LocalDateTime.now());
 		databaseService.save(modelFileVersion, connection);
 
 		return modelFile.getId();
+	}
+
+	public static List<ModelFileVersionDTO> findLastestFileVersion(UUID modellFileId, Connection connection) {
+		DatabaseParameter databaseParameter = DatabaseParameter
+				.valueOf(DatabaseFilter.valueOf("modelFileId", modellFileId.toString()));
+		databaseParameter.getOrders().add(QueryDatabaseOrder.valueOf("version", Direction.DESC));
+		databaseParameter.setPageSize(1);
+
+		return databaseService.findAll(databaseParameter, ModelFileVersionDTO.class, connection);
+
 	}
 
 	public static String findMimeType(File file) {

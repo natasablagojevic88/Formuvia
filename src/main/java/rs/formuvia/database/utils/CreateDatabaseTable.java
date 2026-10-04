@@ -16,6 +16,7 @@ import rs.formuvia.database.annotations.ComboboxList;
 import rs.formuvia.database.annotations.EntityClass;
 import rs.formuvia.database.annotations.HideInTable;
 import rs.formuvia.database.annotations.NotEditableInTable;
+import rs.formuvia.database.annotations.NumberOfDecimal;
 import rs.formuvia.database.annotations.SkipColumn;
 import rs.formuvia.database.enums.ColumnType;
 import rs.formuvia.database.service.DatabaseService;
@@ -33,6 +34,8 @@ public class CreateDatabaseTable<C> implements ExecuteQuery<DatabaseTable<C>> {
 	private final HttpServletRequest httpServletRequest;
 
 	private final String SUFIX_TITLE_NAME = ".title";
+
+	private final Integer DEFAULT_BIGDECIMAL_LENGHT = 2;
 
 	private final DatabaseService databaseService = new DatabaseServiceImpl();
 	private final SqlQueryWriterService sqlQueryWriterService = new SqlQueryWriterServiceImpl();
@@ -109,6 +112,14 @@ public class CreateDatabaseTable<C> implements ExecuteQuery<DatabaseTable<C>> {
 			}
 
 			databaseColumn.setColumnType(columnType);
+
+			if (columnType.equals(ColumnType.BIGDECIMAL))
+				if (field.isAnnotationPresent(NumberOfDecimal.class))
+					databaseColumn.setLength(field.getAnnotation(NumberOfDecimal.class).value());
+				else
+					databaseColumn.setLength(DEFAULT_BIGDECIMAL_LENGHT);
+			else
+				databaseColumn.setLength(DEFAULT_BIGDECIMAL_LENGHT);
 
 			if (field.isAnnotationPresent(NotEditableInTable.class)) {
 				databaseColumn.setEditable(false);

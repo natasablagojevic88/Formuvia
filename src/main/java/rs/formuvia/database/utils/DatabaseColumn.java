@@ -31,6 +31,8 @@ public class DatabaseColumn {
 
 	private UUID modelId;
 
+	private Integer length;
+
 	List<ComboboxDTO> listOfValues = new ArrayList<>();
 
 	List<ParentListOfValues> parentList = new ArrayList<>();

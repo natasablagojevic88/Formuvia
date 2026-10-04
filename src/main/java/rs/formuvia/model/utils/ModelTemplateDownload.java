@@ -95,9 +95,11 @@ public class ModelTemplateDownload implements ExecuteQuery<Response> {
 			else
 				ExcelUtils.createTableTitleRedCell(wb, xssfRow, columnIndex,
 						this.resourseBundleService.getText(modelColumnDTO.getName()));
-			ExportTableServiceImpl.formatColumnType(modelColumnDTO.getColumnType(), xssfSheet, columnIndex);
+			ExportTableServiceImpl.formatColumnType(modelColumnDTO.getColumnType(), xssfSheet, columnIndex,
+					modelColumnDTO.getLength());
 			if (ModelTemplateUpload.hasCodebookValue(modelColumnDTO))
-				ExportTableServiceImpl.formatColumnType(ColumnType.STRING, xssfSheet, columnIndex);
+				ExportTableServiceImpl.formatColumnType(ColumnType.STRING, xssfSheet, columnIndex,
+						modelColumnDTO.getLength());
 		}
 
 		columnIndex = -1;
@@ -153,8 +155,9 @@ public class ModelTemplateDownload implements ExecuteQuery<Response> {
 		for (ComboboxDTO item : list) {
 			index++;
 			XSSFRow row = sheet.createRow(index);
-			ExcelUtils.createCellLocked(wb, row, 0, columnType, resourceBundleService, item.getValue(), null);
-			ExcelUtils.createCellLocked(wb, row, 1, ColumnType.STRING, resourceBundleService, item.getOption(), null);
+			ExcelUtils.createCellLocked(wb, row, 0, columnType, resourceBundleService, item.getValue(), null, null);
+			ExcelUtils.createCellLocked(wb, row, 1, ColumnType.STRING, resourceBundleService, item.getOption(), null,
+					null);
 		}
 		sheet.protectSheet(UUID.randomUUID().toString());
 		wb.setSheetHidden(wb.getSheetIndex(sheet), true);

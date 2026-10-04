@@ -8,6 +8,7 @@ import jakarta.ws.rs.core.Response;
 import rs.formuvia.common.dto.HistoryDTO;
 import rs.formuvia.database.utils.DatabaseParameter;
 import rs.formuvia.database.utils.DatabaseTable;
+import rs.formuvia.model.dto.ModelFileVersionDTO;
 import rs.formuvia.model.dto.ObjectFormDTO;
 
 public interface ModelPreviewService {
@@ -29,5 +30,11 @@ public interface ModelPreviewService {
 	Response getModelTemplateDownload(UUID modelId);
 
 	void getModelTemplateUpload(UUID fileUploadDTOId, UUID modelId, UUID parentId);
+
+	DatabaseTable<ModelFileVersionDTO> getListFileVersion(UUID modelId, UUID id, String columnName);
+
+	Response getDownloadFileVersion(UUID modelId, UUID id, String columnName, UUID versionId);
+
+	void getDeleteFileVersion(UUID modelId, UUID id, String columnName, UUID versionId);
 
 }

@@ -1,5 +1,6 @@
 package rs.formuvia.model.entity;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import jakarta.persistence.CascadeType;
@@ -46,4 +47,7 @@ public class ModelFileVersion {
 
 	@Column(nullable = false)
 	private Integer version;
+
+	@Column(nullable = false, name = "creation_date")
+	private LocalDateTime creationDate;
 }

@@ -225,4 +225,55 @@ public class ModelPreviewController {
 		modelPreviewService.getModelTemplateUpload(fileTemplateId, modelId, parentId);
 		return Response.noContent().build();
 	}
+
+	@GET
+	@Path(ApiRoute.modelListFileVersion)
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "getModelPreviewFileVersions", summary = "List the versions of the file of a record", description = "Returns every version of the file stored in one column of one record, newest first. A file is replaced in place: the record keeps pointing at the same stored file, and each file that was put there is written as a version of it, with its original name, its content type and the time it was stored. The answer has the same shape as any other table - the columns with their translated labels and the rows - so the client can show it without knowing anything about versions. Requires a valid session and the view role of the model.", responses = {
+			@ApiResponse(responseCode = "200", description = "Versions of the file, newest first", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = DatabaseTable.class))),
+			@ApiResponse(responseCode = "400", description = "The table has no such column, the record does not exist, or it holds no file", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "403", description = "Current user does not have the view role of this model", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
+	public Response getListFileVersion(
+			@Parameter(description = "Identifier of the model the record belongs to", required = true) @PathParam("modelId") UUID modelId,
+			@Parameter(description = "Identifier of the record", required = true) @PathParam("id") UUID id,
+			@Parameter(description = "Code of the column of type FILE the file is stored in", required = true) @PathParam("columnName") String columnName) {
+
+		return Response.ok(modelPreviewService.getListFileVersion(modelId, id, columnName)).build();
+	}
+
+	@GET
+	@Path(ApiRoute.modelDownloadFileVersion)
+	@Produces(MediaType.APPLICATION_OCTET_STREAM)
+	@Operation(operationId = "getModelPreviewFileVersion", summary = "Download one version of the file of a record", description = "Returns the content of one earlier version of the file stored in a column of a record, under the name and the content type it had when it was stored. The version must belong to the file this record holds, so a version of another file cannot be read through this record. The file name is in the Content-Disposition header, which is exposed to the browser for cross-origin requests. Requires a valid session and the view role of the model.", responses = {
+			@ApiResponse(responseCode = "200", description = "Content of that version, with its name in the Content-Disposition header", content = @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM, schema = @Schema(type = "string", format = "binary"))),
+			@ApiResponse(responseCode = "400", description = "The table has no such column, the record holds no file, the version does not exist or belongs to another file, or the file is missing from the storage", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "403", description = "Current user does not have the view role of this model", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
+	public Response getDownloadFileVersion(
+			@Parameter(description = "Identifier of the model the record belongs to", required = true) @PathParam("modelId") UUID modelId,
+			@Parameter(description = "Identifier of the record", required = true) @PathParam("id") UUID id,
+			@Parameter(description = "Code of the column of type FILE the file is stored in", required = true) @PathParam("columnName") String columnName,
+			@Parameter(description = "Identifier of the version to download", required = true) @PathParam("versionId") UUID versionId) {
+
+		return modelPreviewService.getDownloadFileVersion(modelId, id, columnName, versionId);
+	}
+
+	@DELETE
+	@Path(ApiRoute.modelDownloadFileVersion)
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "deleteModelPreviewFileVersion", summary = "Delete one version of the file of a record", description = "Removes one earlier version of the file stored in a column of a record. The version must belong to the file this record holds. The last version cannot be removed, because the record would be left pointing at a file that is no longer described anywhere; when the version being removed is the one the record points at, the record is moved to the version stored before it. What is left on disk is not touched.", responses = {
+			@ApiResponse(responseCode = "204", description = "The version was removed"),
+			@ApiResponse(responseCode = "400", description = "The table has no such column, the record holds no file, the version does not exist or belongs to another file, or it is the last version of that file", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "403", description = "Current user does not have the role this model requires for it", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
+	public Response getDeleteFileVersion(
+			@Parameter(description = "Identifier of the model the record belongs to", required = true) @PathParam("modelId") UUID modelId,
+			@Parameter(description = "Identifier of the record", required = true) @PathParam("id") UUID id,
+			@Parameter(description = "Code of the column of type FILE the file is stored in", required = true) @PathParam("columnName") String columnName,
+			@Parameter(description = "Identifier of the version to delete", required = true) @PathParam("versionId") UUID versionId) {
+
+		modelPreviewService.getDeleteFileVersion(modelId, id, columnName, versionId);
+		return Response.noContent().build();
+	}
 }
