@@ -50,6 +50,7 @@ import rs.formuvia.exceptions.CommonException;
 import rs.formuvia.exceptions.NotNullException;
 import rs.formuvia.exceptions.UniqueException;
 import rs.formuvia.model.dto.ModelColumnDTO;
+import rs.formuvia.model.dto.ModelColumnExtendedDTO;
 import rs.formuvia.model.dto.ModelDTO;
 import rs.formuvia.model.entity.Model;
 import rs.formuvia.model.entity.ModelColumn;
@@ -60,7 +61,7 @@ import rs.formuvia.utils.StaticData;
 import rs.formuvia.utils.StringUtils;
 
 @RequiredArgsConstructor
-public class UpdateColumnModel implements ExecuteQuery<ModelColumnDTO> {
+public class UpdateColumnModel implements ExecuteQuery<ModelColumnExtendedDTO> {
 
 	private final ModelColumnDTO modelColumnDTO;
 
@@ -73,7 +74,7 @@ public class UpdateColumnModel implements ExecuteQuery<ModelColumnDTO> {
 	private static SqlQueryWriterService sqlQueryWriterService = new SqlQueryWriterServiceImpl();
 
 	@Override
-	public ModelColumnDTO execute(Connection connection) throws Exception {
+	public ModelColumnExtendedDTO execute(Connection connection) throws Exception {
 		Model model = databaseService.findById(modelColumnDTO.getModelId(), Model.class, connection);
 		ModelColumn modelColumn = modelColumnDTO.getId() == null ? new ModelColumn()
 				: databaseService.findById(modelColumnDTO.getId(), ModelColumn.class, connection);
@@ -115,7 +116,9 @@ public class UpdateColumnModel implements ExecuteQuery<ModelColumnDTO> {
 			}).start();
 		}
 
-		return modelMapper.map(modelColumn, ModelColumnDTO.class);
+		CreateModelColumnExtended createModelColumnExtended = new CreateModelColumnExtended(modelColumn.getId());
+
+		return databaseService.executeQuery(createModelColumnExtended, connection);
 	}
 
 	public static List<ModelColumnDTO> findColumnList(UUID modelId, Connection connection) {

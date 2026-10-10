@@ -73,7 +73,7 @@ public class AppStartUpImpl implements AppStartUp {
 
 	@Override
 	public void loadClass() {
-		Reflections reflections = new Reflections(Formuvia.PACKAGE_NAME, Scanners.SubTypes.filterResultsBy(a -> true));
+		Reflections reflections = new Reflections(Formuvia.PACKAGE_NAME, Scanners.SubTypes.filterResultsBy(_ -> true));
 		StaticData.allClasses = reflections.getSubTypesOf(Object.class).stream()
 				.filter(a -> a.getEnclosingClass() == null).filter(a -> !a.isSynthetic()).toList();
 		List<String> allClassName = StaticData.allClasses.stream().map(a -> a.getSimpleName()).toList();

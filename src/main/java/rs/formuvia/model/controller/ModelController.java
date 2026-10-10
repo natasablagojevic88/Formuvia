@@ -89,4 +89,18 @@ public class ModelController {
 		return Response.noContent().build();
 	}
 
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path(ApiRoute.modelListOfValues)
+	@RolesAllowed(RoleList.ADMIN)
+	@Operation(summary = "Get the records fields of a table offer", description = "Returns, for one table of the model, the records every field of its form offers a choice from: fields that point at a codebook and fields with a query of their own. The answer is an object whose key is the identifier of the field and whose value is the list of records, each one a stored value and the text shown for it, already translated to the language from the X-Language header. The records of a codebook are the ones held in memory and refreshed when the codebook changes; the records of a field with a query are read by running that query. Fields that offer no choice of their own are not in the answer. It is used by the form design: a condition over such a field is entered by choosing a record instead of by typing a value.", responses = {
+			@ApiResponse(responseCode = "200", description = "Field identifier to the records that field offers", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = "object", description = "Field identifier to the list of records, each with a value and the text shown for it"))),
+			@ApiResponse(responseCode = "400", description = "A query of a field cannot be run", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "403", description = "Current user does not have the admin role", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
+	public Response getModelListOfValuesColumns(
+			@Parameter(description = "Identifier of the table whose fields are read", required = true) @PathParam("id") UUID id) {
+		return Response.ok(modelService.getModelListOfValuesColumns(id)).build();
+	}
+
 }

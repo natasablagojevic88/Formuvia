@@ -17,6 +17,7 @@ import rs.formuvia.administration.entity.AppUser;
 import rs.formuvia.database.service.DatabaseService;
 import rs.formuvia.database.service.impl.DatabaseServiceImpl;
 import rs.formuvia.database.utils.LoadStaticData;
+import rs.formuvia.model.dto.ModelColumnConditionDTO;
 import rs.formuvia.model.dto.ModelColumnDTO;
 import rs.formuvia.model.dto.ModelDTO;
 import rs.formuvia.model.dto.ModelFileDTO;
@@ -59,6 +60,10 @@ public class DatabaseListenJob implements Job {
 						break;
 					case listen_model_file:
 						StaticData.modelFiles = this.databaseService.findAll(null, ModelFileDTO.class);
+						break;
+					case listen_model_column_condition:
+						StaticData.modelColumnsConditions = this.databaseService.findAll(null,
+								ModelColumnConditionDTO.class);
 						break;
 
 					}

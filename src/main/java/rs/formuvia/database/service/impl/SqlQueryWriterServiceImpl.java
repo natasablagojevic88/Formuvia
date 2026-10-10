@@ -33,10 +33,10 @@ import rs.formuvia.utils.StringUtils;
 
 @Service
 public class SqlQueryWriterServiceImpl implements SqlQueryWriterService {
-	private final String mainTableAlias = "a";
+	public static final String mainTableAlias = "a";
 	private final String joinTableAlias = "t";
 	public static final String defaultIdColumn = "id";
-	private final String selectCountPart = "select count(*)";
+	private static final String selectCountPart = "select count(*)";
 
 	private Logger logger = LogManager.getLogger(getClass());
 
@@ -583,10 +583,14 @@ public class SqlQueryWriterServiceImpl implements SqlQueryWriterService {
 	}
 
 	@Override
-	public String createTotalQuery(QueryTableInfo queryTableInfo, DatabaseParameter databaseParameter) {
+	public String createTotalQuery(QueryTableInfo queryTableInfo, DatabaseParameter databaseParameter,
+			String[] sumColumn) {
 		QueryTableFinalInfo queryTableFinalInfo = createQueryTableFinalInfo(queryTableInfo);
 		String query = "";
 		query += selectCountPart;
+		if (StringUtils.notNull(sumColumn))
+			query += Arrays.asList(sumColumn).stream().map(a -> ", coalesce(sum(" + a + "),0)")
+					.collect(Collectors.joining());
 		query += "\n";
 		query += createFromPart(queryTableFinalInfo.getName(), queryTableFinalInfo.getLeftJoins());
 		List<DatabaseFilter> databaseFilters = clearDatabaseFilters(databaseParameter.getFilters());
@@ -645,7 +649,7 @@ public class SqlQueryWriterServiceImpl implements SqlQueryWriterService {
 	}
 
 	private String[] createPararameterArray(String[] fieldArray) {
-		return Arrays.asList(fieldArray).stream().map(a -> "?").toArray(String[]::new);
+		return Arrays.asList(fieldArray).stream().map(_ -> "?").toArray(String[]::new);
 	}
 
 	@Override

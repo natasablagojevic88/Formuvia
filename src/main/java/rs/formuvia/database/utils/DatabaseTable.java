@@ -1,6 +1,8 @@
 package rs.formuvia.database.utils;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -39,6 +41,8 @@ public class DatabaseTable<C> {
 	private Long total;
 
 	private Integer numberOfPages;
+
+	private LinkedHashMap<String, BigDecimal> totalColumns = new LinkedHashMap<>();
 
 	private List<DatabaseColumn> allColumns = new ArrayList<>();
 

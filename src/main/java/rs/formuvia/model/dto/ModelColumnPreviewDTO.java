@@ -48,4 +48,6 @@ public class ModelColumnPreviewDTO {
 
 	private Integer colspan;
 
+	private List<ModelColumnConditionDTO> conditions = new ArrayList<>();
+
 }

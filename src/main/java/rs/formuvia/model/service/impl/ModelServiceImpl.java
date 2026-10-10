@@ -1,6 +1,7 @@
 package rs.formuvia.model.service.impl;
 
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -9,14 +10,18 @@ import org.jvnet.hk2.annotations.Service;
 import org.modelmapper.ModelMapper;
 
 import jakarta.inject.Inject;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.core.Context;
+import rs.formuvia.common.dto.ComboboxDTO;
 import rs.formuvia.common.service.ResourceBundleService;
 import rs.formuvia.database.service.DatabaseService;
 import rs.formuvia.model.dto.ModelDTO;
 import rs.formuvia.model.dto.ModelTreeDTO;
 import rs.formuvia.model.entity.Model;
 import rs.formuvia.model.service.ModelService;
-import rs.formuvia.model.utils.UpdateModel;
+import rs.formuvia.model.utils.CreateModelListOfValuesColumns;
 import rs.formuvia.model.utils.DeleteModel;
+import rs.formuvia.model.utils.UpdateModel;
 import rs.formuvia.utils.StringUtils;
 
 @Service
@@ -27,6 +32,9 @@ public class ModelServiceImpl implements ModelService {
 
 	@Inject
 	private ResourceBundleService resourceBundleService;
+
+	@Context
+	private HttpServletRequest httpServletRequest;
 
 	private final String rootName = "model.root";
 
@@ -79,6 +87,13 @@ public class ModelServiceImpl implements ModelService {
 		}
 
 		parent.getChildren().add(modelTreeDTO);
+	}
+
+	@Override
+	public LinkedHashMap<UUID, List<ComboboxDTO>> getModelListOfValuesColumns(UUID id) {
+		CreateModelListOfValuesColumns createModelListOfValuesColumns = new CreateModelListOfValuesColumns(
+				httpServletRequest, id);
+		return this.databaseService.executeQuery(createModelListOfValuesColumns);
 	}
 
 }

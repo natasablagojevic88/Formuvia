@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import rs.formuvia.common.dto.ComboboxDTO;
 import rs.formuvia.database.enums.ColumnType;
+import rs.formuvia.model.dto.ModelColumnConditionDTO;
 
 @Setter
 @Getter
@@ -33,8 +34,10 @@ public class DatabaseColumn {
 
 	private Integer length;
 
-	List<ComboboxDTO> listOfValues = new ArrayList<>();
+	private List<ComboboxDTO> listOfValues = new ArrayList<>();
 
-	List<ParentListOfValues> parentList = new ArrayList<>();
+	private List<ParentListOfValues> parentList = new ArrayList<>();
+
+	private List<ModelColumnConditionDTO> conditions = new ArrayList<>();
 
 }

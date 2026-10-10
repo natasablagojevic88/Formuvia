@@ -1,6 +1,6 @@
 # Formuvia – Backend
 
-REST API for Formuvia, built with Java 21 and Jersey (JAX-RS), packaged as a WAR and backed by PostgreSQL.
+REST API for Formuvia, built with Java 25 and Jersey (JAX-RS), packaged as a WAR and backed by PostgreSQL.
 
 The web client lives in a separate repository: **FormuviaFront** (Angular).
 
@@ -28,7 +28,7 @@ The web client lives in a separate repository: **FormuviaFront** (Angular).
 
 | Tool | Version |
 |---|---|
-| Java (JDK) | 21 |
+| Java (JDK) | 25 |
 | Maven | 3.9+ |
 | PostgreSQL | 18+ (uses the built-in `uuidv7()` function) |
 | Servlet container | Jakarta Servlet 6.1 (e.g. Apache Tomcat 11) |

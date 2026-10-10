@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import jakarta.servlet.http.HttpServletRequest;
 import rs.formuvia.common.dto.ComboboxDTO;
@@ -123,6 +124,12 @@ public class CreateForm implements ExecuteQuery<ObjectFormDTO> {
 
 				modelColumnPreviewDTO.setValue(findModelFileDtoFromId(fileValue, connection, false));
 
+			}
+
+			if (StaticData.modelColumnsConditions.stream().filter(a -> a.getModelColumnId().equals(column.getId()))
+					.count() > 0) {
+				modelColumnPreviewDTO.setConditions(StaticData.modelColumnsConditions.stream()
+						.filter(a -> a.getModelColumnId().equals(column.getId())).collect(Collectors.toList()));
 			}
 
 			list.add(modelColumnPreviewDTO);

@@ -3,6 +3,7 @@ package rs.formuvia.model.service;
 import java.util.List;
 import java.util.UUID;
 
+import rs.formuvia.model.dto.ModelColumnConditionDTO;
 import rs.formuvia.model.dto.ModelColumnDTO;
 
 public interface ModelColumnService {
@@ -14,5 +15,9 @@ public interface ModelColumnService {
 	ModelColumnDTO getModelColumn(UUID id);
 
 	void getDelete(UUID id);
+
+	ModelColumnConditionDTO getUpdateColumnModelCondition(ModelColumnConditionDTO modelColumnConditionDTO);
+
+	void getDeleteColumnModelCondition(UUID id);
 
 }

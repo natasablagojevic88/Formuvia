@@ -24,10 +24,13 @@ public class ApiRoute {
 	public static final String model = "/model";
 	public static final String modelTree = "/model/tree";
 	public static final String modelId = "/model/{id}";
+	public static final String modelListOfValues = "/model/list-of-values/{id}";
 
 	public static final String modelColumn = "/model-column";
 	public static final String modelColumnId = "/model-column/{id}";
 	public static final String modelColumnTable = "/model-column/list/{modelId}";
+	public static final String modelColumnCondition = "/model-column/condition";
+	public static final String modelColumnConditionId = "/model-column/condition/{id}";
 
 	public static final String modelPreviewTable = "/preview/model/{modelId}";
 	public static final String modelPreviewTableWithParent = "/preview/model/{modelId}/{parentId}";

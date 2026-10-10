@@ -61,7 +61,7 @@ public class CreateDatabaseTable<C> implements ExecuteQuery<DatabaseTable<C>> {
 		addColumn(databaseTable);
 		databaseTable.setList(list);
 		QueryTableInfo queryTableInfo = GenerateQueryFromDTO.createQueryTableInfo(this.resultClass);
-		String totalQuery = sqlQueryWriterService.createTotalQuery(queryTableInfo, databaseParameter);
+		String totalQuery = sqlQueryWriterService.createTotalQuery(queryTableInfo, databaseParameter, null);
 		Map<Integer, Object> parameters = sqlQueryWriterService.createParameters(databaseParameter.getFilters());
 		Long total = this.databaseService.executeNativeQuery(totalQuery, parameters, Long.class, connection).getFirst();
 		databaseTable.setTotal(total);
@@ -158,6 +158,9 @@ public class CreateDatabaseTable<C> implements ExecuteQuery<DatabaseTable<C>> {
 					.collect(Collectors.toList());
 		case listen_model_file:
 			return StaticData.modelFiles.stream().map(a -> new ComboboxDTO(a.getId(), a.getFileName())).toList();
+		case listen_model_column_condition:
+			return StaticData.modelColumnsConditions.stream()
+					.map(a -> new ComboboxDTO(a.getId(), a.getConditionColumnName())).toList();
 		}
 
 		return new ArrayList<>();

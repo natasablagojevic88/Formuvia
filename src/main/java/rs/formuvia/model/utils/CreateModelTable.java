@@ -1,5 +1,6 @@
 package rs.formuvia.model.utils;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -108,11 +109,25 @@ public class CreateModelTable implements ExecuteQuery<DatabaseTable<LinkedHashMa
 		}
 
 		databaseTable.setList(createListObject(queryTableInfo, databaseParameter, databaseTable, connection));
+		List<DatabaseColumn> totalColumns = databaseTable.getColumn().stream()
+				.filter(a -> a.getColumnType().equals(ColumnType.BIGDECIMAL)).collect(Collectors.toList());
 
-		String totalQuery = sqlQueryWriterService.createTotalQuery(queryTableInfo, databaseParameter);
-		Long total = databaseService.executeNativeQuery(totalQuery,
-				sqlQueryWriterService.createParameters(databaseParameter.getFilters()), Long.class, connection)
+		String totalQuery = sqlQueryWriterService.createTotalQuery(queryTableInfo, databaseParameter,
+				totalColumns.stream().map(a -> SqlQueryWriterServiceImpl.mainTableAlias + "." + a.getFieldName())
+						.toArray(String[]::new));
+		Object[] totalResult = databaseService.executeNativeQuery(totalQuery,
+				sqlQueryWriterService.createParameters(databaseParameter.getFilters()), Object[].class, connection)
 				.getFirst();
+
+		Long total = ((Number) totalResult[0]).longValue();
+
+		int totalIndexCount = 0;
+		for (DatabaseColumn totalColumn : totalColumns) {
+			totalIndexCount++;
+			databaseTable.getTotalColumns().put(totalColumn.getFieldName(),
+					new BigDecimal(totalResult[totalIndexCount].toString()));
+		}
+
 		databaseTable.setTotal(total);
 		databaseTable.setNumberOfPages(CreateDatabaseTable.numberOfPages(total, databaseParameter.getPageSize()));
 
@@ -216,6 +231,12 @@ public class CreateModelTable implements ExecuteQuery<DatabaseTable<LinkedHashMa
 				databaseColumn.setParentList(parentListOfValues);
 			}
 			databaseColumn.setRequired(!column.getNullable());
+
+			if (StaticData.modelColumnsConditions.stream().filter(a -> a.getModelColumnId().equals(column.getId()))
+					.count() > 0) {
+				databaseColumn.setConditions(StaticData.modelColumnsConditions.stream()
+						.filter(a -> a.getModelColumnId().equals(column.getId())).collect(Collectors.toList()));
+			}
 
 			list.add(databaseColumn);
 		}

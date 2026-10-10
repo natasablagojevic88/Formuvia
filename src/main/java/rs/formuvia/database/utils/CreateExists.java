@@ -21,7 +21,7 @@ public class CreateExists<C> implements ExecuteQuery<Boolean> {
 	public Boolean execute(Connection connection) throws Exception {
 		QueryTableInfo queryTableInfo = GenerateQueryFromDTO.createQueryTableInfo(this.resultClass);
 		GenerateQueryFromDTO.fillColumnType(databaseParameter, resultClass);
-		String query = sqlQueryWriterService.createTotalQuery(queryTableInfo, databaseParameter);
+		String query = sqlQueryWriterService.createTotalQuery(queryTableInfo, databaseParameter, null);
 		Map<Integer, Object> parameters = sqlQueryWriterService.createParameters(databaseParameter.getFilters());
 		Long count = this.databaseService.executeNativeQuery(query, parameters, Long.class, connection).getFirst();
 		return count == 0 ? false : true;

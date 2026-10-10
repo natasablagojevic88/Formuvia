@@ -1,0 +1,39 @@
+<project name="Formuvia" default="package" basedir=".">
+
+	<property name="frontpath" location="../FormuviaFront" />
+
+	<property name="dest" location="target" />
+	<property name="war-path" location="${dest}/Formuvia.war" />
+	<property name="frontpath-antfile"
+		location="${frontpath}/buildForWar.xml" />
+	<property name="frontpath-build"
+		location="${frontpath}/dist/FormuviaFront/browser" />
+
+	<target name="clean">
+		<delete dir="${dest}" />
+	</target>
+
+	<target name="build-front" depends="clean">
+		<exec executable="ant" failonerror="true">
+			<arg value="-f" />
+			<arg value="${frontpath-antfile}" />
+		</exec>
+	</target>
+
+	<target name="build-back" depends="build-front">
+		<exec executable="mvn" failonerror="true">
+			<arg value="clean" />
+			<arg value="package" />
+		</exec>
+	</target>
+
+	<target name="package" depends="build-back">
+		<exec executable="jar"  failonerror="true">
+			<arg value="-uf" />
+			<arg value="${war-path}" />
+			<arg value="-C" />
+			<arg value="${frontpath-build}" />
+			<arg value="." />
+		</exec>
+	</target>
+</project>

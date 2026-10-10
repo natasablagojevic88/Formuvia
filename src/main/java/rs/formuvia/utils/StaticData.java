@@ -18,6 +18,7 @@ import rs.formuvia.administration.dto.AppUserRoleDTO;
 import rs.formuvia.administration.dto.RoleDTO;
 import rs.formuvia.administration.entity.AppUser;
 import rs.formuvia.common.dto.ComboboxDTO;
+import rs.formuvia.model.dto.ModelColumnConditionDTO;
 import rs.formuvia.model.dto.ModelColumnDTO;
 import rs.formuvia.model.dto.ModelDTO;
 import rs.formuvia.model.dto.ModelFileDTO;
@@ -37,14 +38,15 @@ public class StaticData {
 	public static Connection databaseListenConnection;
 	public static List<MenuInfo> menuInfos = new ArrayList<>();
 
-	public static List<AppUser> appUsers = new ArrayList<>();
-	public static List<AppUserRoleDTO> appUserRoles = new ArrayList<>();
-	public static List<RoleDTO> roles = new ArrayList<>();
-	public static List<ModelDTO> models = new ArrayList<>();
-	public static List<ModelColumnDTO> modelColumns = new ArrayList<>();
-	public static List<ModelFileDTO> modelFiles = new ArrayList<>();
+	public static volatile List<AppUser> appUsers = new ArrayList<>();
+	public static volatile List<AppUserRoleDTO> appUserRoles = new ArrayList<>();
+	public static volatile List<RoleDTO> roles = new ArrayList<>();
+	public static volatile List<ModelDTO> models = new ArrayList<>();
+	public static volatile List<ModelColumnDTO> modelColumns = new ArrayList<>();
+	public static volatile List<ModelColumnConditionDTO> modelColumnsConditions = new ArrayList<>();
+	public static volatile List<ModelFileDTO> modelFiles = new ArrayList<>();
 
-	public static Map<UUID, List<ComboboxDTO>> modelCodebook = new ConcurrentHashMap<>();
-	public static Set<UUID> modelsToListen = ConcurrentHashMap.newKeySet();
+	public static volatile Map<UUID, List<ComboboxDTO>> modelCodebook = new ConcurrentHashMap<>();
+	public static volatile Set<UUID> modelsToListen = ConcurrentHashMap.newKeySet();
 
 }

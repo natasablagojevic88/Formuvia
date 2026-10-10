@@ -13,7 +13,7 @@ public interface SqlQueryWriterService {
 
 	Map<Integer, Object> createParameters(List<DatabaseFilter> databaseFilters);
 
-	String createTotalQuery(QueryTableInfo queryTableInfo, DatabaseParameter databaseParameter);
+	String createTotalQuery(QueryTableInfo queryTableInfo, DatabaseParameter databaseParameter, String[] sumColumn);
 
 	String insertQuery(String[] fieldArray, String tableName);
 
