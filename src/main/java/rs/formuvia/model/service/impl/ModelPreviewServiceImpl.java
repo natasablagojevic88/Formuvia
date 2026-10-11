@@ -1,5 +1,6 @@
 package rs.formuvia.model.service.impl;
 
+import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -23,6 +24,7 @@ import rs.formuvia.model.service.ModelPreviewService;
 import rs.formuvia.model.utils.CreateForm;
 import rs.formuvia.model.utils.CreateModelHistory;
 import rs.formuvia.model.utils.CreateModelTable;
+import rs.formuvia.model.utils.CreateTableTotal;
 import rs.formuvia.model.utils.DeleteFileVersion;
 import rs.formuvia.model.utils.DeleteObject;
 import rs.formuvia.model.utils.DownloadFileVersion;
@@ -127,6 +129,14 @@ public class ModelPreviewServiceImpl implements ModelPreviewService {
 				versionId);
 		this.databaseService.executeQuery(deleteFileVersion);
 
+	}
+
+	@Override
+	public LinkedHashMap<String, BigDecimal> getTableTotal(DatabaseParameter databaseParameter, UUID modelId,
+			UUID parentId) {
+		CreateTableTotal createTableTotal = new CreateTableTotal(httpServletRequest, databaseParameter, modelId,
+				parentId);
+		return this.databaseService.executeQuery(createTableTotal);
 	}
 
 }

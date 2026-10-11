@@ -47,6 +47,8 @@ public class ApiRoute {
 	public static final String modelPreviewUploadTemplateWithParent = "/preview/template/upload/{modelId}/{fileTemplateId}/{parentId}";
 	public static final String modelListFileVersion = "/preview/download/{modelId}/{id}/{columnName}/version";
 	public static final String modelDownloadFileVersion = "/preview/download/{modelId}/{id}/{columnName}/version/{versionId}";
+	public static final String modelPreviewTableTotal = "/preview/model/{modelId}/total";
+	public static final String modelPreviewTableWithParentTotal = "/preview/model/{modelId}/{parentId}/total";
 
 	public static final String fileUpload = "/file-upload";
 

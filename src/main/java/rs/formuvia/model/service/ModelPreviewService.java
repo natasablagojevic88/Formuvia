@@ -1,5 +1,6 @@
 package rs.formuvia.model.service;
 
+import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.UUID;
@@ -36,5 +37,7 @@ public interface ModelPreviewService {
 	Response getDownloadFileVersion(UUID modelId, UUID id, String columnName, UUID versionId);
 
 	void getDeleteFileVersion(UUID modelId, UUID id, String columnName, UUID versionId);
+
+	LinkedHashMap<String, BigDecimal> getTableTotal(DatabaseParameter databaseParameter, UUID modelId, UUID parentId);
 
 }

@@ -276,4 +276,33 @@ public class ModelPreviewController {
 		modelPreviewService.getDeleteFileVersion(modelId, id, columnName, versionId);
 		return Response.noContent().build();
 	}
+
+	@POST
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Path(ApiRoute.modelPreviewTableTotal)
+	@Operation(operationId = "getModelPreviewTableTotal", summary = "Sums of the number columns of a model table", description = "Returns the sum of every column of type BIGDECIMAL of the table, over all rows that match the filters sent in the request, not only the page. The request is the same one the table itself is read with, so the sums belong to the list the reader is looking at; pageIndex and pageSize are ignored. The response is an object whose keys are the column names of those fields and whose values are the sums. It exists so that a client that changes one row in place, without reading the page again, can bring the sums up to date on their own.", requestBody = @RequestBody(description = "The same page, filters and sort order the table was read with", required = true, content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = DatabaseParameter.class))), responses = {
+			@ApiResponse(responseCode = "200", description = "Column name to the sum of that column", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = "object", description = "Sum by column name", example = "{\"iznos\": 12500.00, \"porez\": 2500.00}"))),
+			@ApiResponse(responseCode = "400", description = "Unknown field or invalid value in a filter", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "403", description = "Current user does not have the view role of this model", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
+	public Response getTableTotal(DatabaseParameter databaseParameter,
+			@Parameter(description = "Identifier of the model whose sums are read", required = true) @PathParam("modelId") UUID modelId) {
+		return Response.ok(modelPreviewService.getTableTotal(databaseParameter, modelId, null)).build();
+	}
+
+	@POST
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Path(ApiRoute.modelPreviewTableWithParentTotal)
+	@Operation(operationId = "getModelPreviewTableTotalByParent", summary = "Sums of the number columns of a subtable", description = "The same as the sums of a model table, except that only the rows belonging to one record of the parent table are counted: a filter on the parent column is added to the ones sent in the request.", requestBody = @RequestBody(description = "The same page, filters and sort order the subtable was read with", required = true, content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = DatabaseParameter.class))), responses = {
+			@ApiResponse(responseCode = "200", description = "Column name to the sum of that column, over the rows of the given parent record", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = "object", description = "Sum by column name", example = "{\"iznos\": 12500.00, \"porez\": 2500.00}"))),
+			@ApiResponse(responseCode = "400", description = "Unknown field or invalid value in a filter, or the model has no parent column because it is not a subtable", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "403", description = "Current user does not have the view role of this model", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
+	public Response getTableTotal(DatabaseParameter databaseParameter,
+			@Parameter(description = "Identifier of the model whose subtable sums are read", required = true) @PathParam("modelId") UUID modelId,
+			@Parameter(description = "Identifier of the record in the parent table whose rows are counted", required = true) @PathParam("parentId") UUID parentId) {
+		return Response.ok(modelPreviewService.getTableTotal(databaseParameter, modelId, parentId)).build();
+	}
 }

@@ -98,8 +98,22 @@ public class CreateModelTable implements ExecuteQuery<DatabaseTable<LinkedHashMa
 		databaseTable.setSaveUrl(ApiRoute.modelPreviewUpdate.replace(SessionServiceImpl.MODEL_NAME_TO_REPLACE,
 				modelDTO.getId().toString()));
 
-		addColumn(modelDTO, databaseTable, this.resourceBundleService);
+		QueryTableInfo queryTableInfo = createQueryTableInfo(modelDTO, databaseTable, resourceBundleService);
 
+		databaseTable.setList(createListObject(queryTableInfo, databaseParameter, databaseTable, connection));
+		calculateTotal(databaseTable, queryTableInfo, databaseParameter, connection);
+
+		databaseTable.getAllColumns().removeIf(a -> a.getFieldName().equals(UpdateModel.PARENT_COLUMN_NAME));
+		databaseTable.setSubTables(findSubTable(modelDTO, resourceBundleService));
+		databaseTable.setHasAdd(commonService.hasRole(modelDTO.getAddRoleCode()));
+		databaseTable.setHasUpdate(commonService.hasRole(modelDTO.getUpdateRoleCode()));
+		databaseTable.setHasDelete(commonService.hasRole(modelDTO.getDeleteRoleCode()));
+		return databaseTable;
+	}
+
+	public static QueryTableInfo createQueryTableInfo(ModelDTO modelDTO,
+			DatabaseTable<LinkedHashMap<String, Object>> databaseTable, ResourceBundleService resourceBundleService) {
+		addColumn(modelDTO, databaseTable, resourceBundleService);
 		QueryTableInfo queryTableInfo = new QueryTableInfo();
 		queryTableInfo.setName(modelDTO.getCode());
 
@@ -107,8 +121,11 @@ public class CreateModelTable implements ExecuteQuery<DatabaseTable<LinkedHashMa
 			queryTableInfo.getColumns()
 					.add(QueryColumnInfo.valueOf(column.getFieldName(), column.getFieldName(), column.getColumnType()));
 		}
+		return queryTableInfo;
+	}
 
-		databaseTable.setList(createListObject(queryTableInfo, databaseParameter, databaseTable, connection));
+	public static void calculateTotal(DatabaseTable<LinkedHashMap<String, Object>> databaseTable,
+			QueryTableInfo queryTableInfo, DatabaseParameter databaseParameter, Connection connection) {
 		List<DatabaseColumn> totalColumns = databaseTable.getColumn().stream()
 				.filter(a -> a.getColumnType().equals(ColumnType.BIGDECIMAL)).collect(Collectors.toList());
 
@@ -131,12 +148,6 @@ public class CreateModelTable implements ExecuteQuery<DatabaseTable<LinkedHashMa
 		databaseTable.setTotal(total);
 		databaseTable.setNumberOfPages(CreateDatabaseTable.numberOfPages(total, databaseParameter.getPageSize()));
 
-		databaseTable.getAllColumns().removeIf(a -> a.getFieldName().equals(UpdateModel.PARENT_COLUMN_NAME));
-		databaseTable.setSubTables(findSubTable(modelDTO, resourceBundleService));
-		databaseTable.setHasAdd(commonService.hasRole(modelDTO.getAddRoleCode()));
-		databaseTable.setHasUpdate(commonService.hasRole(modelDTO.getUpdateRoleCode()));
-		databaseTable.setHasDelete(commonService.hasRole(modelDTO.getDeleteRoleCode()));
-		return databaseTable;
 	}
 
 	private List<DatabaseSubTable> findSubTable(ModelDTO modelDTO, ResourceBundleService resourceBundleService) {
