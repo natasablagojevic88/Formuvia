@@ -55,7 +55,7 @@ public class CreateModelHistory implements ExecuteQuery<List<HistoryDTO>> {
 
 			for (DatabaseColumn column : columns) {
 				ChangeDTO changeDTO = CreateHistory.createChangeDTO(oldData.get(column.getFieldName()),
-						newData.get(column.getFieldName()), this.resourceBundleService, column.getFieldName(),
+						newData.get(column.getFieldName()), this.resourceBundleService, column.getDescription(),
 						column.getColumnType());
 
 				if (StringUtils.notNull(changeDTO)) {
