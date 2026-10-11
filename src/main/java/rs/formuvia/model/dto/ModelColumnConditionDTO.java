@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import rs.formuvia.database.annotations.EntityClass;
 import rs.formuvia.database.annotations.InitSort;
+import rs.formuvia.database.enums.ColumnType;
 import rs.formuvia.database.enums.Direction;
 import rs.formuvia.database.enums.SearchOperation;
 import rs.formuvia.model.entity.ModelColumnCondition;
@@ -38,6 +39,8 @@ public class ModelColumnConditionDTO {
 	private String conditionColumnCode;
 
 	private String conditionColumnName;
+
+	private ColumnType conditionColumnColumnType;
 
 	@NotNull
 	private SearchOperation searchOperation;

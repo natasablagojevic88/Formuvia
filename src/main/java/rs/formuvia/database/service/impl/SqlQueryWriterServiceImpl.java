@@ -38,7 +38,7 @@ public class SqlQueryWriterServiceImpl implements SqlQueryWriterService {
 	public static final String defaultIdColumn = "id";
 	private static final String selectCountPart = "select count(*)";
 
-	private Logger logger = LogManager.getLogger(getClass());
+	private static Logger logger = LogManager.getLogger(SqlQueryWriterServiceImpl.class);
 
 	private QueryTableFinalInfo createQueryTableFinalInfo(QueryTableInfo queryTableInfo) {
 		QueryTableFinalInfo queryTableFinalInfo = new QueryTableFinalInfo();
@@ -145,7 +145,7 @@ public class SqlQueryWriterServiceImpl implements SqlQueryWriterService {
 			bufferedWriter.close();
 			return stringWriter.toString();
 		} catch (Exception e) {
-			this.logger.error(e.getMessage(), e);
+			logger.error(e.getMessage(), e);
 			throw new WebApplicationException(e);
 		}
 	}
@@ -172,7 +172,7 @@ public class SqlQueryWriterServiceImpl implements SqlQueryWriterService {
 			bufferedWriter.close();
 			return stringWriter.toString();
 		} catch (Exception e) {
-			this.logger.error(e.getMessage(), e);
+			logger.error(e.getMessage(), e);
 			throw new WebApplicationException(e);
 		}
 	}
@@ -221,73 +221,61 @@ public class SqlQueryWriterServiceImpl implements SqlQueryWriterService {
 
 				QueryColumnFinalInfo columnFinalInfo = findColumnFromList(columns, databaseFilter.getField());
 				String columnName = columnFinalInfo.getColumnPrefix() + "." + columnFinalInfo.getColumnName();
-				switch (databaseFilter.getSearchOperation()) {
-				case BETWEEN:
-					bufferedWriter.write(columnName);
-					bufferedWriter.write(" ");
-					bufferedWriter.write("BETWEEN ? and ?");
-					break;
-				case CONTAINS:
-					bufferedWriter.write("lower(" + columnName + ")");
-					bufferedWriter.write(" ");
-					bufferedWriter.write("like lower('%'||?||'%')");
-					break;
-				case ENDS_WITH:
-					bufferedWriter.write("lower(" + columnName + ")");
-					bufferedWriter.write(" ");
-					bufferedWriter.write("like lower('%'||?)");
-					break;
-				case EQUALS:
-					bufferedWriter.write(columnName);
-					bufferedWriter.write(" ");
-					bufferedWriter.write("= ?");
-					break;
-				case GREATER_THEN:
-					bufferedWriter.write(columnName);
-					bufferedWriter.write(" ");
-					bufferedWriter.write("> ?");
-					break;
-				case IS_NOT_NULL:
-					bufferedWriter.write(columnName);
-					bufferedWriter.write(" is not null");
-					break;
-				case IS_NULL:
-					bufferedWriter.write(columnName);
-					bufferedWriter.write(" is null");
-					break;
-				case LESS_THEN:
-					bufferedWriter.write(columnName);
-					bufferedWriter.write(" ");
-					bufferedWriter.write("< ?");
-					break;
-				case NOT_EQUALS:
-					bufferedWriter.write(columnName);
-					bufferedWriter.write(" ");
-					bufferedWriter.write("!= ?");
-					break;
-				case STARTS_WITH:
-					bufferedWriter.write("lower(" + columnName + ")");
-					bufferedWriter.write(" ");
-					bufferedWriter.write("like lower(?||'%')");
-					break;
-				case GREATER_THEN_OR_EQUALS:
-					bufferedWriter.write(columnName);
-					bufferedWriter.write(" ");
-					bufferedWriter.write(">= ?");
-					break;
-				case LESS_THEN_OR_EQUALS:
-					bufferedWriter.write(columnName);
-					bufferedWriter.write(" ");
-					bufferedWriter.write("<= ?");
-					break;
-
-				}
+				bufferedWriter.write(conditionString(columnName, databaseFilter.getSearchOperation()));
 
 			}
 			bufferedWriter.close();
 			return stringWriter.toString();
 		} catch (Exception e) {
-			this.logger.error(e.getMessage(), e);
+			logger.error(e.getMessage(), e);
+			throw new WebApplicationException(e);
+		}
+	}
+
+	public static String conditionString(String columnName, SearchOperation searchOperation) {
+		try {
+			StringWriter stringWriter = new StringWriter();
+			BufferedWriter bufferedWriter = new BufferedWriter(stringWriter);
+
+			switch (searchOperation) {
+			case BETWEEN:
+				bufferedWriter.write(columnName);
+				bufferedWriter.write(" ");
+				bufferedWriter.write(searchOperation.databaseMark + " ? and ?");
+				break;
+			case CONTAINS:
+				bufferedWriter.write("lower(" + columnName + ")");
+				bufferedWriter.write(" ");
+				bufferedWriter.write(searchOperation.databaseMark + " lower('%'||?||'%')");
+				break;
+			case ENDS_WITH:
+				bufferedWriter.write("lower(" + columnName + ")");
+				bufferedWriter.write(" ");
+				bufferedWriter.write(searchOperation.databaseMark + " lower('%'||?)");
+				break;
+			case STARTS_WITH:
+				bufferedWriter.write("lower(" + columnName + ")");
+				bufferedWriter.write(" ");
+				bufferedWriter.write(searchOperation.databaseMark + " lower(?||'%')");
+				break;
+			case IS_NULL, IS_NOT_NULL:
+				bufferedWriter.write(columnName);
+				bufferedWriter.write(" ");
+				bufferedWriter.write(searchOperation.databaseMark);
+				break;
+			case EQUALS, GREATER_THEN, LESS_THEN, NOT_EQUALS, GREATER_THEN_OR_EQUALS, LESS_THEN_OR_EQUALS:
+				bufferedWriter.write(columnName);
+				bufferedWriter.write(" ");
+				bufferedWriter.write(searchOperation.databaseMark);
+				bufferedWriter.write(" ?");
+				break;
+
+			}
+
+			bufferedWriter.close();
+			return stringWriter.toString();
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
 			throw new WebApplicationException(e);
 		}
 	}
@@ -320,7 +308,7 @@ public class SqlQueryWriterServiceImpl implements SqlQueryWriterService {
 			bufferedWriter.close();
 			return stringWriter.toString();
 		} catch (Exception e) {
-			this.logger.error(e.getMessage(), e);
+			logger.error(e.getMessage(), e);
 			throw new WebApplicationException(e);
 		}
 	}
@@ -338,7 +326,7 @@ public class SqlQueryWriterServiceImpl implements SqlQueryWriterService {
 			bufferedWriter.close();
 			return stringWriter.toString();
 		} catch (Exception e) {
-			this.logger.error(e.getMessage(), e);
+			logger.error(e.getMessage(), e);
 			throw new WebApplicationException(e);
 		}
 	}
@@ -349,40 +337,7 @@ public class SqlQueryWriterServiceImpl implements SqlQueryWriterService {
 		int count = 0;
 		List<DatabaseFilter> databaseFiltersFilteed = clearDatabaseFilters(databaseFilters);
 		for (DatabaseFilter databaseFilter : databaseFiltersFilteed) {
-			Object[] objects = null;
-			switch (databaseFilter.getColumnType()) {
-			case BIGDECIMAL:
-				objects = createBigDecimalParameters(databaseFilter);
-				break;
-			case BOOLEAN:
-				objects = createBooleanParameters(databaseFilter);
-				break;
-			case INTEGER:
-				objects = createIntegerParameters(databaseFilter);
-				break;
-			case LOCALDATE:
-				objects = createLocalDateParameters(databaseFilter);
-				break;
-			case LOCALDATETIME:
-				objects = createLocalDateTimeParameters(databaseFilter);
-				break;
-			case LOCALTIME:
-				objects = createLocalTimeParameters(databaseFilter);
-				break;
-			case LONG:
-				objects = createLongParameters(databaseFilter);
-				break;
-			case STRING:
-				objects = createStringParameters(databaseFilter);
-				break;
-			case UUID:
-				objects = createUUIDParameters(databaseFilter);
-				break;
-			case FILE:
-				continue;
-
-			}
-
+			Object[] objects = createParametersForFilters(databaseFilter);
 			for (Object object : objects) {
 				count++;
 				parameters.put(count, object);
@@ -392,7 +347,45 @@ public class SqlQueryWriterServiceImpl implements SqlQueryWriterService {
 		return parameters;
 	}
 
-	private Object[] createIntegerParameters(DatabaseFilter databaseFilter) {
+	public static Object[] createParametersForFilters(DatabaseFilter databaseFilter) {
+		Object[] objects = null;
+		switch (databaseFilter.getColumnType()) {
+		case BIGDECIMAL:
+			objects = createBigDecimalParameters(databaseFilter);
+			break;
+		case BOOLEAN:
+			objects = createBooleanParameters(databaseFilter);
+			break;
+		case INTEGER:
+			objects = createIntegerParameters(databaseFilter);
+			break;
+		case LOCALDATE:
+			objects = createLocalDateParameters(databaseFilter);
+			break;
+		case LOCALDATETIME:
+			objects = createLocalDateTimeParameters(databaseFilter);
+			break;
+		case LOCALTIME:
+			objects = createLocalTimeParameters(databaseFilter);
+			break;
+		case LONG:
+			objects = createLongParameters(databaseFilter);
+			break;
+		case STRING:
+			objects = createStringParameters(databaseFilter);
+			break;
+		case UUID:
+			objects = createUUIDParameters(databaseFilter);
+			break;
+		case FILE:
+			objects = new Object[0];
+
+		}
+
+		return objects;
+	}
+
+	private static Object[] createIntegerParameters(DatabaseFilter databaseFilter) {
 		Object[] objects = null;
 		switch (databaseFilter.getSearchOperation()) {
 		case BETWEEN: {
@@ -415,7 +408,7 @@ public class SqlQueryWriterServiceImpl implements SqlQueryWriterService {
 		return objects;
 	}
 
-	private Object[] createLongParameters(DatabaseFilter databaseFilter) {
+	private static Object[] createLongParameters(DatabaseFilter databaseFilter) {
 		Object[] objects = null;
 		switch (databaseFilter.getSearchOperation()) {
 		case BETWEEN: {
@@ -438,7 +431,7 @@ public class SqlQueryWriterServiceImpl implements SqlQueryWriterService {
 		return objects;
 	}
 
-	private Object[] createBigDecimalParameters(DatabaseFilter databaseFilter) {
+	private static Object[] createBigDecimalParameters(DatabaseFilter databaseFilter) {
 		Object[] objects = null;
 
 		switch (databaseFilter.getSearchOperation()) {
@@ -462,7 +455,7 @@ public class SqlQueryWriterServiceImpl implements SqlQueryWriterService {
 		return objects;
 	}
 
-	private Object[] createLocalDateParameters(DatabaseFilter databaseFilter) {
+	private static Object[] createLocalDateParameters(DatabaseFilter databaseFilter) {
 		Object[] objects = null;
 		switch (databaseFilter.getSearchOperation()) {
 		case BETWEEN: {
@@ -485,7 +478,7 @@ public class SqlQueryWriterServiceImpl implements SqlQueryWriterService {
 		return objects;
 	}
 
-	private Object[] createLocalDateTimeParameters(DatabaseFilter databaseFilter) {
+	private static Object[] createLocalDateTimeParameters(DatabaseFilter databaseFilter) {
 		Object[] objects = null;
 		switch (databaseFilter.getSearchOperation()) {
 		case BETWEEN: {
@@ -508,7 +501,7 @@ public class SqlQueryWriterServiceImpl implements SqlQueryWriterService {
 		return objects;
 	}
 
-	private Object[] createLocalTimeParameters(DatabaseFilter databaseFilter) {
+	private static Object[] createLocalTimeParameters(DatabaseFilter databaseFilter) {
 		Object[] objects = null;
 		switch (databaseFilter.getSearchOperation()) {
 		case BETWEEN: {
@@ -531,7 +524,7 @@ public class SqlQueryWriterServiceImpl implements SqlQueryWriterService {
 		return objects;
 	}
 
-	private Object[] createBooleanParameters(DatabaseFilter databaseFilter) {
+	private static Object[] createBooleanParameters(DatabaseFilter databaseFilter) {
 		Object[] objects = null;
 		switch (databaseFilter.getSearchOperation()) {
 		case IS_NULL, IS_NOT_NULL: {
@@ -548,7 +541,7 @@ public class SqlQueryWriterServiceImpl implements SqlQueryWriterService {
 		return objects;
 	}
 
-	private Object[] createStringParameters(DatabaseFilter databaseFilter) {
+	private static Object[] createStringParameters(DatabaseFilter databaseFilter) {
 		Object[] objects = null;
 		switch (databaseFilter.getSearchOperation()) {
 		case IS_NULL, IS_NOT_NULL: {
@@ -565,7 +558,7 @@ public class SqlQueryWriterServiceImpl implements SqlQueryWriterService {
 		return objects;
 	}
 
-	private Object[] createUUIDParameters(DatabaseFilter databaseFilter) {
+	private static Object[] createUUIDParameters(DatabaseFilter databaseFilter) {
 		Object[] objects = null;
 		switch (databaseFilter.getSearchOperation()) {
 		case IS_NULL, IS_NOT_NULL: {
@@ -642,7 +635,7 @@ public class SqlQueryWriterServiceImpl implements SqlQueryWriterService {
 			bufferedWriter.close();
 			return stringWriter.toString();
 		} catch (Exception e) {
-			this.logger.error(e.getMessage(), e);
+			logger.error(e.getMessage(), e);
 			throw new WebApplicationException(e);
 		}
 
@@ -699,7 +692,7 @@ public class SqlQueryWriterServiceImpl implements SqlQueryWriterService {
 			bufferedWriter.close();
 			return stringWriter.toString();
 		} catch (Exception e) {
-			this.logger.error(e.getMessage(), e);
+			logger.error(e.getMessage(), e);
 			throw new WebApplicationException(e);
 		}
 
@@ -718,7 +711,7 @@ public class SqlQueryWriterServiceImpl implements SqlQueryWriterService {
 			bufferedWriter.close();
 			return stringWriter.toString();
 		} catch (Exception e) {
-			this.logger.error(e.getMessage(), e);
+			logger.error(e.getMessage(), e);
 			throw new WebApplicationException(e);
 		}
 	}

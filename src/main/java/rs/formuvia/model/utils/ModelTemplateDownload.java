@@ -36,6 +36,7 @@ import rs.formuvia.database.utils.ExecuteQuery;
 import rs.formuvia.database.utils.ParentListOfValues;
 import rs.formuvia.model.dto.ModelColumnDTO;
 import rs.formuvia.model.dto.ModelDTO;
+import rs.formuvia.model.enums.ModelColumnConditionType;
 import rs.formuvia.model.service.impl.ModelPreviewServiceImpl;
 import rs.formuvia.utils.StaticData;
 import rs.formuvia.utils.StringUtils;
@@ -132,7 +133,11 @@ public class ModelTemplateDownload implements ExecuteQuery<Response> {
 	}
 
 	public static List<ModelColumnDTO> findColumnsForExcel(UUID modelId) {
-		return StaticData.modelColumns.stream().filter(a -> a.getEditable()).filter(a -> a.getModelId().equals(modelId))
+		return StaticData.modelColumns.stream().filter(a -> a.getModelId().equals(modelId))
+				.filter(a -> a.getEditable()
+						|| UpdateObject.columnHasConditionByType(a.getId(), ModelColumnConditionType.EDITABLE))
+				.filter(a -> a.getShowable()
+						|| UpdateObject.columnHasConditionByType(a.getId(), ModelColumnConditionType.SHOWABLE))
 				.filter(a -> !a.getColumnType().equals(ColumnType.FILE))
 				.sorted(Comparator.comparing(ModelColumnDTO::getRowIndex)
 						.thenComparing(Comparator.comparing(ModelColumnDTO::getColumnIndex)))

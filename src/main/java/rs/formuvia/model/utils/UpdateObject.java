@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -38,11 +39,13 @@ import rs.formuvia.database.utils.ExecuteQuery;
 import rs.formuvia.database.utils.LoadStaticData;
 import rs.formuvia.database.utils.QueryDatabaseOrder;
 import rs.formuvia.exceptions.CommonException;
+import rs.formuvia.model.dto.ModelColumnConditionDTO;
 import rs.formuvia.model.dto.ModelColumnDTO;
 import rs.formuvia.model.dto.ModelDTO;
 import rs.formuvia.model.dto.ModelFileVersionDTO;
 import rs.formuvia.model.entity.ModelFile;
 import rs.formuvia.model.entity.ModelFileVersion;
+import rs.formuvia.model.enums.ModelColumnConditionType;
 import rs.formuvia.model.enums.ModelType;
 import rs.formuvia.model.service.impl.ModelPreviewServiceImpl;
 import rs.formuvia.utils.StaticData;
@@ -50,7 +53,7 @@ import rs.formuvia.utils.StringUtils;
 
 public class UpdateObject implements ExecuteQuery<LinkedHashMap<String, Object>> {
 	private final HttpServletRequest httpServletRequest;
-	private final LinkedHashMap<String, Object> object;
+	private LinkedHashMap<String, Object> object;
 	private final UUID modelId;
 
 	private SqlQueryWriterService sqlQueryWriterService = new SqlQueryWriterServiceImpl();
@@ -71,9 +74,7 @@ public class UpdateObject implements ExecuteQuery<LinkedHashMap<String, Object>>
 	public LinkedHashMap<String, Object> execute(Connection connection) throws Exception {
 		ModelDTO modelDTO = ModelPreviewServiceImpl.findModel(modelId);
 		List<ModelColumnDTO> columns = findColumns(modelDTO);
-
 		checkObject(columns, object, resourceBundleService);
-
 		Boolean insert = true;
 
 		if (StringUtils.notNull(object.get(SqlQueryWriterServiceImpl.defaultIdColumn))) {
@@ -85,6 +86,8 @@ public class UpdateObject implements ExecuteQuery<LinkedHashMap<String, Object>>
 				object.put(UpdateModel.PARENT_COLUMN_NAME, current.get(UpdateModel.PARENT_COLUMN_NAME));
 			}
 		}
+		transformValues(modelDTO, object, columns, connection);
+		checkConditions(object, columns, connection);
 
 		String query = null;
 		if (insert) {
@@ -94,11 +97,117 @@ public class UpdateObject implements ExecuteQuery<LinkedHashMap<String, Object>>
 			commonService.checkRole(modelDTO.getUpdateRoleCode());
 			query = sqlQueryWriterService.updateQuery(columnsToArray(columns), modelDTO.getCode());
 		}
-		Map<Integer, Object> parameters = createParameter(modelDTO, object, columns, connection);
+		Map<Integer, Object> parameters = createParameter(object, columns);
 
 		Object[] result = databaseService.executeNativeQuery(query, parameters, Object[].class, connection).getFirst();
 
 		return createMapFromArray(result, columns);
+	}
+
+	private void checkConditions(LinkedHashMap<String, Object> object, List<ModelColumnDTO> columns,
+			Connection connection) {
+		for (ModelColumnDTO column : columns.stream().filter(a -> StringUtils.notNull(a.getId()))
+				.sorted(Comparator.comparing(ModelColumnDTO::getRowIndex).thenComparing(ModelColumnDTO::getColumnIndex))
+				.toList()) {
+			if (!columnHasCondition(column.getId())) {
+				continue;
+			}
+
+			List<ModelColumnConditionDTO> showableCondition = conditionForColumn(column.getId(),
+					ModelColumnConditionType.SHOWABLE);
+			if (!checkCondition(showableCondition, connection, object)) {
+				object.put(column.getCode(), null);
+				continue;
+			}
+
+			if (StringUtils.isNull(object.get(column.getCode()))) {
+				List<ModelColumnConditionDTO> notNullCondition = conditionForColumn(column.getId(),
+						ModelColumnConditionType.REQUIRED);
+				if (notNullCondition.isEmpty()) {
+					continue;
+				}
+				if (checkCondition(notNullCondition, connection, object))
+					throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "fieldRequired",
+							this.resourceBundleService.getText(column.getName()));
+			}
+
+		}
+
+	}
+
+	private Boolean checkCondition(List<ModelColumnConditionDTO> list, Connection connection,
+			LinkedHashMap<String, Object> object) {
+		for (ModelColumnConditionDTO columnCondition : list) {
+			switch (columnCondition.getSearchOperation()) {
+			case IS_NULL: {
+				if (StringUtils.notNull(object.get(columnCondition.getConditionColumnCode())))
+					return false;
+				break;
+			}
+			case IS_NOT_NULL: {
+				if (StringUtils.isNull(object.get(columnCondition.getConditionColumnCode())))
+					return false;
+				break;
+			}
+			default: {
+				String query = "SELECT "
+						+ SqlQueryWriterServiceImpl.conditionString("?", columnCondition.getSearchOperation());
+				Map<Integer, Object> parameters = new HashMap<>();
+				int index = 1;
+				parameters.put(index, object.get(columnCondition.getConditionColumnCode()));
+				DatabaseFilter databaseFilter = new DatabaseFilter(columnCondition.getConditionColumnCode(),
+						columnCondition.getSearchOperation(), columnCondition.getConditionColumnColumnType(),
+						columnCondition.getField1(), columnCondition.getField2());
+				Object[] objects = SqlQueryWriterServiceImpl.createParametersForFilters(databaseFilter);
+				for (Object objectValue : objects) {
+					index++;
+					parameters.put(index, objectValue);
+				}
+				Boolean checkValue = databaseService.executeNativeQuery(query, parameters, Boolean.class, connection)
+						.getFirst();
+				if (StringUtils.isNull(checkValue) || (!checkValue))
+					return false;
+				break;
+			}
+			}
+
+		}
+
+		return true;
+
+	}
+
+	private Boolean columnHasCondition(UUID columnId) {
+		return StaticData.modelColumnsConditions.stream().filter(a -> a.getModelColumnId().equals(columnId))
+				.count() > 0;
+	}
+
+	private static List<ModelColumnConditionDTO> conditionForColumn(UUID columnId, ModelColumnConditionType type) {
+		return StaticData.modelColumnsConditions.stream().filter(a -> a.getModelColumnId().equals(columnId))
+				.filter(a -> a.getType().equals(type)).collect(Collectors.toList());
+	}
+
+	public static Boolean columnHasConditionByType(UUID columnId, ModelColumnConditionType type) {
+		return !conditionForColumn(columnId, type).isEmpty();
+	}
+
+	private Map<Integer, Object> createParameter(LinkedHashMap<String, Object> object, List<ModelColumnDTO> columns) {
+		Map<Integer, Object> parameters = new HashMap<>();
+		int index = 0;
+		for (ModelColumnDTO column : columns) {
+			if (column.getCode().equals(SqlQueryWriterServiceImpl.defaultIdColumn)) {
+				continue;
+			}
+			index++;
+			parameters.put(index, object.get(column.getCode()));
+
+		}
+
+		if (StringUtils.notNull(object.get(SqlQueryWriterServiceImpl.defaultIdColumn))) {
+			index++;
+			parameters.put(index, object.get(SqlQueryWriterServiceImpl.defaultIdColumn));
+		}
+		return parameters;
 	}
 
 	private void checkObject(List<ModelColumnDTO> columns, LinkedHashMap<String, Object> object,
@@ -138,65 +247,58 @@ public class UpdateObject implements ExecuteQuery<LinkedHashMap<String, Object>>
 		return parentModel.getType().equals(ModelType.TABLE);
 	}
 
-	@SuppressWarnings("unchecked")
-	private Map<Integer, Object> createParameter(ModelDTO modelDTO, LinkedHashMap<String, Object> object,
-			List<ModelColumnDTO> columns, Connection connection) {
-		Map<Integer, Object> parameters = new HashMap<>();
-		int index = 0;
+	private void transformValues(ModelDTO modelDTO, LinkedHashMap<String, Object> object, List<ModelColumnDTO> columns,
+			Connection connection) {
 		for (ModelColumnDTO modelColumnDTO : columns) {
 			if (modelColumnDTO.getCode().equals(SqlQueryWriterServiceImpl.defaultIdColumn)) {
 				continue;
 			}
-			index++;
-			Object value = object.get(modelColumnDTO.getCode());
-			if (StringUtils.isNull(value)) {
-				parameters.put(index, null);
-				continue;
-			}
+			String columnCode = modelColumnDTO.getCode();
+			object.put(columnCode, createValue(object.get(columnCode), modelColumnDTO, modelDTO, connection));
 
-			switch (modelColumnDTO.getColumnType()) {
-			case BIGDECIMAL:
-				parameters.put(index, new BigDecimal(value.toString()));
-				break;
-			case BOOLEAN:
-				parameters.put(index, Boolean.valueOf(value.toString()));
-				break;
-			case INTEGER:
-				parameters.put(index, new BigDecimal(value.toString()).intValue());
-				break;
-			case LOCALDATE:
-				parameters.put(index, LocalDate.parse(value.toString()));
-				break;
-			case LOCALDATETIME:
-				parameters.put(index, LocalDateTime.parse(value.toString()));
-				break;
-			case LOCALTIME:
-				parameters.put(index, LocalTime.parse(value.toString()));
-				break;
-			case LONG:
-				parameters.put(index, new BigDecimal(value.toString()).longValue());
-				break;
-			case STRING:
-				parameters.put(index, value.toString());
-				break;
-			case UUID:
-				parameters.put(index, UUID.fromString(value.toString()));
-				break;
-			case FILE: {
-				Map<String, Object> fileObject = (Map<String, Object>) value;
-				UUID rowId = StringUtils.isNull(object.get(SqlQueryWriterServiceImpl.defaultIdColumn)) ? null
-						: UUID.fromString(object.get(SqlQueryWriterServiceImpl.defaultIdColumn).toString());
-				parameters.put(index, createFile(fileObject, rowId, connection, modelDTO, modelColumnDTO.getCode()));
-				break;
-			}
-			}
 		}
 
 		if (StringUtils.notNull(object.get(SqlQueryWriterServiceImpl.defaultIdColumn))) {
-			index++;
-			parameters.put(index, UUID.fromString(object.get(SqlQueryWriterServiceImpl.defaultIdColumn).toString()));
+			object.put(SqlQueryWriterServiceImpl.defaultIdColumn,
+					UUID.fromString(object.get(SqlQueryWriterServiceImpl.defaultIdColumn).toString()));
 		}
-		return parameters;
+	}
+
+	@SuppressWarnings("unchecked")
+	private Object createValue(Object value, ModelColumnDTO modelColumnDTO, ModelDTO modelDTO, Connection connection) {
+
+		if (StringUtils.isNull(value)) {
+			return null;
+		}
+
+		switch (modelColumnDTO.getColumnType()) {
+		case BIGDECIMAL:
+			return new BigDecimal(value.toString());
+		case BOOLEAN:
+			return Boolean.valueOf(value.toString());
+		case INTEGER:
+			return new BigDecimal(value.toString()).intValue();
+		case LOCALDATE:
+			return LocalDate.parse(value.toString());
+		case LOCALDATETIME:
+			return LocalDateTime.parse(value.toString());
+		case LOCALTIME:
+			return LocalTime.parse(value.toString());
+		case LONG:
+			return new BigDecimal(value.toString()).longValue();
+		case STRING:
+			return value.toString();
+		case UUID:
+			return UUID.fromString(value.toString());
+		case FILE: {
+			Map<String, Object> fileObject = (Map<String, Object>) value;
+			UUID rowId = StringUtils.isNull(object.get(SqlQueryWriterServiceImpl.defaultIdColumn)) ? null
+					: UUID.fromString(object.get(SqlQueryWriterServiceImpl.defaultIdColumn).toString());
+			return createFile(fileObject, rowId, connection, modelDTO, modelColumnDTO.getCode());
+		}
+		}
+
+		return null;
 	}
 
 	private UUID createFile(Map<String, Object> fileObject, UUID rowId, Connection connection, ModelDTO modelDTO,
