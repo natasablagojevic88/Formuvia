@@ -90,6 +90,7 @@ public class CreateForm implements ExecuteQuery<ObjectFormDTO> {
 			modelColumnPreviewDTO.setRowIndex(column.getRowIndex());
 			modelColumnPreviewDTO.setTextArea(column.getTextArea());
 			modelColumnPreviewDTO.setValue(values.get(column.getCode()));
+			modelColumnPreviewDTO.setChangeValueFunction(column.getChangeValueFunction());
 
 			if (StringUtils.notNull(this.parent) && column.getCode().equals(UpdateModel.PARENT_COLUMN_NAME)) {
 				modelColumnPreviewDTO.setValue(this.parent);

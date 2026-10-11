@@ -92,4 +92,7 @@ public class ModelColumn {
 	@Column(name = "in_description_for_codebook", nullable = false)
 	private Boolean inDescriptionForCodebook;
 
+	@Column(name = "change_value_function")
+	private String changeValueFunction;
+
 }

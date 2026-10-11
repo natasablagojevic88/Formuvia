@@ -119,4 +119,5 @@ public class ModelColumnController {
 		modelColumnService.getDeleteColumnModelCondition(id);
 		return Response.noContent().build();
 	}
+
 }

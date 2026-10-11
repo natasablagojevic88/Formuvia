@@ -16,8 +16,6 @@ import java.util.stream.Collectors;
 
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
-import jakarta.json.bind.Jsonb;
-import jakarta.json.bind.JsonbBuilder;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -71,8 +69,6 @@ public class CustomContainerRequestFilter implements ContainerRequestFilter {
 	@Context
 	private ResourceInfo resource;
 
-	private static final Jsonb JSONB = JsonbBuilder.create();
-
 	@Inject
 	private CommonService commonService;
 
@@ -112,7 +108,7 @@ public class CustomContainerRequestFilter implements ContainerRequestFilter {
 					if (parameter != null) {
 						byte[] inputStreamByte = requestContext.getEntityStream().readAllBytes();
 						Class<?> bodyClass = (Class<?>) parameter.getParameterizedType();
-						Object object = JSONB.fromJson(new String(inputStreamByte, StandardCharsets.UTF_8),
+						Object object = StaticData.JSONB.fromJson(new String(inputStreamByte, StandardCharsets.UTF_8),
 								parameter.getParameterizedType());
 
 						List<Field> notNullField = StaticData.classFields.get(bodyClass).stream()

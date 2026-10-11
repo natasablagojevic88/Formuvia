@@ -14,6 +14,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import org.quartz.Scheduler;
 
+import jakarta.json.bind.Jsonb;
+import jakarta.json.bind.JsonbBuilder;
 import rs.formuvia.administration.dto.AppUserRoleDTO;
 import rs.formuvia.administration.dto.RoleDTO;
 import rs.formuvia.administration.entity.AppUser;
@@ -28,6 +30,7 @@ public class StaticData {
 	public static List<Class<?>> allClasses = new ArrayList<>();
 	public static Map<Class<?>, List<Field>> classFields = new ConcurrentHashMap<>();
 	public static Map<String, Class<?>> allClassesByName = new ConcurrentHashMap<>();
+	public static final Jsonb JSONB = JsonbBuilder.create();
 
 	public static Properties appProperties = new Properties();
 	public static BlockingQueue<Connection> connections = new LinkedBlockingQueue<>();

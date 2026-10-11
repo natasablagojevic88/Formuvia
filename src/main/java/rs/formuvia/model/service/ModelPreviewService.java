@@ -40,4 +40,7 @@ public interface ModelPreviewService {
 
 	LinkedHashMap<String, BigDecimal> getTableTotal(DatabaseParameter databaseParameter, UUID modelId, UUID parentId);
 
+	LinkedHashMap<String, Object> getColumnChange(LinkedHashMap<String, Object> object, UUID modelId,
+			String columnName);
+
 }

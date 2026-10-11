@@ -21,6 +21,7 @@ import rs.formuvia.model.dto.ModelDTO;
 import rs.formuvia.model.dto.ModelFileVersionDTO;
 import rs.formuvia.model.dto.ObjectFormDTO;
 import rs.formuvia.model.service.ModelPreviewService;
+import rs.formuvia.model.utils.CreateColumnChange;
 import rs.formuvia.model.utils.CreateForm;
 import rs.formuvia.model.utils.CreateModelHistory;
 import rs.formuvia.model.utils.CreateModelTable;
@@ -137,6 +138,13 @@ public class ModelPreviewServiceImpl implements ModelPreviewService {
 		CreateTableTotal createTableTotal = new CreateTableTotal(httpServletRequest, databaseParameter, modelId,
 				parentId);
 		return this.databaseService.executeQuery(createTableTotal);
+	}
+
+	@Override
+	public LinkedHashMap<String, Object> getColumnChange(LinkedHashMap<String, Object> object, UUID modelId,
+			String columnName) {
+		CreateColumnChange createColumnChange = new CreateColumnChange(httpServletRequest, object, modelId, columnName);
+		return this.databaseService.executeQuery(createColumnChange);
 	}
 
 }

@@ -305,4 +305,19 @@ public class ModelPreviewController {
 			@Parameter(description = "Identifier of the record in the parent table whose rows are counted", required = true) @PathParam("parentId") UUID parentId) {
 		return Response.ok(modelPreviewService.getTableTotal(databaseParameter, modelId, parentId)).build();
 	}
+
+	@POST
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Path(ApiRoute.modelChangeColumn)
+	@Operation(operationId = "getModelPreviewColumnChange", summary = "Values worked out by the database after a field is changed", description = "Hands the record, as it is filled in at that moment, to the function of the database the model puts on that field (the change function of the column), and returns the record the function gives back. It is what lets one field fill in or correct others, for example a tax worked out from a rate. The request is an object of column name to value, the whole record and not only the field that changed; the identifier of the record is in it when the record already exists, and the link to the parent row when the table is a subtable. The function takes one argument of type json and returns json, so a key the table does not have is ignored, and a column the answer says nothing about keeps the value it had. Nothing is stored here: the answer is only shown, and it reaches the database when the record itself is saved.", requestBody = @RequestBody(description = "The record as it stands, column name to value", required = true, content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = "object", description = "Value by column name", example = "{\"id\": null, \"stopa\": 20, \"osnovica\": 1000}"))), responses = {
+			@ApiResponse(responseCode = "200", description = "The record the function returned, column name to value", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = "object", description = "Value by column name", example = "{\"stopa\": 20, \"osnovica\": 1000, \"porez\": 200}"))),
+			@ApiResponse(responseCode = "400", description = "The table has no such column, no change function is set on it, or the function returned nothing", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "403", description = "Current user does not have the role this model requires for a change", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
+	public Response getColumnChange(LinkedHashMap<String, Object> object,
+			@Parameter(description = "Identifier of the model the record belongs to", required = true) @PathParam("modelId") UUID modelId,
+			@Parameter(description = "Code of the column that was changed; the change function is read from it", required = true) @PathParam("columnName") String columnName) {
+		return Response.ok(modelPreviewService.getColumnChange(object, modelId, columnName)).build();
+	}
 }

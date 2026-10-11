@@ -95,6 +95,9 @@ public class ModelColumnDTO {
 	@NotNull
 	private Boolean inDescriptionForCodebook;
 
+	@HideInTable
+	private String changeValueFunction;
+
 	public static ModelColumnDTO valueOf(String code, ColumnType columnType) {
 		ModelColumnDTO modelColumnDTO = new ModelColumnDTO();
 		modelColumnDTO.setCode(code);

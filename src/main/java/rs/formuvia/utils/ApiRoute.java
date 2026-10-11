@@ -49,7 +49,11 @@ public class ApiRoute {
 	public static final String modelDownloadFileVersion = "/preview/download/{modelId}/{id}/{columnName}/version/{versionId}";
 	public static final String modelPreviewTableTotal = "/preview/model/{modelId}/total";
 	public static final String modelPreviewTableWithParentTotal = "/preview/model/{modelId}/{parentId}/total";
+	public static final String modelChangeColumn = "/preview/change/{modelId}/{columnName}";
 
 	public static final String fileUpload = "/file-upload";
+
+	public static final String listAllFunctions = "/function/{functionType}";
+	public static final String listAllFunctionsWithDataType = "/function/{functionType}/{dataType}";
 
 }

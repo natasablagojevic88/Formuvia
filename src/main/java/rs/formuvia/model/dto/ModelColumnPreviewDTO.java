@@ -50,4 +50,6 @@ public class ModelColumnPreviewDTO {
 
 	private List<ModelColumnConditionDTO> conditions = new ArrayList<>();
 
+	private String changeValueFunction;
+
 }
