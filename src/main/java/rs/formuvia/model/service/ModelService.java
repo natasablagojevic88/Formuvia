@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import rs.formuvia.common.dto.ComboboxDTO;
 import rs.formuvia.model.dto.ModelDTO;
+import rs.formuvia.model.dto.ModelProcedureDTO;
 import rs.formuvia.model.dto.ModelTreeDTO;
 
 public interface ModelService {
@@ -19,5 +20,9 @@ public interface ModelService {
 	ModelTreeDTO getTree();
 
 	LinkedHashMap<UUID, List<ComboboxDTO>> getModelListOfValuesColumns(UUID id);
+
+	ModelProcedureDTO getUpdateModelProcedure(ModelProcedureDTO modelProcedureDTO);
+
+	void getDeleteModelProcedure(UUID id);
 
 }

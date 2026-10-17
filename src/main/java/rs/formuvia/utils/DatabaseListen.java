@@ -7,12 +7,13 @@ import rs.formuvia.model.entity.Model;
 import rs.formuvia.model.entity.ModelColumn;
 import rs.formuvia.model.entity.ModelColumnCondition;
 import rs.formuvia.model.entity.ModelFile;
+import rs.formuvia.model.entity.ModelProcedure;
 
 public enum DatabaseListen {
 
 	listen_appuser(AppUser.class), listen_appuser_role(AppUserRole.class), listen_role(Role.class),
 	listen_model(Model.class), listen_model_column(ModelColumn.class), listen_model_file(ModelFile.class),
-	listen_model_column_condition(ModelColumnCondition.class);
+	listen_model_column_condition(ModelColumnCondition.class), listen_model_procedure(ModelProcedure.class);
 
 	public Class<?> entityClass;
 

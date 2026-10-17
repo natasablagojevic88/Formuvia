@@ -25,6 +25,8 @@ public class ApiRoute {
 	public static final String modelTree = "/model/tree";
 	public static final String modelId = "/model/{id}";
 	public static final String modelListOfValues = "/model/list-of-values/{id}";
+	public static final String modelUpdateProcedure = "/model/procedure";
+	public static final String modelUpdateProcedureId = "/model/procedure/{id}";
 
 	public static final String modelColumn = "/model-column";
 	public static final String modelColumnId = "/model-column/{id}";
@@ -50,6 +52,7 @@ public class ApiRoute {
 	public static final String modelPreviewTableTotal = "/preview/model/{modelId}/total";
 	public static final String modelPreviewTableWithParentTotal = "/preview/model/{modelId}/{parentId}/total";
 	public static final String modelChangeColumn = "/preview/change/{modelId}/{columnName}";
+	public static final String modelExecuteProcedure = "/preview/execute-procedure/{procedureId}/{id}";
 
 	public static final String fileUpload = "/file-upload";
 

@@ -320,4 +320,18 @@ public class ModelPreviewController {
 			@Parameter(description = "Code of the column that was changed; the change function is read from it", required = true) @PathParam("columnName") String columnName) {
 		return Response.ok(modelPreviewService.getColumnChange(object, modelId, columnName)).build();
 	}
+
+	@POST
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path(ApiRoute.modelExecuteProcedure)
+	@Operation(operationId = "executeModelProcedure", summary = "Run a procedure of the table over one record", description = "Runs one of the procedures the model put on a table over a single record: the procedure is called with the identifier of that record as its only argument, and whatever it changes it changes itself. There is no request body. The answer is that record as it stands after the procedure, column name to value, in the same shape as one row of the table, so the list can draw that row again without being loaded anew; a file column carries the stored file with its name and type. The procedure says which table it belongs to, so the identifier of the model is not given. It asks for the role the model requires for a change, because a procedure changes the record.", responses = {
+			@ApiResponse(responseCode = "200", description = "The record as it stands after the procedure, column name to value", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = "object", description = "Value by column name", example = "{\"id\": \"0190e0a0-0000-7000-8000-000000000000\", \"osnovica\": 1000, \"porez\": 200}"))),
+			@ApiResponse(responseCode = "400", description = "No procedure or record with the given identifier, or the procedure itself failed", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "403", description = "Current user does not have the role this model requires for a change", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
+	public Response getExecuteProcedure(
+			@Parameter(description = "Identifier of the procedure of the table, as the table sends it with its rows", required = true) @PathParam("procedureId") UUID procedureId,
+			@Parameter(description = "Identifier of the record the procedure is run over", required = true) @PathParam("id") UUID id) {
+		return Response.ok(modelPreviewService.getExecuteProcedure(procedureId, id)).build();
+	}
 }

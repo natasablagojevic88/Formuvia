@@ -24,6 +24,7 @@ import rs.formuvia.model.dto.ModelColumnConditionDTO;
 import rs.formuvia.model.dto.ModelColumnDTO;
 import rs.formuvia.model.dto.ModelDTO;
 import rs.formuvia.model.dto.ModelFileDTO;
+import rs.formuvia.model.dto.ModelProcedureDTO;
 
 public class StaticData {
 
@@ -48,6 +49,7 @@ public class StaticData {
 	public static volatile List<ModelColumnDTO> modelColumns = new ArrayList<>();
 	public static volatile List<ModelColumnConditionDTO> modelColumnsConditions = new ArrayList<>();
 	public static volatile List<ModelFileDTO> modelFiles = new ArrayList<>();
+	public static volatile List<ModelProcedureDTO> modelProcedures = new ArrayList<>();
 
 	public static volatile Map<UUID, List<ComboboxDTO>> modelCodebook = new ConcurrentHashMap<>();
 	public static volatile Set<UUID> modelsToListen = ConcurrentHashMap.newKeySet();

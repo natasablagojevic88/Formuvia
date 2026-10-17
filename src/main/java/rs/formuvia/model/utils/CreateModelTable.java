@@ -38,6 +38,7 @@ import rs.formuvia.database.utils.QueryDatabaseOrder;
 import rs.formuvia.database.utils.QueryTableInfo;
 import rs.formuvia.model.dto.ModelColumnDTO;
 import rs.formuvia.model.dto.ModelDTO;
+import rs.formuvia.model.dto.ModelPreviewProcedureDTO;
 import rs.formuvia.model.dto.ObjectFormDTO;
 import rs.formuvia.model.enums.ModelType;
 import rs.formuvia.model.service.impl.ModelPreviewServiceImpl;
@@ -108,6 +109,14 @@ public class CreateModelTable implements ExecuteQuery<DatabaseTable<LinkedHashMa
 		databaseTable.setHasAdd(commonService.hasRole(modelDTO.getAddRoleCode()));
 		databaseTable.setHasUpdate(commonService.hasRole(modelDTO.getUpdateRoleCode()));
 		databaseTable.setHasDelete(commonService.hasRole(modelDTO.getDeleteRoleCode()));
+
+		List<ModelPreviewProcedureDTO> procedures = StaticData.modelProcedures.stream()
+				.filter(a -> a.getModelId().equals(this.modelId))
+				.map(a -> new ModelPreviewProcedureDTO(a.getId(), this.resourceBundleService.getText(a.getName()),
+						a.getIcon()))
+				.sorted(Comparator.comparing(ModelPreviewProcedureDTO::getName)).collect(Collectors.toList());
+		databaseTable.setProcedures(procedures);
+
 		return databaseTable;
 	}
 

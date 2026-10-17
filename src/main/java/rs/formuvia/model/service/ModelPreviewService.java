@@ -43,4 +43,6 @@ public interface ModelPreviewService {
 	LinkedHashMap<String, Object> getColumnChange(LinkedHashMap<String, Object> object, UUID modelId,
 			String columnName);
 
+	LinkedHashMap<String, Object> getExecuteProcedure(UUID procedureId, UUID id);
+
 }

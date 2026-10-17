@@ -5,6 +5,7 @@ import java.net.HttpURLConnection;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.postgresql.util.PSQLException;
 
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
@@ -80,11 +81,27 @@ public class CustomDefaultExceptionMapper implements ExceptionMapper<Throwable> 
 			return toExcelImportException((ExcelImportException) lastException);
 		}
 
+		if (lastException.getClass().equals(PSQLException.class)) {
+			return toPSQLException((PSQLException) lastException);
+		}
+
 		ErrorDetail errorDetail = new ErrorDetail();
 		errorDetail.setStatus(HttpURLConnection.HTTP_BAD_REQUEST);
 		errorDetail.setMessage(this.resourceBundleService.getText(lastException.getMessage()));
 		this.logger.error(lastException.getMessage(), lastException);
 		return Response.status(HttpURLConnection.HTTP_BAD_REQUEST).entity(errorDetail).build();
+	}
+
+	private Response toPSQLException(PSQLException psqlException) {
+		this.logger.error(psqlException.getMessage(), psqlException);
+		ErrorDetail errorDetail = new ErrorDetail();
+		errorDetail.setStatus(HttpURLConnection.HTTP_BAD_REQUEST);
+		String message = this.resourceBundleService.getText(psqlException.getMessage());
+		if (psqlException.getServerErrorMessage() != null) {
+			message = this.resourceBundleService.getText(psqlException.getServerErrorMessage().getMessage());
+		}
+		errorDetail.setMessage(message);
+		return Response.status(errorDetail.getStatus()).entity(errorDetail).build();
 	}
 
 	private Response toWrongLoginException(WrongLoginException wrongLoginException) {

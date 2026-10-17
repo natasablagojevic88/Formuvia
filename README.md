@@ -19,6 +19,7 @@ The web client lives in a separate repository: **FormuviaFront** (Angular).
 - Data in those tables: listing with paging, filtering and sorting, the form definition for one record, the history of a record, and adding, changing and deleting a record, each guarded by the role the model defines for that action
 - Form designer: the fields of a table are defined through the application – data type, position in the entry dialog, default value and list of values (each given as a single `SELECT`, validated before it is saved), and a link to another table used as a codebook, which creates the foreign key in the database; deleting a field drops its column
 - Values worked out by the database: a field of a form can carry the name of a database function that takes the record as `json` and returns `json`; when the client reports that the field was changed, the record is handed to that function and the record it returns is sent back, so one field can fill in or correct the others. The functions a field may be given are read from `information_schema.routines` of the current schema
+- Procedures on a table: a table of the model can be given procedures of the database, each under a name of its own (`model_procedure`). The client runs one over a single record; the server checks the name against `information_schema.routines`, calls it with the identifier of that record and answers with the record as it stands afterwards. Running one asks for the role that may change the record
 - File upload: a file of a record is stored on the file system under `files.path`, in a folder of the date it arrived, and the record keeps the identifier it was stored under (column type `FILE`)
 - Multilingual texts: English (`en-US`), Serbian Latin (`sr-Latn-RS`), Serbian Cyrillic (`sr-RS`)
 - Database schema is created and updated automatically on startup – no manual migrations
@@ -109,6 +110,11 @@ Log in with username **`admin`** and the password set in `admin.default.password
 - Serve the application over **HTTPS** (`cookie.secure=true`).
 - With `cookie.same.site=Strict` the web client and the API must be on the same site (e.g. `app.example.com` and `api.example.com`, or both behind one reverse proxy). Set `cors.url` to the exact origin of the web client.
 - Put secrets in an external properties file or JVM properties, never in the repository.
+- Turn on **gzip** for the answers of the API. JSON goes down to roughly a tenth of its size (`openapi.json`: 149 KB -> 17 KB), and a page of a table behaves the same way. It is a setting of the deployment, not of the application, and it belongs wherever the traffic enters:
+  - behind an ingress or a reverse proxy, there: `gzip on` in nginx, or a `compress` middleware in Traefik;
+  - on a plain Tomcat, on the `<Connector>`: `compression="on" compressionMinSize="1024"` (`application/json` is in Tomcat's own list of compressible types).
+
+  Nothing changes in the code, and the browser unpacks the answer by itself. Leave the Excel export and uploaded files out of the list of compressed media types - they are packed already.
 
 ## License
 

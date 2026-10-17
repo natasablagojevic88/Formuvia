@@ -22,6 +22,8 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import rs.formuvia.model.dto.ModelDTO;
+import rs.formuvia.model.dto.ModelExtendedDTO;
+import rs.formuvia.model.dto.ModelProcedureDTO;
 import rs.formuvia.model.dto.ModelTreeDTO;
 import rs.formuvia.model.service.ModelService;
 import rs.formuvia.utils.ApiRoute;
@@ -51,8 +53,8 @@ public class ModelController {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path(ApiRoute.modelId)
 	@RolesAllowed(RoleList.ADMIN)
-	@Operation(summary = "Get model item", description = "Returns one menu or table by identifier, used to fill the edit form.", responses = {
-			@ApiResponse(responseCode = "200", description = "Model item", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ModelDTO.class))),
+	@Operation(summary = "Get model item", description = "Returns one menu or table by identifier, used to fill the edit form. A table also carries the procedures of the database put on it, sorted by name, each with the name it was given and the procedure it stands for.", responses = {
+			@ApiResponse(responseCode = "200", description = "Model item, with the procedures of the table", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ModelExtendedDTO.class))),
 			@ApiResponse(responseCode = "400", description = "Item with the given identifier does not exist", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
 			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
 			@ApiResponse(responseCode = "403", description = "Current user does not have the admin role", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
@@ -101,6 +103,34 @@ public class ModelController {
 	public Response getModelListOfValuesColumns(
 			@Parameter(description = "Identifier of the table whose fields are read", required = true) @PathParam("id") UUID id) {
 		return Response.ok(modelService.getModelListOfValuesColumns(id)).build();
+	}
+
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path(ApiRoute.modelUpdateProcedure)
+	@RolesAllowed(RoleList.ADMIN)
+	@POST
+	@Operation(summary = "Create or update a procedure of a table", description = "Ties a procedure of the database to one table of the model under a name of its own, which is what the user is offered in the list of that table. Creates a new one when id is empty, otherwise changes the one with that id. The procedure has to be one the current schema really holds, read from information_schema.routines as a routine of the PROCEDURE kind; a name the database does not know is refused. It also has to take exactly one parameter, the identifier of the record it is run over, because that is how it is called. The name is unique within the table, and it is looked up in the resource bundle before it is shown, so a key may be used instead of plain text and the name then arrives translated.", requestBody = @RequestBody(description = "Procedure of a table; id empty for a new one", required = true, content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ModelProcedureDTO.class))), responses = {
+			@ApiResponse(responseCode = "200", description = "Procedure saved", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ModelProcedureDTO.class))),
+			@ApiResponse(responseCode = "400", description = "The database holds no such procedure, the name is already used in this table, or a required value is missing", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "403", description = "Current user does not have the admin role", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
+	public Response getUpdateModelProcedure(@Valid ModelProcedureDTO modelProcedureDTO) {
+		return Response.ok(modelService.getUpdateModelProcedure(modelProcedureDTO)).build();
+	}
+
+	@Path(ApiRoute.modelUpdateProcedureId)
+	@RolesAllowed(RoleList.ADMIN)
+	@DELETE
+	@Operation(summary = "Delete a procedure of a table", description = "Takes a procedure off the table it was put on. Only the tie to the table is deleted; the procedure itself stays in the database untouched. The response body is empty.", responses = {
+			@ApiResponse(responseCode = "204", description = "Procedure taken off the table"),
+			@ApiResponse(responseCode = "400", description = "Procedure with the given identifier does not exist", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "403", description = "Current user does not have the admin role", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
+	public Response getDeleteModelProcedure(
+			@Parameter(description = "Identifier of the procedure of the table", required = true) @PathParam("id") UUID id) {
+		modelService.getDeleteModelProcedure(id);
+		return Response.noContent().build();
 	}
 
 }

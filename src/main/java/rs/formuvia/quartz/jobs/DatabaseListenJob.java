@@ -21,6 +21,7 @@ import rs.formuvia.model.dto.ModelColumnConditionDTO;
 import rs.formuvia.model.dto.ModelColumnDTO;
 import rs.formuvia.model.dto.ModelDTO;
 import rs.formuvia.model.dto.ModelFileDTO;
+import rs.formuvia.model.dto.ModelProcedureDTO;
 import rs.formuvia.model.utils.UpdateColumnModel;
 import rs.formuvia.utils.DatabaseListen;
 import rs.formuvia.utils.StaticData;
@@ -64,6 +65,9 @@ public class DatabaseListenJob implements Job {
 					case listen_model_column_condition:
 						StaticData.modelColumnsConditions = this.databaseService.findAll(null,
 								ModelColumnConditionDTO.class);
+						break;
+					case listen_model_procedure:
+						StaticData.modelProcedures = this.databaseService.findAll(null, ModelProcedureDTO.class);
 						break;
 
 					}

@@ -30,6 +30,7 @@ import rs.formuvia.model.utils.DeleteFileVersion;
 import rs.formuvia.model.utils.DeleteObject;
 import rs.formuvia.model.utils.DownloadFileVersion;
 import rs.formuvia.model.utils.DownloadModelFile;
+import rs.formuvia.model.utils.ExecuteProcedure;
 import rs.formuvia.model.utils.ListModelFileVersion;
 import rs.formuvia.model.utils.ModelTemplateDownload;
 import rs.formuvia.model.utils.ModelTemplateUpload;
@@ -145,6 +146,12 @@ public class ModelPreviewServiceImpl implements ModelPreviewService {
 			String columnName) {
 		CreateColumnChange createColumnChange = new CreateColumnChange(httpServletRequest, object, modelId, columnName);
 		return this.databaseService.executeQuery(createColumnChange);
+	}
+
+	@Override
+	public LinkedHashMap<String, Object> getExecuteProcedure(UUID procedureId, UUID id) {
+		ExecuteProcedure executeProcedure = new ExecuteProcedure(httpServletRequest, procedureId, id);
+		return this.databaseService.executeQuery(executeProcedure);
 	}
 
 }
