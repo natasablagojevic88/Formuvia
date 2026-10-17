@@ -22,6 +22,7 @@ import rs.formuvia.model.dto.ModelColumnDTO;
 import rs.formuvia.model.dto.ModelDTO;
 import rs.formuvia.model.dto.ModelFileDTO;
 import rs.formuvia.model.dto.ModelProcedureDTO;
+import rs.formuvia.model.dto.ModelTriggerDTO;
 import rs.formuvia.model.utils.UpdateColumnModel;
 import rs.formuvia.utils.DatabaseListen;
 import rs.formuvia.utils.StaticData;
@@ -68,6 +69,9 @@ public class DatabaseListenJob implements Job {
 						break;
 					case listen_model_procedure:
 						StaticData.modelProcedures = this.databaseService.findAll(null, ModelProcedureDTO.class);
+						break;
+					case listen_model_trigger:
+						StaticData.modelTriggers = this.databaseService.findAll(null, ModelTriggerDTO.class);
 						break;
 
 					}

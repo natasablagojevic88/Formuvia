@@ -25,6 +25,7 @@ import rs.formuvia.model.dto.ModelDTO;
 import rs.formuvia.model.dto.ModelExtendedDTO;
 import rs.formuvia.model.dto.ModelProcedureDTO;
 import rs.formuvia.model.dto.ModelTreeDTO;
+import rs.formuvia.model.dto.ModelTriggerDTO;
 import rs.formuvia.model.service.ModelService;
 import rs.formuvia.utils.ApiRoute;
 import rs.formuvia.utils.ErrorDetail;
@@ -53,8 +54,8 @@ public class ModelController {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path(ApiRoute.modelId)
 	@RolesAllowed(RoleList.ADMIN)
-	@Operation(summary = "Get model item", description = "Returns one menu or table by identifier, used to fill the edit form. A table also carries the procedures of the database put on it, sorted by name, each with the name it was given and the procedure it stands for.", responses = {
-			@ApiResponse(responseCode = "200", description = "Model item, with the procedures of the table", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ModelExtendedDTO.class))),
+	@Operation(summary = "Get model item", description = "Returns one menu or table by identifier, used to fill the edit form. A table also carries the procedures of the database put on it, sorted by name, each with the name it was given and the procedure it stands for, and the triggers of the database standing on it, sorted by name as well.", responses = {
+			@ApiResponse(responseCode = "200", description = "Model item, with the procedures and the triggers of the table", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ModelExtendedDTO.class))),
 			@ApiResponse(responseCode = "400", description = "Item with the given identifier does not exist", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
 			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
 			@ApiResponse(responseCode = "403", description = "Current user does not have the admin role", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
@@ -130,6 +131,36 @@ public class ModelController {
 	public Response getDeleteModelProcedure(
 			@Parameter(description = "Identifier of the procedure of the table", required = true) @PathParam("id") UUID id) {
 		modelService.getDeleteModelProcedure(id);
+		return Response.noContent().build();
+	}
+
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path(ApiRoute.modelUpdateTrigger)
+	@RolesAllowed(RoleList.ADMIN)
+	@POST
+	@Operation(summary = "Create or update a trigger of a table", description = "Puts a trigger of the database on one table of the model and creates it in the database in the same step. Creates a new one when id is empty, otherwise changes the one with that id. The name is the name of the trigger in the database and is unique within the table; it cannot be changed afterwards, because the trigger already exists under it, so a rename is a delete and a new entry. triggerWhen says BEFORE or AFTER the row is written, action what sets it off (INSERT, UPDATE, INSERT_OR_UPDATE, DELETE or ALL for all three), and condition is the WHEN clause of the trigger, written over NEW and OLD and left out when the trigger is to run over every row. The function has to be one the current schema really holds, read from information_schema.routines as a routine of the FUNCTION kind returning trigger; a name the database does not know is refused. A trigger goes on a table only, never on a menu. Nothing in the API runs it afterwards: the database does, on every write of a row.", requestBody = @RequestBody(description = "Trigger of a table; id empty for a new one", required = true, content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ModelTriggerDTO.class))), responses = {
+			@ApiResponse(responseCode = "200", description = "Trigger saved and created in the database", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ModelTriggerDTO.class))),
+			@ApiResponse(responseCode = "400", description = "The item is a menu and not a table, the database holds no such function, the name is already used in this table or is being changed, the condition cannot be compiled, or a required value is missing", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "403", description = "Current user does not have the admin role", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
+	public Response getUpdateModelTrigger(@Valid ModelTriggerDTO modelTriggerDTO) {
+		return Response.ok(modelService.getUpdateModelTrigger(modelTriggerDTO)).build();
+	}
+
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path(ApiRoute.modelUpdateTriggerId)
+	@RolesAllowed(RoleList.ADMIN)
+	@DELETE
+	@Operation(summary = "Delete a trigger of a table", description = "Takes a trigger off the table it was put on and drops it from the database in the same step, so the database stops running it. The function the trigger called stays in the database untouched. The response body is empty.", responses = {
+			@ApiResponse(responseCode = "204", description = "Trigger taken off the table and dropped from the database"),
+			@ApiResponse(responseCode = "400", description = "Trigger with the given identifier does not exist", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "403", description = "Current user does not have the admin role", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
+	public Response getDeleteModelTrigger(
+			@Parameter(description = "Identifier of the trigger of the table", required = true) @PathParam("id") UUID id) {
+		modelService.getDeleteModelTrigger(id);
 		return Response.noContent().build();
 	}
 

@@ -27,6 +27,8 @@ public class ApiRoute {
 	public static final String modelListOfValues = "/model/list-of-values/{id}";
 	public static final String modelUpdateProcedure = "/model/procedure";
 	public static final String modelUpdateProcedureId = "/model/procedure/{id}";
+	public static final String modelUpdateTrigger = "/model/trigger";
+	public static final String modelUpdateTriggerId = "/model/trigger/{id}";
 
 	public static final String modelColumn = "/model-column";
 	public static final String modelColumnId = "/model-column/{id}";

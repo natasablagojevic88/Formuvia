@@ -349,9 +349,8 @@ public class UpdateObject implements ExecuteQuery<LinkedHashMap<String, Object>>
 
 	public static List<ModelFileVersionDTO> findLastestFileVersion(UUID modellFileId, Connection connection) {
 		DatabaseParameter databaseParameter = DatabaseParameter
-				.valueOf(DatabaseFilter.valueOf("modelFileId", modellFileId.toString()));
+				.singleFilter(DatabaseFilter.valueOf("modelFileId", modellFileId.toString()));
 		databaseParameter.getOrders().add(QueryDatabaseOrder.valueOf("version", Direction.DESC));
-		databaseParameter.setPageSize(1);
 
 		return databaseService.findAll(databaseParameter, ModelFileVersionDTO.class, connection);
 

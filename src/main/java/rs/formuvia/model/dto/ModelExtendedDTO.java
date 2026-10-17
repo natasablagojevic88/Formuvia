@@ -11,4 +11,6 @@ import lombok.Setter;
 public class ModelExtendedDTO extends ModelDTO {
 
 	List<ModelProcedureDTO> procedures = new ArrayList<>();
+
+	List<ModelTriggerDTO> triggers = new ArrayList<>();
 }

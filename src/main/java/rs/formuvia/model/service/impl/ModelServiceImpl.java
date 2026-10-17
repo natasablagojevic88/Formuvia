@@ -12,6 +12,7 @@ import org.modelmapper.ModelMapper;
 
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.core.Context;
 import rs.formuvia.common.dto.ComboboxDTO;
 import rs.formuvia.common.service.FunctionListService;
@@ -26,12 +27,15 @@ import rs.formuvia.model.dto.ModelDTO;
 import rs.formuvia.model.dto.ModelExtendedDTO;
 import rs.formuvia.model.dto.ModelProcedureDTO;
 import rs.formuvia.model.dto.ModelTreeDTO;
+import rs.formuvia.model.dto.ModelTriggerDTO;
 import rs.formuvia.model.entity.Model;
 import rs.formuvia.model.entity.ModelProcedure;
 import rs.formuvia.model.service.ModelService;
 import rs.formuvia.model.utils.CreateModelListOfValuesColumns;
 import rs.formuvia.model.utils.DeleteModel;
+import rs.formuvia.model.utils.DeleteModelTrigger;
 import rs.formuvia.model.utils.UpdateModel;
+import rs.formuvia.model.utils.UpdateModelTrigger;
 import rs.formuvia.utils.StaticData;
 import rs.formuvia.utils.StringUtils;
 
@@ -63,6 +67,9 @@ public class ModelServiceImpl implements ModelService {
 		List<ModelProcedureDTO> procedures = StaticData.modelProcedures.stream().filter(a -> a.getModelId().equals(id))
 				.sorted(Comparator.comparing(ModelProcedureDTO::getName)).collect(Collectors.toList());
 		modelModelExtendedDTO.setProcedures(procedures);
+		List<ModelTriggerDTO> triggers = StaticData.modelTriggers.stream().filter(a -> a.getModelId().equals(id))
+				.sorted(Comparator.comparing(ModelTriggerDTO::getName)).collect(Collectors.toList());
+		modelModelExtendedDTO.setTriggers(triggers);
 		return modelModelExtendedDTO;
 	}
 
@@ -152,6 +159,18 @@ public class ModelServiceImpl implements ModelService {
 		ModelProcedure modelProcedure = this.databaseService.findById(id, ModelProcedure.class);
 		this.databaseService.delete(modelProcedure);
 
+	}
+
+	@Override
+	public ModelTriggerDTO getUpdateModelTrigger(@Valid ModelTriggerDTO modelTriggerDTO) {
+		UpdateModelTrigger updateModelTrigger = new UpdateModelTrigger(httpServletRequest, modelTriggerDTO);
+		return this.databaseService.executeQuery(updateModelTrigger);
+	}
+
+	@Override
+	public void getDeleteModelTrigger(UUID id) {
+		DeleteModelTrigger deleteModelTrigger = new DeleteModelTrigger(id);
+		this.databaseService.executeQuery(deleteModelTrigger);
 	}
 
 }

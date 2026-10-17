@@ -28,6 +28,8 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SetOperationList;
 import rs.formuvia.common.dto.ComboboxDTO;
+import rs.formuvia.common.service.FunctionListService;
+import rs.formuvia.common.service.impl.FunctionListServiceImpl;
 import rs.formuvia.database.enums.ColumnType;
 import rs.formuvia.database.enums.Direction;
 import rs.formuvia.database.enums.SearchOperation;
@@ -70,8 +72,10 @@ public class UpdateColumnModel implements ExecuteQuery<ModelColumnExtendedDTO> {
 
 	private static DatabaseService databaseService = new DatabaseServiceImpl();
 	private ModelMapper modelMapper = new ModelMapper();
-	private static final Pattern COLUMN_NAME = Pattern.compile("^[a-z][a-z0-9_]{0,62}$");
+	public static final Pattern COLUMN_NAME = Pattern.compile("^[a-z][a-z0-9_]{0,62}$");
 	private static SqlQueryWriterService sqlQueryWriterService = new SqlQueryWriterServiceImpl();
+	private static FunctionListService functionListService = new FunctionListServiceImpl();
+	private static final String FUNCTION_NAME = "FUNCTION";
 
 	@Override
 	public ModelColumnExtendedDTO execute(Connection connection) throws Exception {
@@ -93,6 +97,7 @@ public class UpdateColumnModel implements ExecuteQuery<ModelColumnExtendedDTO> {
 				}
 			}
 		}
+		checkFunctionExists("json", modelColumnDTO.getChangeValueFunction(), connection);
 		List<ModelColumnDTO> list = databaseService.findAll(
 				DatabaseParameter.valueOf(DatabaseFilter.valueOf("modelId", modelColumnDTO.getModelId().toString())),
 				ModelColumnDTO.class, connection);
@@ -119,6 +124,18 @@ public class UpdateColumnModel implements ExecuteQuery<ModelColumnExtendedDTO> {
 		CreateModelColumnExtended createModelColumnExtended = new CreateModelColumnExtended(modelColumn.getId());
 
 		return databaseService.executeQuery(createModelColumnExtended, connection);
+	}
+
+	public static void checkFunctionExists(String type, String function, Connection connection) {
+		if (!StringUtils.hasText(function)) {
+			return;
+		}
+
+		List<String> functions = functionListService.getAllFunction(FUNCTION_NAME, type, connection);
+
+		if (!functions.contains(function)) {
+			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "noFunctionFound", function);
+		}
 	}
 
 	public static List<ModelColumnDTO> findColumnList(UUID modelId, Connection connection) {

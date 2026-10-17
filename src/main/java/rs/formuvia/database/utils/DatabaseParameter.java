@@ -28,4 +28,10 @@ public class DatabaseParameter {
 		}
 		return databaseParameter;
 	}
+
+	public static DatabaseParameter singleFilter(DatabaseFilter... databaseFilters) {
+		DatabaseParameter databaseParameter = valueOf(databaseFilters);
+		databaseParameter.setPageSize(1);
+		return databaseParameter;
+	}
 }

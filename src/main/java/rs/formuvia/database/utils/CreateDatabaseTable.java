@@ -163,6 +163,9 @@ public class CreateDatabaseTable<C> implements ExecuteQuery<DatabaseTable<C>> {
 					.map(a -> new ComboboxDTO(a.getId(), a.getConditionColumnName())).toList();
 		case listen_model_procedure:
 			return StaticData.modelProcedures.stream().map(a -> new ComboboxDTO(a.getId(), a.getName())).toList();
+		case listen_model_trigger:
+			return StaticData.modelTriggers.stream().map(a -> new ComboboxDTO(a.getId(), a.getName())).toList();
+
 		}
 
 		return new ArrayList<>();
