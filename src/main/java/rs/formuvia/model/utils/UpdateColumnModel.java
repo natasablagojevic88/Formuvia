@@ -406,85 +406,11 @@ public class UpdateColumnModel implements ExecuteQuery<ModelColumnExtendedDTO> {
 			modelColumnDTO.setTextArea(false);
 		}
 
-		if (StringUtils.hasText(modelColumnDTO.getDefaultValueSql())) {
-			Statement statement;
-			try {
-				statement = CCJSqlParserUtil.parse(modelColumnDTO.getDefaultValueSql());
-				if (!(statement instanceof Select)) {
-					throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "onlySelectAllowed",
-							modelColumnDTO.getDefaultValueSql());
-				} else {
+		if (StringUtils.hasText(modelColumnDTO.getDefaultValueSql()))
+			checkDefaultValue(modelColumnDTO.getDefaultValueSql());
 
-					Select selectQuery = (Select) statement;
-					List<PlainSelect> selects = plainSelects(selectQuery);
-
-					if (selects.isEmpty()) {
-						throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "invalidQuery",
-								modelColumnDTO.getListOfValuesSql());
-					}
-
-					boolean hasStar = selects.stream().flatMap(a -> a.getSelectItems().stream())
-							.anyMatch(a -> a.getExpression() instanceof AllColumns);
-
-					if (hasStar) {
-						throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "selectStarNotAllowed",
-								modelColumnDTO.getListOfValuesSql());
-					}
-
-					if (selects.stream().anyMatch(a -> a.getSelectItems().size() != 1)) {
-						throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "selectMustHave1Column",
-								modelColumnDTO.getDefaultValueSql());
-					}
-
-				}
-			} catch (JSQLParserException e) {
-				throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "invalidQuery",
-						modelColumnDTO.getDefaultValueSql());
-			}
-
-		}
-
-		if (StringUtils.hasText(modelColumnDTO.getListOfValuesSql())) {
-			Statement statement;
-			try {
-				statement = CCJSqlParserUtil.parse(modelColumnDTO.getListOfValuesSql());
-				if (!(statement instanceof Select)) {
-					throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "onlySelectAllowed",
-							modelColumnDTO.getListOfValuesSql());
-				} else {
-					Select selectQuery = (Select) statement;
-					List<PlainSelect> selects = plainSelects(selectQuery);
-
-					if (selects.isEmpty()) {
-						throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "invalidQuery",
-								modelColumnDTO.getListOfValuesSql());
-					}
-
-					boolean hasStar = selects.stream().flatMap(a -> a.getSelectItems().stream())
-							.anyMatch(a -> a.getExpression() instanceof AllColumns);
-
-					if (hasStar) {
-						throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "selectStarNotAllowed",
-								modelColumnDTO.getListOfValuesSql());
-					}
-
-					if (hasStar) {
-						throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "selectStarNotAllowed",
-								modelColumnDTO.getListOfValuesSql());
-					}
-
-					if (selects.stream().anyMatch(a -> a.getSelectItems().size() != 2)) {
-						throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "selectMustHave2Column",
-								modelColumnDTO.getListOfValuesSql());
-					}
-
-				}
-			} catch (JSQLParserException e) {
-				throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "invalidQuery",
-						modelColumnDTO.getListOfValuesSql());
-			}
-
-		}
+		if (StringUtils.hasText(modelColumnDTO.getListOfValuesSql()))
+			checkListOfValuesQuery(modelColumnDTO.getListOfValuesSql());
 
 		if (StringUtils.notNull(modelColumnDTO.getInitSortOrder())) {
 			if (StringUtils.isNull(modelColumnDTO.getInitSortDirection())) {
@@ -508,7 +434,7 @@ public class UpdateColumnModel implements ExecuteQuery<ModelColumnExtendedDTO> {
 
 	}
 
-	private List<PlainSelect> plainSelects(Select select) {
+	private static List<PlainSelect> plainSelects(Select select) {
 		List<PlainSelect> list = new ArrayList<>();
 
 		if (select instanceof SetOperationList) {
@@ -520,6 +446,74 @@ public class UpdateColumnModel implements ExecuteQuery<ModelColumnExtendedDTO> {
 		}
 
 		return list;
+	}
+
+	public static void checkDefaultValue(String query) {
+		Statement statement;
+		try {
+			statement = CCJSqlParserUtil.parse(query);
+			if (!(statement instanceof Select)) {
+				throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "onlySelectAllowed", query);
+			} else {
+
+				Select selectQuery = (Select) statement;
+				List<PlainSelect> selects = plainSelects(selectQuery);
+
+				if (selects.isEmpty()) {
+					throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "invalidQuery", query);
+				}
+
+				boolean hasStar = selects.stream().flatMap(a -> a.getSelectItems().stream())
+						.anyMatch(a -> a.getExpression() instanceof AllColumns);
+
+				if (hasStar) {
+					throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "selectStarNotAllowed", query);
+				}
+
+				if (selects.stream().anyMatch(a -> a.getSelectItems().size() != 1)) {
+					throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "selectMustHave1Column", query);
+				}
+
+			}
+		} catch (JSQLParserException e) {
+			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "invalidQuery", query);
+		}
+
+	}
+
+	public static void checkListOfValuesQuery(String query) {
+		Statement statement;
+		try {
+			statement = CCJSqlParserUtil.parse(query);
+			if (!(statement instanceof Select)) {
+				throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "onlySelectAllowed", query);
+			} else {
+				Select selectQuery = (Select) statement;
+				List<PlainSelect> selects = plainSelects(selectQuery);
+
+				if (selects.isEmpty()) {
+					throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "invalidQuery", query);
+				}
+
+				boolean hasStar = selects.stream().flatMap(a -> a.getSelectItems().stream())
+						.anyMatch(a -> a.getExpression() instanceof AllColumns);
+
+				if (hasStar) {
+					throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "selectStarNotAllowed", query);
+				}
+
+				if (hasStar) {
+					throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "selectStarNotAllowed", query);
+				}
+
+				if (selects.stream().anyMatch(a -> a.getSelectItems().size() != 2)) {
+					throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "selectMustHave2Column", query);
+				}
+
+			}
+		} catch (JSQLParserException e) {
+			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "invalidQuery", query);
+		}
 	}
 
 }

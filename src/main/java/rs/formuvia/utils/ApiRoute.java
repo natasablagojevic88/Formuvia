@@ -64,4 +64,21 @@ public class ApiRoute {
 	public static final String listAllFunctions = "/function/{functionType}";
 	public static final String listAllFunctionsWithDataType = "/function/{functionType}/{dataType}";
 
+	public static final String reportGroup = "/report-group";
+	public static final String reportGroupTable = "/report-group/table";
+	public static final String reportGroupId = "/report-group/{id}";
+
+	public static final String report = "/report";
+	public static final String reportTable = "/report/table/{reportGroupId}";
+	public static final String reportId = "/report/{id}";
+	public static final String reportParameter = "/report/parameter";
+	public static final String reportParameterId = "/report/parameter/{id}";
+	public static final String reportParameterTable = "/report/parameter/table/{reportId}";
+	public static final String reportParameterOrderNumber = "/report/parameter/next-order-number/{reportId}";
+
+	public static final String reportPreview = "/report/preview/{reportId}";
+	public static final String reportPreviewTable = "/report/preview/{reportId}/table";
+	public static final String reportPreviewExcel = "/report/preview/{reportId}/excel";
+	public static final String reportPreviewExecute = "/report/preview/{reportId}/execute";
+
 }

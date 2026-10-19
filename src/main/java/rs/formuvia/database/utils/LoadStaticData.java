@@ -21,6 +21,9 @@ import rs.formuvia.model.dto.ModelProcedureDTO;
 import rs.formuvia.model.dto.ModelTriggerDTO;
 import rs.formuvia.model.service.impl.ModelPreviewServiceImpl;
 import rs.formuvia.model.utils.UpdateColumnModel;
+import rs.formuvia.report.dto.ReportDTO;
+import rs.formuvia.report.dto.ReportGroupDTO;
+import rs.formuvia.report.dto.ReportParameterDTO;
 import rs.formuvia.utils.StaticData;
 import rs.formuvia.utils.StringUtils;
 
@@ -41,6 +44,9 @@ public class LoadStaticData implements ExecuteQuery<Void> {
 		StaticData.modelProcedures = this.databaseService.findAll(null, ModelProcedureDTO.class, connection);
 		StaticData.modelTriggers = this.databaseService.findAll(null, ModelTriggerDTO.class, connection);
 		StaticData.modelJaspers = this.databaseService.findAll(null, ModelJasperDTO.class, connection);
+		StaticData.reportGroups = this.databaseService.findAll(null, ReportGroupDTO.class, connection);
+		StaticData.reports = this.databaseService.findAll(null, ReportDTO.class, connection);
+		StaticData.reportParameters = this.databaseService.findAll(null, ReportParameterDTO.class, connection);
 
 		Set<UUID> columnsWithCodebook = columnWithCodebook();
 		for (UUID modelId : columnsWithCodebook) {

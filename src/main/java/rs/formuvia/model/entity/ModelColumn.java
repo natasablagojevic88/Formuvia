@@ -68,7 +68,7 @@ public class ModelColumn {
 	@Column(name = "default_value_sql")
 	private String defaultValueSql;
 
-	@Column(name = "list_of_values_sql")
+	@Column(name = "list_of_values_sql", columnDefinition = "text")
 	private String listOfValuesSql;
 
 	@Column(name = "text_area", nullable = false)

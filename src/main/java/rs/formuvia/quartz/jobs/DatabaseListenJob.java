@@ -25,6 +25,9 @@ import rs.formuvia.model.dto.ModelJasperDTO;
 import rs.formuvia.model.dto.ModelProcedureDTO;
 import rs.formuvia.model.dto.ModelTriggerDTO;
 import rs.formuvia.model.utils.UpdateColumnModel;
+import rs.formuvia.report.dto.ReportDTO;
+import rs.formuvia.report.dto.ReportGroupDTO;
+import rs.formuvia.report.dto.ReportParameterDTO;
 import rs.formuvia.utils.DatabaseListen;
 import rs.formuvia.utils.StaticData;
 import rs.formuvia.utils.StringUtils;
@@ -76,6 +79,15 @@ public class DatabaseListenJob implements Job {
 						break;
 					case listen_model_jasper:
 						StaticData.modelJaspers = this.databaseService.findAll(null, ModelJasperDTO.class);
+						break;
+					case listen_report:
+						StaticData.reports = this.databaseService.findAll(null, ReportDTO.class);
+						break;
+					case listen_report_group:
+						StaticData.reportGroups = this.databaseService.findAll(null, ReportGroupDTO.class);
+						break;
+					case listen_report_parameter:
+						StaticData.reportParameters = this.databaseService.findAll(null, ReportParameterDTO.class);
 						break;
 
 					}

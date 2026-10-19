@@ -19,6 +19,8 @@ import rs.formuvia.common.service.SessionService;
 import rs.formuvia.database.service.DatabaseService;
 import rs.formuvia.exceptions.CommonException;
 import rs.formuvia.model.dto.ModelDTO;
+import rs.formuvia.report.dto.ReportDTO;
+import rs.formuvia.report.dto.ReportGroupDTO;
 import rs.formuvia.utils.ApiRoute;
 import rs.formuvia.utils.MenuInfo;
 import rs.formuvia.utils.StaticData;
@@ -39,6 +41,7 @@ public class SessionServiceImpl implements SessionService {
 	private DatabaseService databaseService;
 
 	public static final String MODEL_NAME_TO_REPLACE = "{modelId}";
+	private static final String REPORT_TO_REPLACE = "{reportId}";
 
 	@Override
 	public UserInfoDTO getUserInfo() {
@@ -56,8 +59,32 @@ public class SessionServiceImpl implements SessionService {
 		}
 
 		loadMenuFromModel(userInfo);
+		loadMenuFromReport(userInfo);
 
 		return userInfo;
+	}
+
+	private void loadMenuFromReport(UserInfoDTO userInfo) {
+		List<ReportGroupDTO> groups = StaticData.reportGroups.stream()
+				.filter(a -> this.commonService.getRoles().contains(a.getRoleCode())).collect(Collectors.toList());
+
+		for (ReportGroupDTO group : groups) {
+			MenuDTO menuDTO = new MenuDTO();
+			menuDTO.setIcon(group.getIcon());
+			menuDTO.setName(resourceBundleService.getText(group.getName()));
+
+			List<ReportDTO> reports = StaticData.reports.stream()
+					.filter(a -> a.getReportGroupId().equals(group.getId())).collect(Collectors.toList());
+			for (ReportDTO report : reports) {
+				MenuDTO reportMenu = new MenuDTO();
+				reportMenu.setName(resourceBundleService.getText(report.getName()));
+				reportMenu.setUrl(ApiRoute.reportPreview.replace(REPORT_TO_REPLACE, report.getId().toString()));
+				menuDTO.getChildren().add(reportMenu);
+			}
+
+			userInfo.getMenu().add(menuDTO);
+		}
+
 	}
 
 	private void loadMenuFromModel(UserInfoDTO userInfo) {

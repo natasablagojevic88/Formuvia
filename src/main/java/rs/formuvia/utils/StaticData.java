@@ -27,6 +27,9 @@ import rs.formuvia.model.dto.ModelFileDTO;
 import rs.formuvia.model.dto.ModelJasperDTO;
 import rs.formuvia.model.dto.ModelProcedureDTO;
 import rs.formuvia.model.dto.ModelTriggerDTO;
+import rs.formuvia.report.dto.ReportDTO;
+import rs.formuvia.report.dto.ReportGroupDTO;
+import rs.formuvia.report.dto.ReportParameterDTO;
 
 public class StaticData {
 
@@ -54,6 +57,9 @@ public class StaticData {
 	public static volatile List<ModelProcedureDTO> modelProcedures = new ArrayList<>();
 	public static volatile List<ModelTriggerDTO> modelTriggers = new ArrayList<>();
 	public static volatile List<ModelJasperDTO> modelJaspers = new ArrayList<>();
+	public static volatile List<ReportGroupDTO> reportGroups = new ArrayList<>();
+	public static volatile List<ReportDTO> reports = new ArrayList<>();
+	public static volatile List<ReportParameterDTO> reportParameters = new ArrayList<>();
 
 	public static volatile Map<UUID, List<ComboboxDTO>> modelCodebook = new ConcurrentHashMap<>();
 	public static volatile Set<UUID> modelsToListen = ConcurrentHashMap.newKeySet();

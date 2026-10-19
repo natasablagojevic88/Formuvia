@@ -167,6 +167,12 @@ public class CreateDatabaseTable<C> implements ExecuteQuery<DatabaseTable<C>> {
 			return StaticData.modelTriggers.stream().map(a -> new ComboboxDTO(a.getId(), a.getName())).toList();
 		case listen_model_jasper:
 			return StaticData.modelJaspers.stream().map(a -> new ComboboxDTO(a.getId(), a.getName())).toList();
+		case listen_report:
+			return StaticData.reports.stream().map(a -> new ComboboxDTO(a.getId(), a.getName())).toList();
+		case listen_report_group:
+			return StaticData.reportGroups.stream().map(a -> new ComboboxDTO(a.getId(), a.getName())).toList();
+		case listen_report_parameter:
+			return StaticData.reportParameters.stream().map(a -> new ComboboxDTO(a.getId(), a.getName())).toList();
 
 		}
 
