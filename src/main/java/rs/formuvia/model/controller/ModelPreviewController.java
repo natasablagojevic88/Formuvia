@@ -334,4 +334,19 @@ public class ModelPreviewController {
 			@Parameter(description = "Identifier of the record the procedure is run over", required = true) @PathParam("id") UUID id) {
 		return Response.ok(modelPreviewService.getExecuteProcedure(procedureId, id)).build();
 	}
+
+	@GET
+	@Path(ApiRoute.modelJasperPrint)
+	@Produces(MediaType.APPLICATION_OCTET_STREAM)
+	@Operation(operationId = "printModelJasper", summary = "Make a report of the table over one record", description = "Makes one of the reports the model put on a table over a single record and returns it as a PDF file. The report is the compiled .jasper file kept with that entry; it is filled on the connection of this request, so the query of the report reads the database directly and sees the record as it stands, and it is handed the identifier of that record as its parameter id, together with the language of the request as the locale of the report. The answer is the finished PDF, named after the report, with the name in the Content-Disposition header, which is exposed to the browser for cross-origin requests. The report says which table it belongs to, so the identifier of the model is not given. It asks for the view role of the model, because making a report only reads the record.", responses = {
+			@ApiResponse(responseCode = "200", description = "PDF of the report, with the file name in the Content-Disposition header", content = @Content(mediaType = "application/pdf", schema = @Schema(type = "string", format = "binary"))),
+			@ApiResponse(responseCode = "400", description = "No report with that identifier on this table, its stored file is missing, or the report itself could not be made", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "403", description = "Current user does not have the view role of this model", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
+	public Response getPrintModelJasper(
+			@Parameter(description = "Identifier of the report of the table, as the table sends it with its rows", required = true) @PathParam("modelJasperId") UUID modelJasperId,
+			@Parameter(description = "Identifier of the record the report is made over", required = true) @PathParam("id") UUID id) {
+
+		return modelPreviewService.getPrintModelJasper(modelJasperId, id);
+	}
 }

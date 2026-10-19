@@ -16,6 +16,7 @@ import rs.formuvia.model.dto.ModelColumnConditionDTO;
 import rs.formuvia.model.dto.ModelColumnDTO;
 import rs.formuvia.model.dto.ModelDTO;
 import rs.formuvia.model.dto.ModelFileDTO;
+import rs.formuvia.model.dto.ModelJasperDTO;
 import rs.formuvia.model.dto.ModelProcedureDTO;
 import rs.formuvia.model.dto.ModelTriggerDTO;
 import rs.formuvia.model.service.impl.ModelPreviewServiceImpl;
@@ -35,9 +36,11 @@ public class LoadStaticData implements ExecuteQuery<Void> {
 		StaticData.models = this.databaseService.findAll(null, ModelDTO.class, connection);
 		StaticData.modelColumns = this.databaseService.findAll(null, ModelColumnDTO.class, connection);
 		StaticData.modelFiles = this.databaseService.findAll(null, ModelFileDTO.class, connection);
-		StaticData.modelColumnsConditions = this.databaseService.findAll(null, ModelColumnConditionDTO.class);
-		StaticData.modelProcedures = this.databaseService.findAll(null, ModelProcedureDTO.class);
-		StaticData.modelTriggers = this.databaseService.findAll(null, ModelTriggerDTO.class);
+		StaticData.modelColumnsConditions = this.databaseService.findAll(null, ModelColumnConditionDTO.class,
+				connection);
+		StaticData.modelProcedures = this.databaseService.findAll(null, ModelProcedureDTO.class, connection);
+		StaticData.modelTriggers = this.databaseService.findAll(null, ModelTriggerDTO.class, connection);
+		StaticData.modelJaspers = this.databaseService.findAll(null, ModelJasperDTO.class, connection);
 
 		Set<UUID> columnsWithCodebook = columnWithCodebook();
 		for (UUID modelId : columnsWithCodebook) {

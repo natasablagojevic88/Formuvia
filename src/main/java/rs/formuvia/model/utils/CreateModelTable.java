@@ -38,6 +38,7 @@ import rs.formuvia.database.utils.QueryDatabaseOrder;
 import rs.formuvia.database.utils.QueryTableInfo;
 import rs.formuvia.model.dto.ModelColumnDTO;
 import rs.formuvia.model.dto.ModelDTO;
+import rs.formuvia.model.dto.ModelPreviewJasperDTO;
 import rs.formuvia.model.dto.ModelPreviewProcedureDTO;
 import rs.formuvia.model.dto.ObjectFormDTO;
 import rs.formuvia.model.enums.ModelType;
@@ -116,6 +117,12 @@ public class CreateModelTable implements ExecuteQuery<DatabaseTable<LinkedHashMa
 						a.getIcon()))
 				.sorted(Comparator.comparing(ModelPreviewProcedureDTO::getName)).collect(Collectors.toList());
 		databaseTable.setProcedures(procedures);
+
+		List<ModelPreviewJasperDTO> jaspers = StaticData.modelJaspers.stream()
+				.filter(a -> a.getModelId().equals(this.modelId))
+				.map(a -> new ModelPreviewJasperDTO(a.getId(), this.resourceBundleService.getText(a.getName())))
+				.sorted(Comparator.comparing(ModelPreviewJasperDTO::getName)).collect(Collectors.toList());
+		databaseTable.setJaspers(jaspers);
 
 		return databaseTable;
 	}

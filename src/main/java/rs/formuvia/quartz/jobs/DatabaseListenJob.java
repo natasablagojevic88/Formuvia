@@ -21,6 +21,7 @@ import rs.formuvia.model.dto.ModelColumnConditionDTO;
 import rs.formuvia.model.dto.ModelColumnDTO;
 import rs.formuvia.model.dto.ModelDTO;
 import rs.formuvia.model.dto.ModelFileDTO;
+import rs.formuvia.model.dto.ModelJasperDTO;
 import rs.formuvia.model.dto.ModelProcedureDTO;
 import rs.formuvia.model.dto.ModelTriggerDTO;
 import rs.formuvia.model.utils.UpdateColumnModel;
@@ -72,6 +73,9 @@ public class DatabaseListenJob implements Job {
 						break;
 					case listen_model_trigger:
 						StaticData.modelTriggers = this.databaseService.findAll(null, ModelTriggerDTO.class);
+						break;
+					case listen_model_jasper:
+						StaticData.modelJaspers = this.databaseService.findAll(null, ModelJasperDTO.class);
 						break;
 
 					}

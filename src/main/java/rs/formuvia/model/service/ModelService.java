@@ -7,6 +7,7 @@ import java.util.UUID;
 import jakarta.validation.Valid;
 import rs.formuvia.common.dto.ComboboxDTO;
 import rs.formuvia.model.dto.ModelDTO;
+import rs.formuvia.model.dto.ModelJasperDTO;
 import rs.formuvia.model.dto.ModelProcedureDTO;
 import rs.formuvia.model.dto.ModelTreeDTO;
 import rs.formuvia.model.dto.ModelTriggerDTO;
@@ -30,5 +31,9 @@ public interface ModelService {
 	ModelTriggerDTO getUpdateModelTrigger(@Valid ModelTriggerDTO modelTriggerDTO);
 
 	void getDeleteModelTrigger(UUID id);
+
+	ModelJasperDTO getUpdateModelJasper(ModelJasperDTO modelTriggerDTO);
+
+	void getDeleteModelJasper(UUID id);
 
 }

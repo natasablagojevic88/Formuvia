@@ -45,4 +45,6 @@ public interface ModelPreviewService {
 
 	LinkedHashMap<String, Object> getExecuteProcedure(UUID procedureId, UUID id);
 
+	Response getPrintModelJasper(UUID modelJasperId, UUID id);
+
 }

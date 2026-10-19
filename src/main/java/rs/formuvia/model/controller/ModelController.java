@@ -23,6 +23,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import rs.formuvia.model.dto.ModelDTO;
 import rs.formuvia.model.dto.ModelExtendedDTO;
+import rs.formuvia.model.dto.ModelJasperDTO;
 import rs.formuvia.model.dto.ModelProcedureDTO;
 import rs.formuvia.model.dto.ModelTreeDTO;
 import rs.formuvia.model.dto.ModelTriggerDTO;
@@ -148,8 +149,6 @@ public class ModelController {
 		return Response.ok(modelService.getUpdateModelTrigger(modelTriggerDTO)).build();
 	}
 
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
 	@Path(ApiRoute.modelUpdateTriggerId)
 	@RolesAllowed(RoleList.ADMIN)
 	@DELETE
@@ -161,6 +160,34 @@ public class ModelController {
 	public Response getDeleteModelTrigger(
 			@Parameter(description = "Identifier of the trigger of the table", required = true) @PathParam("id") UUID id) {
 		modelService.getDeleteModelTrigger(id);
+		return Response.noContent().build();
+	}
+
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path(ApiRoute.modelUpdateJasper)
+	@RolesAllowed(RoleList.ADMIN)
+	@POST
+	@Operation(summary = "Create or update a report of a table", description = "Ties a JasperReports report to one table of the model. Creates a new one when id is empty, otherwise changes the one with that id. The name is what the user sees in the list of reports of that table and is unique within the table. The report itself is a compiled .jasper file, sent beforehand through the file upload and named here under fileUpload by the identifier that upload returned; it is kept for the entry, so a new entry always carries a file, while a change without one keeps the file already stored. The file is read before it is accepted and has to be a report that takes a parameter id of type java.util.UUID, because that is the record the report is run over; anything else is refused. Deleting the entry deletes the stored file with it.", requestBody = @RequestBody(description = "Report of a table; id empty for a new one", required = true, content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ModelJasperDTO.class))), responses = {
+			@ApiResponse(responseCode = "200", description = "Report saved", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ModelJasperDTO.class))),
+			@ApiResponse(responseCode = "400", description = "No file is sent for a new entry, the file is not a compiled report, the report has no parameter id of type UUID, the name is already used in this table, or a required value is missing", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "403", description = "Current user does not have the admin role", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
+	public Response getUpdateModelJasper(@Valid ModelJasperDTO modelTriggerDTO) {
+		return Response.ok(modelService.getUpdateModelJasper(modelTriggerDTO)).build();
+	}
+
+	@Path(ApiRoute.modelUpdateJasperId)
+	@RolesAllowed(RoleList.ADMIN)
+	@DELETE
+	@Operation(summary = "Delete a report of a table", description = "Takes a report off the table it was put on and deletes the stored file of the report with it, so the report disappears from the list of that table. The response body is empty.", responses = {
+			@ApiResponse(responseCode = "204", description = "Report taken off the table"),
+			@ApiResponse(responseCode = "400", description = "Report with the given identifier does not exist", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "403", description = "Current user does not have the admin role", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
+	public Response getDeleteModelJasper(
+			@Parameter(description = "Identifier of the report of the table", required = true) @PathParam("id") UUID id) {
+		modelService.getDeleteModelJasper(id);
 		return Response.noContent().build();
 	}
 

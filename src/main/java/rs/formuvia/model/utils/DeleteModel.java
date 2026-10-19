@@ -3,6 +3,7 @@ package rs.formuvia.model.utils;
 import java.net.HttpURLConnection;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.util.List;
 import java.util.UUID;
 
 import org.apache.logging.log4j.LogManager;
@@ -16,6 +17,7 @@ import rs.formuvia.database.utils.DatabaseParameter;
 import rs.formuvia.database.utils.ExecuteQuery;
 import rs.formuvia.exceptions.CommonException;
 import rs.formuvia.model.entity.Model;
+import rs.formuvia.model.entity.ModelJasper;
 import rs.formuvia.model.enums.ModelType;
 import rs.formuvia.utils.StaticData;
 
@@ -32,6 +34,13 @@ public class DeleteModel implements ExecuteQuery<Void> {
 	@Override
 	public Void execute(Connection connection) throws Exception {
 		Model model = this.databaseService.findById(id, Model.class, connection);
+
+		List<ModelJasper> modelJaspers = this.databaseService.findAll(
+				DatabaseParameter.valueOf(DatabaseFilter.valueOf("model", model.getId().toString())), ModelJasper.class,
+				connection);
+		DeleteModelJasper deleteModelJasper = new DeleteModelJasper(
+				modelJaspers.stream().map(a -> a.getId()).toArray(UUID[]::new));
+		this.databaseService.executeQuery(deleteModelJasper, connection);
 
 		if (this.databaseService.exists(
 				DatabaseParameter.valueOf(DatabaseFilter.valueOf(UpdateModel.PARENT_COLUMN_NAME, id.toString())),

@@ -21,6 +21,7 @@ The web client lives in a separate repository: **FormuviaFront** (Angular).
 - Values worked out by the database: a field of a form can carry the name of a database function that takes the record as `json` and returns `json`; when the client reports that the field was changed, the record is handed to that function and the record it returns is sent back, so one field can fill in or correct the others. The functions a field may be given are read from `information_schema.routines` of the current schema
 - Procedures on a table: a table of the model can be given procedures of the database, each under a name of its own (`model_procedure`). The client runs one over a single record; the server checks the name against `information_schema.routines`, calls it with the identifier of that record and answers with the record as it stands afterwards. Running one asks for the role that may change the record
 - Triggers on a table: a table of the model can be given triggers of the database (`model_trigger`), each one a function returning `trigger`, set to run before or after an insert, an update or a delete, with a `WHEN` condition of its own. Saving the entry creates the trigger in the database and deleting it drops it; the function is checked against `information_schema.routines` beforehand. Only an administrator sets them, and nothing in the API runs them - the database does, on every write of a row
+- Reports on a table: a table of the model can be given reports of JasperReports (`model_jasper`), each one a report compiled by Jaspersoft Studio and stored as a file of its own. The uploaded file is read with `JRLoader` before it is accepted and has to be a compiled report that takes a parameter `id` of type `java.util.UUID`, the record the report is made over; deleting the entry deletes the stored file with it. Only an administrator sets them
 - File upload: a file of a record is stored on the file system under `files.path`, in a folder of the date it arrived, and the record keeps the identifier it was stored under (column type `FILE`)
 - Multilingual texts: English (`en-US`), Serbian Latin (`sr-Latn-RS`), Serbian Cyrillic (`sr-RS`)
 - Database schema is created and updated automatically on startup – no manual migrations
@@ -85,6 +86,8 @@ Most important settings:
 | `files.path` | Folder where uploaded files are stored; `${user.home}` is replaced with the home of the user running the server | `${user.home}/.formuvia-files` |
 
 Logs are written to the console and to `~/.logs/formuvia.log`. Change the location with `-Dlog.path=/path/to/formuvia.log`.
+
+Settings of the report engine are read separately, from `resources/jasperreports.properties`, which the build puts at the root of the classpath (`WEB-INF/classes`). `net.sf.jasperreports.default.font.name` there decides which font a report uses when it names none of its own. The family it names has to be registered as a font extension on the classpath, otherwise filling a report fails with `JRFontNotFoundException`; `jasperreports-fonts` brings the DejaVu families. A PDF keeps the Serbian letters only with a font that is embedded in it, which is what a font extension does, so the built-in `SansSerif` is not enough.
 
 ### 3. Build
 

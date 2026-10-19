@@ -27,7 +27,7 @@ public class InitScriptExecute implements ExecuteQuery<Void> {
 	public static final String TABLE_NAME_TO_REPLACE = "#table_name#";
 	private static final String LISTEN_SCRIPT = "table_listen.sql";
 	public static final String DATABASE_ADDITION_SCHEMA_NAME = "database.additional.shema";
-	private static final String TRIGGER_LISTEN_NAME = "table_listen";
+	public static final String TRIGGER_LISTEN_NAME = "table_listen";
 
 	@Override
 	public Void execute(Connection connection) throws Exception {

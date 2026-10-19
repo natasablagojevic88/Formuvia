@@ -13,6 +13,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import rs.formuvia.common.dto.ComboboxDTO;
+import rs.formuvia.model.dto.ModelPreviewJasperDTO;
 import rs.formuvia.model.dto.ModelPreviewProcedureDTO;
 
 @Setter
@@ -52,5 +53,7 @@ public class DatabaseTable<C> {
 	private Map<UUID, List<ComboboxDTO>> parentCodebook = new ConcurrentHashMap<>();
 
 	private List<ModelPreviewProcedureDTO> procedures = new ArrayList<>();
+
+	private List<ModelPreviewJasperDTO> jaspers = new ArrayList<>();
 
 }

@@ -6,16 +6,23 @@ import java.sql.Connection;
 import org.modelmapper.ModelMapper;
 
 import jakarta.servlet.http.HttpServletRequest;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import rs.formuvia.common.service.CommonService;
 import rs.formuvia.common.service.impl.CommonServiceImpl;
+import rs.formuvia.database.enums.SearchOperation;
 import rs.formuvia.database.service.DatabaseService;
 import rs.formuvia.database.service.impl.DatabaseServiceImpl;
+import rs.formuvia.database.utils.CheckTables;
+import rs.formuvia.database.utils.DatabaseFilter;
+import rs.formuvia.database.utils.DatabaseParameter;
 import rs.formuvia.database.utils.ExecuteQuery;
 import rs.formuvia.exceptions.CommonException;
+import rs.formuvia.exceptions.UniqueException;
 import rs.formuvia.model.dto.ModelTriggerDTO;
 import rs.formuvia.model.entity.Model;
 import rs.formuvia.model.entity.ModelTrigger;
 import rs.formuvia.model.enums.ModelType;
+import rs.formuvia.utils.InitScriptExecute;
 import rs.formuvia.utils.StringUtils;
 
 public class UpdateModelTrigger implements ExecuteQuery<ModelTriggerDTO> {
@@ -49,6 +56,12 @@ public class UpdateModelTrigger implements ExecuteQuery<ModelTriggerDTO> {
 		ModelTrigger modelTrigger = StringUtils.isNull(this.modelTriggerDTO.getId()) ? new ModelTrigger()
 				: this.databaseService.findById(this.modelTriggerDTO.getId(), ModelTrigger.class, connection);
 
+		if (modelTriggerDTO.getName().equals(InitScriptExecute.TRIGGER_LISTEN_NAME)
+				|| modelTriggerDTO.getName().equals(CheckTables.CREATE_AUDIT_TRIGGER)) {
+			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "triggerNameNotAllowed",
+					modelTriggerDTO.getName());
+		}
+
 		if (!UpdateColumnModel.COLUMN_NAME.matcher(modelTriggerDTO.getName()).matches()) {
 			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "invalidTriggerName",
 					modelTriggerDTO.getName());
@@ -59,12 +72,26 @@ public class UpdateModelTrigger implements ExecuteQuery<ModelTriggerDTO> {
 			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "frontModel", model.getId());
 		}
 
+		DatabaseParameter databaseParameterUnique = DatabaseParameter.singleFilter(
+				new DatabaseFilter[] { DatabaseFilter.valueOf("modelId", this.modelTriggerDTO.getModelId().toString()),
+						DatabaseFilter.valueOf("name", this.modelTriggerDTO.getName()) });
 		if (StringUtils.notNull(this.modelTriggerDTO.getId())) {
 			if (!modelTrigger.getName().equals(this.modelTriggerDTO.getName())) {
 				throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "notSameName",
 						this.modelTriggerDTO.getName());
 			}
+
+			if (!modelTrigger.getModel().getId().equals(this.modelTriggerDTO.getModelId())) {
+				throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "notSameModel",
+						this.modelTriggerDTO.getName());
+			}
+			databaseParameterUnique.getFilters().add(
+					DatabaseFilter.valueOf("id", SearchOperation.NOT_EQUALS, this.modelTriggerDTO.getId().toString()));
 		}
+
+		if (this.databaseService.exists(databaseParameterUnique, ModelTriggerDTO.class, connection))
+			throw new UniqueException(UniqueException.findFieldFromList(ModelTriggerDTO.class, "name"),
+					this.modelTriggerDTO.getName());
 
 		UpdateColumnModel.checkFunctionExists(FUNCTION_TYPE, this.modelTriggerDTO.getFunctionName(), connection);
 
@@ -81,7 +108,7 @@ public class UpdateModelTrigger implements ExecuteQuery<ModelTriggerDTO> {
 			query = query.replace(CONDITION_TO_REPLACE, "");
 		else
 			query = query.replace(CONDITION_TO_REPLACE, CONDITION_WHEN_TEXT_TO_REPLACE).replace(CONDITION_TO_REPLACE,
-					this.modelTriggerDTO.getCondition());
+					CCJSqlParserUtil.parseCondExpression(this.modelTriggerDTO.getCondition(), true).toString());
 
 		query = query.replace(FUNCTION_NAME_TO_REPLACE, this.modelTriggerDTO.getFunctionName());
 

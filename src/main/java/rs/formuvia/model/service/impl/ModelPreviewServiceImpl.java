@@ -35,6 +35,7 @@ import rs.formuvia.model.utils.ListModelFileVersion;
 import rs.formuvia.model.utils.ModelTemplateDownload;
 import rs.formuvia.model.utils.ModelTemplateUpload;
 import rs.formuvia.model.utils.ObjectRow;
+import rs.formuvia.model.utils.PrintModelJasper;
 import rs.formuvia.model.utils.UpdateObject;
 import rs.formuvia.utils.StaticData;
 
@@ -152,6 +153,12 @@ public class ModelPreviewServiceImpl implements ModelPreviewService {
 	public LinkedHashMap<String, Object> getExecuteProcedure(UUID procedureId, UUID id) {
 		ExecuteProcedure executeProcedure = new ExecuteProcedure(httpServletRequest, procedureId, id);
 		return this.databaseService.executeQuery(executeProcedure);
+	}
+
+	@Override
+	public Response getPrintModelJasper(UUID modelJasperId, UUID id) {
+		PrintModelJasper printModelJasper = new PrintModelJasper(this.httpServletRequest, modelJasperId, id);
+		return this.databaseService.executeQuery(printModelJasper);
 	}
 
 }

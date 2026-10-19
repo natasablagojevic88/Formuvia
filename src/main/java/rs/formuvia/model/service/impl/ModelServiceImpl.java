@@ -25,6 +25,7 @@ import rs.formuvia.exceptions.CommonException;
 import rs.formuvia.exceptions.UniqueException;
 import rs.formuvia.model.dto.ModelDTO;
 import rs.formuvia.model.dto.ModelExtendedDTO;
+import rs.formuvia.model.dto.ModelJasperDTO;
 import rs.formuvia.model.dto.ModelProcedureDTO;
 import rs.formuvia.model.dto.ModelTreeDTO;
 import rs.formuvia.model.dto.ModelTriggerDTO;
@@ -33,8 +34,10 @@ import rs.formuvia.model.entity.ModelProcedure;
 import rs.formuvia.model.service.ModelService;
 import rs.formuvia.model.utils.CreateModelListOfValuesColumns;
 import rs.formuvia.model.utils.DeleteModel;
+import rs.formuvia.model.utils.DeleteModelJasper;
 import rs.formuvia.model.utils.DeleteModelTrigger;
 import rs.formuvia.model.utils.UpdateModel;
+import rs.formuvia.model.utils.UpdateModelJasper;
 import rs.formuvia.model.utils.UpdateModelTrigger;
 import rs.formuvia.utils.StaticData;
 import rs.formuvia.utils.StringUtils;
@@ -70,6 +73,10 @@ public class ModelServiceImpl implements ModelService {
 		List<ModelTriggerDTO> triggers = StaticData.modelTriggers.stream().filter(a -> a.getModelId().equals(id))
 				.sorted(Comparator.comparing(ModelTriggerDTO::getName)).collect(Collectors.toList());
 		modelModelExtendedDTO.setTriggers(triggers);
+
+		List<ModelJasperDTO> jaspers = StaticData.modelJaspers.stream().filter(a -> a.getModelId().equals(id))
+				.sorted(Comparator.comparing(ModelJasperDTO::getName)).collect(Collectors.toList());
+		modelModelExtendedDTO.setJaspers(jaspers);
 		return modelModelExtendedDTO;
 	}
 
@@ -171,6 +178,18 @@ public class ModelServiceImpl implements ModelService {
 	public void getDeleteModelTrigger(UUID id) {
 		DeleteModelTrigger deleteModelTrigger = new DeleteModelTrigger(id);
 		this.databaseService.executeQuery(deleteModelTrigger);
+	}
+
+	@Override
+	public ModelJasperDTO getUpdateModelJasper(ModelJasperDTO modelTriggerDTO) {
+		UpdateModelJasper updateModelJasper = new UpdateModelJasper(httpServletRequest, modelTriggerDTO);
+		return this.databaseService.executeQuery(updateModelJasper);
+	}
+
+	@Override
+	public void getDeleteModelJasper(UUID id) {
+		DeleteModelJasper deleteModelJasper = new DeleteModelJasper(id);
+		this.databaseService.executeQuery(deleteModelJasper);
 	}
 
 }

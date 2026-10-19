@@ -29,6 +29,8 @@ public class ApiRoute {
 	public static final String modelUpdateProcedureId = "/model/procedure/{id}";
 	public static final String modelUpdateTrigger = "/model/trigger";
 	public static final String modelUpdateTriggerId = "/model/trigger/{id}";
+	public static final String modelUpdateJasper = "/model/jasper";
+	public static final String modelUpdateJasperId = "/model/jasper/{id}";
 
 	public static final String modelColumn = "/model-column";
 	public static final String modelColumnId = "/model-column/{id}";
@@ -55,6 +57,7 @@ public class ApiRoute {
 	public static final String modelPreviewTableWithParentTotal = "/preview/model/{modelId}/{parentId}/total";
 	public static final String modelChangeColumn = "/preview/change/{modelId}/{columnName}";
 	public static final String modelExecuteProcedure = "/preview/execute-procedure/{procedureId}/{id}";
+	public static final String modelJasperPrint = "/preview/jasper/{modelJasperId}/{id}";
 
 	public static final String fileUpload = "/file-upload";
 

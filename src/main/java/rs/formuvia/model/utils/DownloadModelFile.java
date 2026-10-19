@@ -59,14 +59,20 @@ public class DownloadModelFile implements ExecuteQuery<Response> {
 
 	public static Response createDownloadResponse(String path, String fileName, String mimeType, UUID id)
 			throws Exception {
+
+		File file = createFileFromPath(path, id);
+
+		return ExportTableServiceImpl.createExcelResponse(Files.readAllBytes(Paths.get(file.getAbsolutePath())),
+				fileName, mimeType);
+	}
+
+	public static File createFileFromPath(String path, UUID id) {
 		File rootFile = new File(StaticData.appProperties.getProperty(FileUploadServiceImpl.PATH_FILE_PARAMETER));
 		File file = new File(rootFile.getAbsolutePath() + "/" + path);
 		if (!file.exists()) {
 			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "noFile", id);
 		}
-
-		return ExportTableServiceImpl.createExcelResponse(Files.readAllBytes(Paths.get(file.getAbsolutePath())),
-				fileName, mimeType);
+		return file;
 	}
 
 	public static ModelFile findModelFile(String columnName, ModelDTO modelDTO, UUID rowId, Connection connection) {

@@ -10,7 +10,9 @@ import lombok.Setter;
 @Getter
 public class ModelExtendedDTO extends ModelDTO {
 
-	List<ModelProcedureDTO> procedures = new ArrayList<>();
+	private List<ModelProcedureDTO> procedures = new ArrayList<>();
 
-	List<ModelTriggerDTO> triggers = new ArrayList<>();
+	private List<ModelTriggerDTO> triggers = new ArrayList<>();
+
+	private List<ModelJasperDTO> jaspers = new ArrayList<>();
 }
