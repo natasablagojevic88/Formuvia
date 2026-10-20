@@ -48,6 +48,13 @@ public class ReportDTO {
 	@HideInTable
 	private UUID jasterFileId;
 
+	@HideInTable
+	private String jasterFilePath;
+
+	@HideInTable
+	private String icon;
+
 	@SkipColumn
 	private FileUploadDTO fileUpload;
+
 }

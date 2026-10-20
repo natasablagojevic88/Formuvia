@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 import rs.formuvia.common.dto.HistoryDTO;
+import rs.formuvia.common.service.CommonService;
 import rs.formuvia.database.service.DatabaseService;
 import rs.formuvia.database.utils.DatabaseParameter;
 import rs.formuvia.database.utils.DatabaseTable;
@@ -38,6 +39,7 @@ import rs.formuvia.model.utils.ObjectRow;
 import rs.formuvia.model.utils.PrintModelJasper;
 import rs.formuvia.model.utils.UpdateObject;
 import rs.formuvia.utils.StaticData;
+import rs.formuvia.utils.StringUtils;
 
 @Service
 public class ModelPreviewServiceImpl implements ModelPreviewService {
@@ -47,6 +49,9 @@ public class ModelPreviewServiceImpl implements ModelPreviewService {
 
 	@Context
 	private HttpServletRequest httpServletRequest;
+
+	@Inject
+	private CommonService commonService;
 
 	public static ModelDTO findModel(UUID modelId) {
 		return StaticData.models.stream().filter(a -> a.getId().equals(modelId)).findFirst()
@@ -63,7 +68,7 @@ public class ModelPreviewServiceImpl implements ModelPreviewService {
 
 	@Override
 	public ObjectFormDTO getForm(UUID modelId, UUID id, UUID parent) {
-		CreateForm createForm = new CreateForm(httpServletRequest, modelId, id, parent);
+		CreateForm createForm = new CreateForm(httpServletRequest, modelId, id, parent, true);
 		return this.databaseService.executeQuery(createForm);
 	}
 
@@ -159,6 +164,19 @@ public class ModelPreviewServiceImpl implements ModelPreviewService {
 	public Response getPrintModelJasper(UUID modelJasperId, UUID id) {
 		PrintModelJasper printModelJasper = new PrintModelJasper(this.httpServletRequest, modelJasperId, id);
 		return this.databaseService.executeQuery(printModelJasper);
+	}
+
+	@Override
+	public ObjectFormDTO getFormForTable(UUID currentModelId, UUID modelId, UUID id) {
+		ModelDTO modelDTO = findModel(currentModelId);
+		this.commonService.checkRole(modelDTO.getPreviewRoleCode());
+		if (StaticData.modelColumns.stream().filter(a -> a.getModelId().equals(currentModelId))
+				.filter(a -> StringUtils.notNull(a.getCodebookId())).filter(a -> a.getCodebookId().equals(modelId))
+				.count() == 0)
+			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "noCodebookInModel", currentModelId);
+
+		CreateForm createForm = new CreateForm(httpServletRequest, modelId, id, null, false);
+		return this.databaseService.executeQuery(createForm);
 	}
 
 }

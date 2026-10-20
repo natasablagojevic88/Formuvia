@@ -42,6 +42,7 @@ public class ApiRoute {
 	public static final String modelPreviewTableWithParent = "/preview/model/{modelId}/{parentId}";
 	public static final String modelPreviewForm = "/preview/form/{modelId}";
 	public static final String modelPreviewFormWithId = "/preview/form/{modelId}/{id}";
+	public static final String modelPreviewFormFromTable = "/preview/table/form/{currentModelId}/{modelId}/{id}";
 	public static final String modelPreviewFormWithParent = "/preview/form/{modelId}/parent/{parent}";
 	public static final String modelPreviewUpdate = "/preview/update/{modelId}";
 	public static final String modelPreviewDelete = "/preview/delete/{modelId}/{id}";
@@ -80,5 +81,8 @@ public class ApiRoute {
 	public static final String reportPreviewTable = "/report/preview/{reportId}/table";
 	public static final String reportPreviewExcel = "/report/preview/{reportId}/excel";
 	public static final String reportPreviewExecute = "/report/preview/{reportId}/execute";
+	public static final String reportPreviewJasper = "/report/preview/{reportId}/jasper";
+
+	public static final String openApiModule = "/openapi-module.json";
 
 }

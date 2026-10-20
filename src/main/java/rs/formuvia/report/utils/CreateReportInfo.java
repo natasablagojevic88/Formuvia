@@ -65,7 +65,7 @@ public class CreateReportInfo implements ExecuteQuery<ReportInfoDTO> {
 		return reportInfoDTO;
 	}
 
-	private static List<ReportParameterDTO> getParametersForReportId(UUID reportId) {
+	public static List<ReportParameterDTO> getParametersForReportId(UUID reportId) {
 		return StaticData.reportParameters.stream().filter(a -> a.getReportId().equals(reportId))
 				.collect(Collectors.toList());
 	}

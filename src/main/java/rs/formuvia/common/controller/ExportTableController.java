@@ -19,7 +19,7 @@ import rs.formuvia.utils.ApiRoute;
 import rs.formuvia.utils.ErrorDetail;
 
 @Path("")
-@Tag(name = "Export", description = "Exporting table data to Excel. The client first reads the table it wants to export through the table endpoint of that module and then sends the result here, so the file contains exactly the rows and columns the user sees.")
+@Tag(name = "Common / Export", description = "Exporting table data to Excel. The client first reads the table it wants to export through the table endpoint of that module and then sends the result here, so the file contains exactly the rows and columns the user sees.")
 public class ExportTableController {
 
 	@Inject

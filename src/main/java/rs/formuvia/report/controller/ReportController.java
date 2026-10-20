@@ -30,7 +30,7 @@ import rs.formuvia.utils.ErrorDetail;
 import rs.formuvia.utils.RoleList;
 
 @Path("")
-@Tag(name = "Reports", description = "Reports of one report group: paged table and retrieval of a single report. A report is either data from a query, an action over the data, or a Jasper document. All endpoints require a valid session and the admin role.")
+@Tag(name = "Report / Reports", description = "Reports of one report group: paged table and retrieval of a single report. A report is either data from a query, an action over the data, or a Jasper document. All endpoints require a valid session and the admin role.")
 public class ReportController {
 
 	@Inject

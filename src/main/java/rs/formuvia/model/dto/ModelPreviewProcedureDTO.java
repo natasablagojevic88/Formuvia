@@ -2,15 +2,14 @@ package rs.formuvia.model.dto;
 
 import java.util.UUID;
 
-import com.drew.lang.annotations.NotNull;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Setter
 @Getter
-@NotNull
+@NoArgsConstructor
 @AllArgsConstructor
 public class ModelPreviewProcedureDTO {
 

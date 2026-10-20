@@ -31,7 +31,7 @@ public class PrintModelJasper implements ExecuteQuery<Response> {
 	private CommonService commonService;
 	private DatabaseService databaseService = new DatabaseServiceImpl();
 
-	private final String MIME_TYPE_EXPORT = "application/pdf";
+	public static final String MIME_TYPE_EXPORT = "application/pdf";
 	private final String MIME_TYPE_EXTENSION = ".pdf";
 
 	public PrintModelJasper(HttpServletRequest httpServletRequest, UUID modelJasperId, UUID id) {

@@ -30,7 +30,7 @@ import rs.formuvia.utils.ApiRoute;
 import rs.formuvia.utils.ErrorDetail;
 
 @Path("")
-@Tag(name = "Model preview", description = "Reading data from tables defined through the model. Unlike the built-in tables, these have no DTO class of their own: the columns, their labels and the permissions are taken from the model, so one endpoint serves every table that has been created this way. Access is therefore not tied to a fixed role but to the view role of the model being read.")
+@Tag(name = "Model / Preview", description = "Reading data from tables defined through the model. Unlike the built-in tables, these have no DTO class of their own: the columns, their labels and the permissions are taken from the model, so one endpoint serves every table that has been created this way. Access is therefore not tied to a fixed role but to the view role of the model being read.")
 public class ModelPreviewController {
 
 	@Inject
@@ -348,5 +348,20 @@ public class ModelPreviewController {
 			@Parameter(description = "Identifier of the record the report is made over", required = true) @PathParam("id") UUID id) {
 
 		return modelPreviewService.getPrintModelJasper(modelJasperId, id);
+	}
+
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path(ApiRoute.modelPreviewFormFromTable)
+	@Operation(operationId = "getFormForTable", summary = "The record of a codebook, reached from a table that points at it", description = "Returns the form of one record of a codebook, in the same shape as the form of a record of a table, so a value picked from a codebook can be looked at without leaving the table it stands in. The right to read it is judged by the table it is reached from, not by the codebook: it asks for the view role of that table, and it is given only if a column of that table really points at this codebook. The record itself is only shown, never changed through this path.", responses = {
+			@ApiResponse(responseCode = "200", description = "Fields of the record of the codebook, with the records of the codebooks above them", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ObjectFormDTO.class))),
+			@ApiResponse(responseCode = "400", description = "No table or codebook with the given identifier, no record with that identifier, or no column of the table points at that codebook", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "403", description = "Current user does not have the view role of the table the record is reached from", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
+	public Response getFormForTable(
+			@Parameter(description = "Identifier of the table the codebook value stands in", required = true) @PathParam("currentModelId") UUID currentModelId,
+			@Parameter(description = "Identifier of the codebook the record belongs to", required = true) @PathParam("modelId") UUID modelId,
+			@Parameter(description = "Identifier of the record of the codebook", required = true) @PathParam("id") UUID id) {
+		return Response.ok(modelPreviewService.getFormForTable(currentModelId, modelId, id)).build();
 	}
 }

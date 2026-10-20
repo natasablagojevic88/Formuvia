@@ -120,7 +120,8 @@ public class ReportServiceImpl implements ReportService {
 						":" + reportParameterDTO.getCode());
 		}
 
-		if (reportParameterDTO.getColumnType().equals(ColumnType.FILE))
+		if (reportParameterDTO.getColumnType().equals(ColumnType.FILE)
+				|| reportParameterDTO.getColumnType().equals(ColumnType.UUID))
 			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "noColumnTypeAllowed", null);
 
 		DatabaseParameter uniqueParameter = DatabaseParameter.singleFilter(

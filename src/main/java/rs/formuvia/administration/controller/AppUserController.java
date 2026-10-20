@@ -32,7 +32,7 @@ import rs.formuvia.utils.ErrorDetail;
 import rs.formuvia.utils.RoleList;
 
 @Path("")
-@Tag(name = "Users", description = "Administration of application users: paged table, retrieval, creation, update, deletion and assigning roles. All endpoints require a valid session and the admin role. Passwords are never returned.")
+@Tag(name = "Administration / Users", description = "Administration of application users: paged table, retrieval, creation, update, deletion and assigning roles. All endpoints require a valid session and the admin role. Passwords are never returned.")
 public class AppUserController {
 
 	@Inject

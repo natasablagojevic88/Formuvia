@@ -30,7 +30,7 @@ import rs.formuvia.utils.ErrorDetail;
 import rs.formuvia.utils.RoleList;
 
 @Path("")
-@Tag(name = "Roles", description = "Administration of roles: paged table, retrieval, creation, update and deletion. Roles are given to users through the Users endpoints; a role is what @RolesAllowed on an endpoint checks. All endpoints require a valid session and the admin role.")
+@Tag(name = "Administration / Roles", description = "Administration of roles: paged table, retrieval, creation, update and deletion. Roles are given to users through the Users endpoints; a role is what @RolesAllowed on an endpoint checks. All endpoints require a valid session and the admin role.")
 public class RoleController {
 
 	@Inject

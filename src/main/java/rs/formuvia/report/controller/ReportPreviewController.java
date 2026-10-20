@@ -26,7 +26,7 @@ import rs.formuvia.utils.ApiRoute;
 import rs.formuvia.utils.ErrorDetail;
 
 @Path("")
-@Tag(name = "Running reports", description = "Running one report: what it asks for, the rows a SELECT report gives back, the same rows as an Excel file, and running a report that works over the data. Every endpoint requires a valid session and the role of the group the report belongs to; the parameters are sent as a value by parameter code and are put into the query as ?, so the query itself is never built out of them.")
+@Tag(name = "Report / Running", description = "Running one report: what it asks for, the rows a SELECT report gives back, the same rows as an Excel file, and running a report that works over the data. Every endpoint requires a valid session and the role of the group the report belongs to; the parameters are sent as a value by parameter code and are put into the query as ?, so the query itself is never built out of them.")
 public class ReportPreviewController {
 
 	@Inject
@@ -87,4 +87,17 @@ public class ReportPreviewController {
 		return Response.noContent().build();
 	}
 
+	@POST
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_OCTET_STREAM)
+	@Path(ApiRoute.reportPreviewJasper)
+	@Operation(operationId = "getReportPreviewJasper", summary = "A report of the JASPER kind as a PDF", description = "Fills the compiled .jasper file of a report of the JASPER kind with the given parameters and returns the document it makes as a PDF. The value sent under a parameter code is turned into the kind of value that parameter asks for and handed to the report under its own name, so the names in the file and the codes of the parameters are the same thing; the report reads the data over the connection of the application itself, and the language of the document is the one from the X-Language header. The file is named in the Content-Disposition header. A report of another kind is refused, because it is not handed over as a PDF.", requestBody = @RequestBody(description = "Value by parameter code; a parameter left out is sent as null", required = true, content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = "object", description = "Value by parameter code", example = "{\"datum_od\": \"2026-01-01\"}"))), responses = {
+			@ApiResponse(responseCode = "200", description = "The document as a PDF, with its name in the Content-Disposition header", content = @Content(mediaType = "application/pdf", schema = @Schema(type = "string", format = "binary"))),
+			@ApiResponse(responseCode = "400", description = "Report with the given identifier does not exist, the report is not of the JASPER kind, the file of the report is missing, or the report itself failed", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "403", description = "Current user does not have the role of the group this report belongs to", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
+	public Response getReportPreviewJasper(LinkedHashMap<String, Object> parameters,
+			@Parameter(description = "Identifier of the report that is run", required = true) @PathParam("reportId") UUID reportId) {
+		return reportPreviewService.getReportPreviewJasper(parameters, reportId);
+	}
 }

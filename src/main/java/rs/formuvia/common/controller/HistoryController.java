@@ -22,7 +22,7 @@ import rs.formuvia.utils.ApiRoute;
 import rs.formuvia.utils.ErrorDetail;
 
 @Path("")
-@Tag(name = "History", description = "History of changes for a single record. Every change of a tracked table is written by a database trigger, together with the user that made it and the time, so the history shows what the record looked like before and after each change.")
+@Tag(name = "Common / History", description = "History of changes for a single record. Every change of a tracked table is written by a database trigger, together with the user that made it and the time, so the history shows what the record looked like before and after each change.")
 public class HistoryController {
 
 	@Inject

@@ -17,4 +17,6 @@ public interface ReportPreviewService {
 
 	ReportInfoDTO getReportInfo(UUID reportId);
 
+	Response getReportPreviewJasper(LinkedHashMap<String, Object> parameters, UUID reportId);
+
 }

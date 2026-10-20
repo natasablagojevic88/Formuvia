@@ -44,6 +44,7 @@ import rs.formuvia.report.service.ReportPreviewService;
 import rs.formuvia.report.utils.CreateReportInfo;
 import rs.formuvia.report.utils.ExecuteReportPreview;
 import rs.formuvia.report.utils.QuestionMarkDeParser;
+import rs.formuvia.report.utils.ReportPreviewJasper;
 import rs.formuvia.utils.StaticData;
 import rs.formuvia.utils.StringUtils;
 
@@ -199,6 +200,13 @@ public class ReportPreviewServiceImpl implements ReportPreviewService {
 		CreateReportInfo createReportInfo = new CreateReportInfo(httpServletRequest, reportId);
 
 		return databaseService.executeQuery(createReportInfo);
+	}
+
+	@Override
+	public Response getReportPreviewJasper(LinkedHashMap<String, Object> parameters, UUID reportId) {
+		checkRole(reportId);
+		ReportPreviewJasper reportPreviewJasper = new ReportPreviewJasper(httpServletRequest, parameters, reportId);
+		return databaseService.executeQuery(reportPreviewJasper);
 	}
 
 }

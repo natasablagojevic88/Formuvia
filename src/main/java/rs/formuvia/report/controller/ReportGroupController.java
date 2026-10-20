@@ -30,7 +30,7 @@ import rs.formuvia.utils.ErrorDetail;
 import rs.formuvia.utils.RoleList;
 
 @Path("")
-@Tag(name = "Report groups", description = "Groups the reports are sorted into: paged table, retrieval, creation, update and deletion. A group carries the role that may read the reports in it. All endpoints require a valid session and the admin role.")
+@Tag(name = "Report / Groups", description = "Groups the reports are sorted into: paged table, retrieval, creation, update and deletion. A group carries the role that may read the reports in it. All endpoints require a valid session and the admin role.")
 public class ReportGroupController {
 
 	@Inject

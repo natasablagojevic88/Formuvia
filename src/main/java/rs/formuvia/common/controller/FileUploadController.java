@@ -21,7 +21,7 @@ import rs.formuvia.utils.ApiRoute;
 import rs.formuvia.utils.ErrorDetail;
 
 @Path("")
-@Tag(name = "Files", description = "Storing files that belong to records. A file is sent on its own, before the record that will hold it is saved: the answer carries the identifier under which the file was stored, and that identifier is what goes into a column of type FILE.")
+@Tag(name = "Common / Files", description = "Storing files that belong to records. A file is sent on its own, before the record that will hold it is saved: the answer carries the identifier under which the file was stored, and that identifier is what goes into a column of type FILE.")
 public class FileUploadController {
 
 	@Inject

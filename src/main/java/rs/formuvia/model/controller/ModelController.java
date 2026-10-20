@@ -33,7 +33,7 @@ import rs.formuvia.utils.ErrorDetail;
 import rs.formuvia.utils.RoleList;
 
 @Path("")
-@Tag(name = "Model", description = "Definition of the application structure as a tree: menus at the first level, tables under menus and subtables under tables. Saving a new table creates it in the database; deleting a table drops it together with its data. All endpoints require a valid session and the admin role.")
+@Tag(name = "Model / Structure", description = "Definition of the application structure as a tree: menus at the first level, tables under menus and subtables under tables. Saving a new table creates it in the database; deleting a table drops it together with its data. All endpoints require a valid session and the admin role.")
 public class ModelController {
 
 	@Inject

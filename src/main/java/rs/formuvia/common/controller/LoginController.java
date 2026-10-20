@@ -20,7 +20,7 @@ import rs.formuvia.utils.ApiRoute;
 import rs.formuvia.utils.ErrorDetail;
 
 @Path("")
-@Tag(name = "Authentication", description = "Signing in and out. Sessions are cookie based: a successful login sets an HttpOnly access token cookie that the browser sends automatically with every following request.")
+@Tag(name = "Common / Authentication", description = "Signing in and out. Sessions are cookie based: a successful login sets an HttpOnly access token cookie that the browser sends automatically with every following request.")
 public class LoginController {
 
 	@Inject

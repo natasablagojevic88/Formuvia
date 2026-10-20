@@ -19,7 +19,7 @@ import rs.formuvia.utils.ApiRoute;
 import rs.formuvia.utils.ErrorDetail;
 
 @Path("")
-@Tag(name = "Database routines", description = "Names of the routines the database itself holds, read from information_schema.routines of the current schema. The form design uses them to put a function behind a field of a form: only a function that takes the record as json and returns json can be used there, so the list is asked for the FUNCTION kind returning json.")
+@Tag(name = "Common / Database routines", description = "Names of the routines the database itself holds, read from information_schema.routines of the current schema. The form design uses them to put a function behind a field of a form: only a function that takes the record as json and returns json can be used there, so the list is asked for the FUNCTION kind returning json.")
 public class FunctionListController {
 
 	@Inject

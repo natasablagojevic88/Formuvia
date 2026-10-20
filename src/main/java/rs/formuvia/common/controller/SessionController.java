@@ -22,7 +22,7 @@ import rs.formuvia.utils.ApiRoute;
 import rs.formuvia.utils.ErrorDetail;
 
 @Path("")
-@Tag(name = "Session", description = "The signed-in user: their data, their menu and changing their own password. All endpoints require a valid session.")
+@Tag(name = "Common / Session", description = "The signed-in user: their data, their menu and changing their own password. All endpoints require a valid session.")
 public class SessionController {
 
 	@Inject

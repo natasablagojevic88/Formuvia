@@ -54,7 +54,8 @@ public class CustomContainerRequestFilter implements ContainerRequestFilter {
 	@Context
 	private HttpServletResponse httpServletResponse;
 
-	private String[] apiNonAuthorized = new String[] { "/login", "/openapi.json", "/translations" };
+	private String[] apiNonAuthorized = new String[] { "/login", "/openapi.json", ApiRoute.openApiModule,
+			"/translations" };
 
 	private DatabaseService databaseService = new DatabaseServiceImpl();
 

@@ -31,7 +31,7 @@ import rs.formuvia.utils.ErrorDetail;
 import rs.formuvia.utils.RoleList;
 
 @Path("")
-@Tag(name = "Model columns", description = "Fields of a table defined through the model. A field is two things at once: a column of the table in the database and one input in its entry dialog, so every change here is also a change of the database schema. All endpoints require a valid session and the admin role.")
+@Tag(name = "Model / Columns", description = "Fields of a table defined through the model. A field is two things at once: a column of the table in the database and one input in its entry dialog, so every change here is also a change of the database schema. All endpoints require a valid session and the admin role.")
 public class ModelColumnController {
 
 	@Inject

@@ -47,4 +47,6 @@ public interface ModelPreviewService {
 
 	Response getPrintModelJasper(UUID modelJasperId, UUID id);
 
+	ObjectFormDTO getFormForTable(UUID currentModelId, UUID modelId, UUID id);
+
 }

@@ -42,25 +42,30 @@ public class CreateForm implements ExecuteQuery<ObjectFormDTO> {
 	private final UUID modelId;
 	private final UUID id;
 	private final UUID parent;
+	private final Boolean checkRole;
 
 	private CommonService commonService;
 	private ResourceBundleService resourceBundleService;
 	private static DatabaseService databaseService = new DatabaseServiceImpl();
 
-	public CreateForm(HttpServletRequest httpServletRequest, UUID modelId, UUID id, UUID parent) {
+	public CreateForm(HttpServletRequest httpServletRequest, UUID modelId, UUID id, UUID parent, Boolean checkRole) {
 		this.httpServletRequest = httpServletRequest;
 		commonService = new CommonServiceImpl(this.httpServletRequest);
 		resourceBundleService = new ResourceBundleServiceImpl(this.httpServletRequest);
 		this.modelId = modelId;
 		this.id = id;
 		this.parent = parent;
+		this.checkRole = checkRole;
 	}
 
 	@Override
 	public ObjectFormDTO execute(Connection connection) throws Exception {
 		ObjectFormDTO objectFormDTO = new ObjectFormDTO();
 		ModelDTO modelDTO = ModelPreviewServiceImpl.findModel(modelId);
-		commonService.checkRole(modelDTO.getPreviewRoleCode());
+
+		if (checkRole)
+			commonService.checkRole(modelDTO.getPreviewRoleCode());
+
 		LinkedHashMap<String, Object> values = new LinkedHashMap<String, Object>();
 
 		if (StringUtils.notNull(id)) {

@@ -104,6 +104,9 @@ Copy `Formuvia.war` to Tomcat's `webapps/` directory and start Tomcat. The appli
 - API: `http://localhost:8080/Formuvia/api/...`
 - Swagger UI: `http://localhost:8080/Formuvia/swagger-ui/index.html`
 - OpenAPI spec: `http://localhost:8080/Formuvia/api/openapi.json`
+- OpenAPI spec of one module: `http://localhost:8080/Formuvia/api/openapi-module.json?module=report`
+
+Both the endpoints and the schemas are named after the module they belong to - the tags read `Report / Reports`, `Model / Columns`, and a schema is `Report.ReportDTO` - and the document is written out sorted, so each module stands together in Swagger UI. The picker in the header of Swagger UI holds the whole application (*All*) and one definition per module; the modules are read from the packages of the controllers, so a new module appears there by itself.
 
 ## First login
 

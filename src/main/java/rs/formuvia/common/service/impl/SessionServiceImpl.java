@@ -78,6 +78,7 @@ public class SessionServiceImpl implements SessionService {
 			for (ReportDTO report : reports) {
 				MenuDTO reportMenu = new MenuDTO();
 				reportMenu.setName(resourceBundleService.getText(report.getName()));
+				reportMenu.setIcon(report.getIcon());
 				reportMenu.setUrl(ApiRoute.reportPreview.replace(REPORT_TO_REPLACE, report.getId().toString()));
 				menuDTO.getChildren().add(reportMenu);
 			}
