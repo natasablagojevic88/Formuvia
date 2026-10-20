@@ -254,7 +254,8 @@ public class UpdateObject implements ExecuteQuery<LinkedHashMap<String, Object>>
 				continue;
 			}
 			String columnCode = modelColumnDTO.getCode();
-			object.put(columnCode, createValue(object.get(columnCode), modelColumnDTO, modelDTO, connection));
+			object.put(columnCode, createValue(object.get(columnCode), modelColumnDTO.getColumnType(), modelColumnDTO,
+					modelDTO, connection, this.object, this.commonService));
 
 		}
 
@@ -265,13 +266,15 @@ public class UpdateObject implements ExecuteQuery<LinkedHashMap<String, Object>>
 	}
 
 	@SuppressWarnings("unchecked")
-	private Object createValue(Object value, ModelColumnDTO modelColumnDTO, ModelDTO modelDTO, Connection connection) {
+	public static Object createValue(Object value, ColumnType columnType, ModelColumnDTO modelColumnDTO,
+			ModelDTO modelDTO, Connection connection, LinkedHashMap<String, Object> object,
+			CommonService commonService) {
 
 		if (StringUtils.isNull(value)) {
 			return null;
 		}
 
-		switch (modelColumnDTO.getColumnType()) {
+		switch (columnType) {
 		case BIGDECIMAL:
 			return new BigDecimal(value.toString());
 		case BOOLEAN:
@@ -294,15 +297,15 @@ public class UpdateObject implements ExecuteQuery<LinkedHashMap<String, Object>>
 			Map<String, Object> fileObject = (Map<String, Object>) value;
 			UUID rowId = StringUtils.isNull(object.get(SqlQueryWriterServiceImpl.defaultIdColumn)) ? null
 					: UUID.fromString(object.get(SqlQueryWriterServiceImpl.defaultIdColumn).toString());
-			return createFile(fileObject, rowId, connection, modelDTO, modelColumnDTO.getCode());
+			return createFile(fileObject, rowId, connection, modelDTO, modelColumnDTO.getCode(), commonService);
 		}
 		}
 
 		return null;
 	}
 
-	private UUID createFile(Map<String, Object> fileObject, UUID rowId, Connection connection, ModelDTO modelDTO,
-			String columnName) {
+	private static UUID createFile(Map<String, Object> fileObject, UUID rowId, Connection connection, ModelDTO modelDTO,
+			String columnName, CommonService commonService) {
 		if (StringUtils.isNull(fileObject.get("fileUploadFile"))) {
 
 			if (StringUtils.isNull(fileObject.get("id")))
@@ -315,7 +318,7 @@ public class UpdateObject implements ExecuteQuery<LinkedHashMap<String, Object>>
 
 		UUID fileId = UUID.fromString(fileObject.get("fileUploadFile").toString());
 		FileUpload fileUpload = databaseService.findById(fileId, FileUpload.class, connection);
-		File file = createUploadFile(fileUpload, connection, commonService);
+		File file = createUploadFile(fileUpload, commonService);
 
 		String mimeType = findMimeType(file);
 		ModelFile modelFileFromBase = rowId == null ? null
@@ -367,7 +370,7 @@ public class UpdateObject implements ExecuteQuery<LinkedHashMap<String, Object>>
 		return mimeType;
 	}
 
-	public static File createUploadFile(FileUpload fileUpload, Connection connection, CommonService commonService) {
+	public static File createUploadFile(FileUpload fileUpload, CommonService commonService) {
 
 		if (!fileUpload.getAppUser().getId().equals(commonService.getUser().getId())) {
 			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "wrongUser", fileUpload.getId());

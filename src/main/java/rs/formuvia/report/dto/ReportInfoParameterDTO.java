@@ -22,6 +22,8 @@ public class ReportInfoParameterDTO {
 
 	private ColumnType type;
 
+	private Boolean nullable;
+
 	private Object defaultValue;
 
 	private List<ComboboxDTO> listOfValues = new ArrayList<>();

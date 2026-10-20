@@ -1,6 +1,8 @@
 package rs.formuvia.report.service.impl;
 
+import java.io.File;
 import java.net.HttpURLConnection;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -8,15 +10,14 @@ import org.jvnet.hk2.annotations.Service;
 import org.modelmapper.ModelMapper;
 
 import jakarta.inject.Inject;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Context;
+import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.util.JRLoader;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.Statements;
-import net.sf.jsqlparser.statement.delete.Delete;
-import net.sf.jsqlparser.statement.execute.Execute;
-import net.sf.jsqlparser.statement.insert.Insert;
-import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.update.Update;
 import rs.formuvia.database.enums.ColumnType;
 import rs.formuvia.database.enums.Direction;
 import rs.formuvia.database.enums.SearchOperation;
@@ -26,8 +27,8 @@ import rs.formuvia.database.utils.DatabaseParameter;
 import rs.formuvia.database.utils.DatabaseTable;
 import rs.formuvia.database.utils.QueryDatabaseOrder;
 import rs.formuvia.exceptions.CommonException;
-import rs.formuvia.exceptions.NotNullException;
 import rs.formuvia.exceptions.UniqueException;
+import rs.formuvia.model.utils.DownloadModelFile;
 import rs.formuvia.model.utils.UpdateColumnModel;
 import rs.formuvia.report.dto.ReportDTO;
 import rs.formuvia.report.dto.ReportParameterDTO;
@@ -36,6 +37,7 @@ import rs.formuvia.report.entity.ReportParameter;
 import rs.formuvia.report.enums.ReportType;
 import rs.formuvia.report.service.ReportService;
 import rs.formuvia.report.utils.ParameterTablesNamesFinder;
+import rs.formuvia.report.utils.UpdateReport;
 import rs.formuvia.utils.StringUtils;
 
 @Service
@@ -45,6 +47,9 @@ public class ReportServiceImpl implements ReportService {
 	private DatabaseService databaseService;
 
 	private ModelMapper modelMapper = new ModelMapper();
+
+	@Context
+	private HttpServletRequest httpServletRequest;
 
 	@Override
 	public DatabaseTable<ReportDTO> getTable(DatabaseParameter databaseParameter, UUID reportGroupId) {
@@ -60,66 +65,9 @@ public class ReportServiceImpl implements ReportService {
 
 	@Override
 	public ReportDTO updateReport(ReportDTO reportDTO) {
-		Report report = StringUtils.isNull(reportDTO.getId()) ? new Report()
-				: this.databaseService.findById(reportDTO.getId(), Report.class);
 
-		if (reportDTO.getType().equals(ReportType.EXECUTE) || reportDTO.getType().equals(ReportType.SQL)) {
-			if (StringUtils.isNull(reportDTO.getSqlQuery()))
-				throw new NotNullException(UniqueException.findFieldFromList(ReportDTO.class, "sqlQuery"));
-		} else {
-			reportDTO.setSqlQuery(null);
-		}
-
-		DatabaseParameter uniqueParameter = DatabaseParameter.singleFilter(
-				new DatabaseFilter[] { DatabaseFilter.valueOf("reportGroupId", reportDTO.getReportGroupId().toString()),
-						DatabaseFilter.valueOf("name", reportDTO.getName()) });
-
-		if (StringUtils.notNull(reportDTO.getId()))
-			uniqueParameter.getFilters()
-					.add(DatabaseFilter.valueOf("id", SearchOperation.NOT_EQUALS, reportDTO.getId().toString()));
-
-		if (this.databaseService.exists(uniqueParameter, ReportDTO.class))
-			throw new UniqueException(UniqueException.findFieldFromList(ReportDTO.class, "name"), reportDTO.getName());
-
-		checkSqlQuery(reportDTO.getType(), reportDTO.getSqlQuery());
-
-		this.modelMapper.map(reportDTO, report);
-
-		report = this.databaseService.save(report);
-
-		return getReport(report.getId());
-	}
-
-	private void checkSqlQuery(ReportType reportType, String sqlQuery) {
-
-		if (!StringUtils.hasText(sqlQuery)) {
-			return;
-		}
-
-		Statements statements;
-		try {
-			statements = CCJSqlParserUtil.parseStatements(sqlQuery);
-		} catch (JSQLParserException e) {
-			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "invalidQuery", sqlQuery);
-		}
-
-		if (statements.size() != 1) {
-			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "onlyOneQueryAllowed", sqlQuery);
-		}
-
-		Statement statement = statements.getFirst();
-
-		if (reportType.equals(ReportType.SQL)) {
-			if (!(statement instanceof Select)) {
-				throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "onlySelectAllowed", sqlQuery);
-			}
-		} else if (reportType.equals(ReportType.EXECUTE)) {
-			if (!(statement instanceof Execute || statement instanceof Update || statement instanceof Insert
-					|| statement instanceof Delete)) {
-				throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "onlyExecuteAllowed", sqlQuery);
-			}
-		}
-
+		UpdateReport updateReport = new UpdateReport(this.httpServletRequest, reportDTO);
+		return this.databaseService.executeQuery(updateReport);
 	}
 
 	@Override
@@ -141,11 +89,10 @@ public class ReportServiceImpl implements ReportService {
 				: this.databaseService.findById(reportParameterDTO.getId(), ReportParameter.class);
 		Report report = this.databaseService.findById(reportParameterDTO.getReportId(), Report.class);
 
-		if (!UpdateColumnModel.COLUMN_NAME.matcher(reportParameterDTO.getCode()).matches())
-			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "invalidParameterCode",
-					reportParameterDTO.getCode());
-
 		if (report.getType().equals(ReportType.EXECUTE) || report.getType().equals(ReportType.SQL)) {
+			if (!UpdateColumnModel.COLUMN_NAME.matcher(reportParameterDTO.getCode()).matches())
+				throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "invalidParameterCode",
+						reportParameterDTO.getCode());
 			Statement statement;
 			try {
 				statement = CCJSqlParserUtil.parse(report.getSqlQuery());
@@ -157,6 +104,19 @@ public class ReportServiceImpl implements ReportService {
 			parameterTablesNamesFinder.getTables(statement);
 			if (!parameterTablesNamesFinder.getNames().contains(reportParameterDTO.getCode()))
 				throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "noParameterFoundInQuery",
+						":" + reportParameterDTO.getCode());
+		} else {
+			JasperReport jasperReport = null;
+			try {
+				File file = DownloadModelFile.createFileFromPath(report.getJasterFile().getPath(), report.getId());
+				jasperReport = ((JasperReport) JRLoader.loadObject(file));
+			} catch (Exception ex) {
+				throw new WebApplicationException(ex);
+			}
+
+			if (Arrays.asList(jasperReport.getParameters()).stream().filter(a -> !a.isSystemDefined())
+					.filter(a -> a.getName().equals(reportParameterDTO.getCode())).count() == 0)
+				throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "noParameterFoundInJasper",
 						":" + reportParameterDTO.getCode());
 		}
 

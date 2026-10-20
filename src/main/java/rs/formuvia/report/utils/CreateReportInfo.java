@@ -41,11 +41,11 @@ public class CreateReportInfo implements ExecuteQuery<ReportInfoDTO> {
 		reportInfoDTO.setDescription(this.resourceBundleService.getText(reportDTO.getDescription()));
 		reportInfoDTO.setReportType(reportDTO.getType());
 
-		List<ReportParameterDTO> list = StaticData.reportParameters.stream()
-				.filter(a -> a.getReportId().equals(this.reportId)).collect(Collectors.toList());
+		List<ReportParameterDTO> list = getParametersForReportId(this.reportId);
 		for (ReportParameterDTO parameter : list) {
 			ReportInfoParameterDTO reportInfoParameterDTO = new ReportInfoParameterDTO();
 			reportInfoParameterDTO.setCode(parameter.getCode());
+			reportInfoParameterDTO.setNullable(parameter.getNullable());
 
 			if (StringUtils.notNull(parameter.getDefaultValue()))
 				reportInfoParameterDTO.setDefaultValue(this.databaseService
@@ -63,6 +63,15 @@ public class CreateReportInfo implements ExecuteQuery<ReportInfoDTO> {
 		}
 
 		return reportInfoDTO;
+	}
+
+	private static List<ReportParameterDTO> getParametersForReportId(UUID reportId) {
+		return StaticData.reportParameters.stream().filter(a -> a.getReportId().equals(reportId))
+				.collect(Collectors.toList());
+	}
+
+	public static ReportParameterDTO getParametersFromList(UUID reportId, String name) {
+		return getParametersForReportId(reportId).stream().filter(a -> a.getCode().equals(name)).findFirst().get();
 	}
 
 }

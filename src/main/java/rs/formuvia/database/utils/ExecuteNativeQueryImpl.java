@@ -61,27 +61,11 @@ public class ExecuteNativeQueryImpl<C> implements ExecuteQuery<C> {
 					Object[] objects = new Object[resultSet.getMetaData().getColumnCount()];
 					for (int i = 1; i <= objects.length; i++) {
 						objects[i - 1] = resultSet.getObject(i);
-
-						if (StringUtils.isNull(objects[i - 1])) {
-							continue;
-						}
-
-						if (objects[i - 1] instanceof java.sql.Date) {
-							objects[i - 1] = ((java.sql.Date) objects[i - 1]).toLocalDate();
-						}
-
-						if (objects[i - 1] instanceof java.sql.Timestamp) {
-							objects[i - 1] = ((java.sql.Timestamp) objects[i - 1]).toLocalDateTime();
-						}
-
-						if (objects[i - 1] instanceof java.sql.Time) {
-							objects[i - 1] = ((java.sql.Time) objects[i - 1]).toLocalTime();
-						}
-
+						objects[i - 1] = getObjectValue(objects[i - 1]);
 					}
 					list.add((C) objects);
 				} else if (resultClass.equals(Object.class)) {
-					list.add((C) resultSet.getObject(1));
+					list.add((C) getObjectValue(resultSet.getObject(1)));
 				} else {
 					C object = getValueFromResultSet(resultClass, resultSet.getObject(1), connection);
 					list.add(object);
@@ -93,6 +77,28 @@ public class ExecuteNativeQueryImpl<C> implements ExecuteQuery<C> {
 		preparedStatement.close();
 
 		return (C) list;
+	}
+
+	private Object getObjectValue(Object inObject) {
+		if (StringUtils.isNull(inObject)) {
+			return null;
+		}
+
+		Object object = inObject;
+
+		if (inObject instanceof java.sql.Date) {
+			object = ((java.sql.Date) inObject).toLocalDate();
+		}
+
+		if (inObject instanceof java.sql.Timestamp) {
+			object = ((java.sql.Timestamp) inObject).toLocalDateTime();
+		}
+
+		if (inObject instanceof java.sql.Time) {
+			object = ((java.sql.Time) inObject).toLocalTime();
+		}
+
+		return object;
 	}
 
 	public static <T> ColumnType findColumnType(Class<T> type) {

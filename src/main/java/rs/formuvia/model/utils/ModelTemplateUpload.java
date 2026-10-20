@@ -58,7 +58,7 @@ public class ModelTemplateUpload implements ExecuteQuery<Void> {
 
 		FileUpload fileUpload = databaseService.findById(fileUploadDTOId, FileUpload.class, connection);
 
-		File file = UpdateObject.createUploadFile(fileUpload, connection, commonService);
+		File file = UpdateObject.createUploadFile(fileUpload, commonService);
 		String mimeType = UpdateObject.findMimeType(file);
 		if (!mimeType.equals(ExportTableServiceImpl.EXCEL_CONTENT_TYPE)) {
 			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "wrongFormat", mimeType);

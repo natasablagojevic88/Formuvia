@@ -16,6 +16,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import rs.formuvia.model.entity.ModelFile;
 import rs.formuvia.report.enums.ReportType;
 
 @Setter
@@ -45,4 +46,7 @@ public class Report {
 
 	@Column(name = "sql_query", columnDefinition = "text")
 	private String sqlQuery;
+
+	@JoinColumn(name = "jasper_file", foreignKey = @ForeignKey(name = "fk_report_file"))
+	private ModelFile jasterFile;
 }

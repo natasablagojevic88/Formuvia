@@ -4,6 +4,7 @@ import java.io.File;
 import java.net.HttpURLConnection;
 import java.sql.Connection;
 import java.util.Arrays;
+import java.util.UUID;
 
 import org.modelmapper.ModelMapper;
 import org.modelmapper.PropertyMap;
@@ -34,7 +35,7 @@ public class UpdateModelJasper implements ExecuteQuery<ModelJasperDTO> {
 	private final HttpServletRequest httpServletRequest;
 	private final ModelJasperDTO modelJasperDTO;
 
-	private DatabaseService databaseService = new DatabaseServiceImpl();
+	private static DatabaseService databaseService = new DatabaseServiceImpl();
 	private CommonService commonService;
 	private ModelMapper modelMapper = new ModelMapper();
 
@@ -48,7 +49,7 @@ public class UpdateModelJasper implements ExecuteQuery<ModelJasperDTO> {
 	public ModelJasperDTO execute(Connection connection) throws Exception {
 
 		ModelJasper modelJasper = StringUtils.isNull(this.modelJasperDTO.getId()) ? new ModelJasper()
-				: this.databaseService.findById(this.modelJasperDTO.getId(), ModelJasper.class, connection);
+				: databaseService.findById(this.modelJasperDTO.getId(), ModelJasper.class, connection);
 
 		if (StringUtils.isNull(this.modelJasperDTO.getId()) && StringUtils.isNull(modelJasperDTO.getFileUpload())) {
 			throw new NotNullException(UniqueException.findFieldFromList(ModelJasperDTO.class, "fileUpload"));
@@ -66,15 +67,15 @@ public class UpdateModelJasper implements ExecuteQuery<ModelJasperDTO> {
 			databaseParameterUnique.getFilters()
 					.add(DatabaseFilter.valueOf("id", SearchOperation.NOT_EQUALS, modelJasperDTO.getId().toString()));
 
-		if (this.databaseService.exists(databaseParameterUnique, ModelJasperDTO.class, connection))
+		if (databaseService.exists(databaseParameterUnique, ModelJasperDTO.class, connection))
 			throw new UniqueException(UniqueException.findFieldFromList(ModelJasperDTO.class, "name"),
 					modelJasperDTO.getName());
 		customModelMapper().map(modelJasperDTO, modelJasper);
 		if (StringUtils.notNull(modelJasperDTO.getFileUpload().getId())) {
-			FileUpload fileUpload = this.databaseService.findById(modelJasperDTO.getFileUpload().getId(),
-					FileUpload.class, connection);
+			FileUpload fileUpload = databaseService.findById(modelJasperDTO.getFileUpload().getId(), FileUpload.class,
+					connection);
 
-			File file = UpdateObject.createUploadFile(fileUpload, connection, commonService);
+			File file = UpdateObject.createUploadFile(fileUpload, commonService);
 
 			JasperReport jasperReport = null;
 			try {
@@ -89,20 +90,25 @@ public class UpdateModelJasper implements ExecuteQuery<ModelJasperDTO> {
 					.filter(a -> a.getValueClass().equals(Object.class)).count() == 0)
 				throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "missingReportParameter",
 						SqlQueryWriterServiceImpl.defaultIdColumn);
-
-			ModelFile modelFile = new ModelFile();
-			modelFile.setFileName(modelJasperDTO.getFileUpload().getFileName());
-			modelFile.setId(modelJasper.getFile() == null ? null : (modelJasper.getFile().getId()));
-			modelFile.setMimeType(UpdateObject.findMimeType(file));
-			modelFile.setPath(fileUpload.getPath());
-			modelFile = this.databaseService.save(modelFile, connection);
+			ModelFile modelFile = createModelFile(modelJasper.getFile() == null ? null : modelJasper.getFile().getId(),
+					file, modelJasperDTO.getFileUpload().getFileName(), fileUpload.getPath(), connection);
 			modelJasper.setFile(modelFile);
 
 		}
 
-		modelJasper = this.databaseService.save(modelJasper, connection);
+		modelJasper = databaseService.save(modelJasper, connection);
 
 		return this.modelMapper.map(modelJasper, ModelJasperDTO.class);
+	}
+
+	public static ModelFile createModelFile(UUID id, File file, String fileName, String path, Connection connection) {
+		ModelFile modelFile = new ModelFile();
+		modelFile.setFileName(fileName);
+		modelFile.setId(id);
+		modelFile.setMimeType(UpdateObject.findMimeType(file));
+		modelFile.setPath(path);
+		modelFile = databaseService.save(modelFile, connection);
+		return modelFile;
 	}
 
 	private ModelMapper customModelMapper() {

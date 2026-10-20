@@ -32,9 +32,11 @@ import rs.formuvia.common.utils.ExcelUtils;
 import rs.formuvia.database.service.DatabaseService;
 import rs.formuvia.database.service.impl.DatabaseServiceImpl;
 import rs.formuvia.exceptions.CommonException;
+import rs.formuvia.model.utils.UpdateObject;
 import rs.formuvia.report.dto.ReportDTO;
 import rs.formuvia.report.dto.ReportGroupDTO;
 import rs.formuvia.report.dto.ReportInfoDTO;
+import rs.formuvia.report.dto.ReportParameterDTO;
 import rs.formuvia.report.dto.ReportResultColumnDTO;
 import rs.formuvia.report.dto.ReportResultDTO;
 import rs.formuvia.report.enums.ReportType;
@@ -86,20 +88,25 @@ public class ReportPreviewServiceImpl implements ReportPreviewService {
 		Object[] sqlPart = getQueryPart(reportDTO.getSqlQuery());
 		String query = sqlPart[0].toString();
 		List<String> orderParameters = (List<String>) sqlPart[1];
-		Map<Integer, Object> parameterQuery = createParameters(orderParameters, parameters);
+		Map<Integer, Object> parameterQuery = createParameters(orderParameters, parameters, reportId);
 		ExecuteReportPreview executeReportPreview = new ExecuteReportPreview(httpServletRequest, query, parameterQuery);
 
 		return this.databaseService.executeQuery(executeReportPreview);
 	}
 
 	private Map<Integer, Object> createParameters(List<String> orderParameters,
-			LinkedHashMap<String, Object> parameters) {
+			LinkedHashMap<String, Object> parameters, UUID reportId) {
 		Map<Integer, Object> parameterQuery = new HashMap<>();
 
 		int count = 0;
 		for (String parameter : orderParameters) {
 			count++;
-			parameterQuery.put(count, parameters.get(parameter));
+
+			ReportParameterDTO parameterDTO = CreateReportInfo.getParametersFromList(reportId, parameter);
+			Object value = UpdateObject.createValue(parameters.get(parameter), parameterDTO.getColumnType(), null, null,
+					null, parameters, commonService);
+
+			parameterQuery.put(count, value);
 		}
 		return parameterQuery;
 	}
@@ -180,7 +187,7 @@ public class ReportPreviewServiceImpl implements ReportPreviewService {
 		Object[] sqlPart = getQueryPart(reportDTO.getSqlQuery());
 		String query = sqlPart[0].toString();
 		List<String> orderParameters = (List<String>) sqlPart[1];
-		Map<Integer, Object> parameterQuery = createParameters(orderParameters, parameters);
+		Map<Integer, Object> parameterQuery = createParameters(orderParameters, parameters, reportId);
 		this.databaseService.executeUpdateQuery(query, parameterQuery);
 
 	}
