@@ -85,4 +85,9 @@ public class ApiRoute {
 
 	public static final String openApiModule = "/openapi-module.json";
 
+	public static final String smtp = "/smtp";
+	public static final String smtpId = "/smtp/{id}";
+	public static final String smtpTable = "/smtp/table";
+	public static final String smtpTestMail = "/smtp/test-mail/{smtpId}";
+
 }

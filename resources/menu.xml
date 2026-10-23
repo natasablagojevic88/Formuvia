@@ -6,5 +6,6 @@
 		<item icon="fa-solid fa-user-shield" name="menu.roles" url="/roles" />
 		<item icon="fa-solid fa-sitemap" name="menu.model" url="/model" />
 		<item icon="fa-solid fa-file-invoice" name="menu.reports" url="/report-group" />
+		<item icon="fa-solid fa-envelope" name="menu.smtp" url="/smtp" />
 	</item>
 </menu>

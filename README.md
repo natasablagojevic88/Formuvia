@@ -23,6 +23,7 @@ The web client lives in a separate repository: **FormuviaFront** (Angular).
 - Triggers on a table: a table of the model can be given triggers of the database (`model_trigger`), each one a function returning `trigger`, set to run before or after an insert, an update or a delete, with a `WHEN` condition of its own. Saving the entry creates the trigger in the database and deleting it drops it; the function is checked against `information_schema.routines` beforehand. Only an administrator sets them, and nothing in the API runs them - the database does, on every write of a row
 - Reports on a table: a table of the model can be given reports of JasperReports (`model_jasper`), each one a report compiled by Jaspersoft Studio and stored as a file of its own. The uploaded file is read with `JRLoader` before it is accepted and has to be a compiled report that takes a parameter `id` of type `java.util.UUID`, the record the report is made over; deleting the entry deletes the stored file with it. Only an administrator sets them
 - File upload: a file of a record is stored on the file system under `files.path`, in a folder of the date it arrived, and the record keeps the identifier it was stored under (column type `FILE`)
+- Mail servers: the servers the application sends mail through are written down in the application itself (`smtp`), not in `application.properties` - a name of its own, the address mail is sent from, the server and its port, the protection of the connection (none, STARTTLS or SSL/TLS) and, when the server asks for one, the user it signs in as. The password is stored and never sent back to the client. Only an administrator sets them, and each server can be tried out with a test mail. Every mail the application sends is written down in `mail_log` - the server it went through, the recipient, the subject, the text, whether it left and, when it did not, why
 - Multilingual texts: English (`en-US`), Serbian Latin (`sr-Latn-RS`), Serbian Cyrillic (`sr-RS`)
 - Database schema is created and updated automatically on startup – no manual migrations
 - Scheduled jobs (Quartz), e.g. cleanup of expired sessions
@@ -84,6 +85,7 @@ Most important settings:
 | `cookie.refresh.token.duration.minutes` | Session lifetime | `10080` (7 days) |
 | `forward.ip-adress.header` | Header with the client IP when behind a reverse proxy | `X-Real-IP` |
 | `files.path` | Folder where uploaded files are stored; `${user.home}` is replaced with the home of the user running the server | `${user.home}/.formuvia-files` |
+| `test.mail.subject.text` | Subject of the test mail sent from *Administration / Mail servers* | `Formuvia - mail working` |
 
 Logs are written to the console and to `~/.logs/formuvia.log`. Change the location with `-Dlog.path=/path/to/formuvia.log`.
 

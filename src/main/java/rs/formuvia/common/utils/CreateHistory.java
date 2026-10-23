@@ -21,6 +21,7 @@ import jakarta.json.JsonString;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.WebApplicationException;
 import rs.formuvia.administration.dto.AppUserDTO;
+import rs.formuvia.administration.dto.SmtpDTO;
 import rs.formuvia.common.dto.ChangeDTO;
 import rs.formuvia.common.dto.HistoryDTO;
 import rs.formuvia.common.dto.TrackDTO;
@@ -94,6 +95,11 @@ public class CreateHistory implements ExecuteQuery<List<HistoryDTO>> {
 				if (field.getDeclaringClass().equals(AppUserDTO.class) && field.getName().equals("password")) {
 					continue;
 				}
+
+				if (field.getDeclaringClass().equals(SmtpDTO.class) && field.getName().equals("password")) {
+					continue;
+				}
+
 				String fieldName = CustomDefaultExceptionMapper.createFieldName(field);
 				ColumnType columnType = ExecuteNativeQueryImpl.findColumnType(field.getType());
 				columnType = columnType == null ? ColumnType.STRING : columnType;

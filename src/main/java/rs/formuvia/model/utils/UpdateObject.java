@@ -370,6 +370,17 @@ public class UpdateObject implements ExecuteQuery<LinkedHashMap<String, Object>>
 		return mimeType;
 	}
 
+	public static String findMimeType(byte[] bytes) {
+		String mimeType = null;
+
+		try {
+			mimeType = tika.detect(bytes);
+		} catch (Exception e) {
+			throw new WebApplicationException(e);
+		}
+		return mimeType;
+	}
+
 	public static File createUploadFile(FileUpload fileUpload, CommonService commonService) {
 
 		if (!fileUpload.getAppUser().getId().equals(commonService.getUser().getId())) {
