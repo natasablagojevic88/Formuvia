@@ -173,6 +173,10 @@ public class CreateDatabaseTable<C> implements ExecuteQuery<DatabaseTable<C>> {
 			return StaticData.reportGroups.stream().map(a -> new ComboboxDTO(a.getId(), a.getName())).toList();
 		case listen_report_parameter:
 			return StaticData.reportParameters.stream().map(a -> new ComboboxDTO(a.getId(), a.getName())).toList();
+		case listen_job_item:
+			return StaticData.jobItems.stream().map(a -> new ComboboxDTO(a.getId(), a.getName())).toList();
+		case listen_smtp:
+			return StaticData.smtps.stream().map(a -> new ComboboxDTO(a.getId(), a.getName())).toList();
 
 		}
 

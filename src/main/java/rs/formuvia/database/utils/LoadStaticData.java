@@ -8,7 +8,9 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import rs.formuvia.administration.dto.AppUserRoleDTO;
+import rs.formuvia.administration.dto.JobItemDTO;
 import rs.formuvia.administration.dto.RoleDTO;
+import rs.formuvia.administration.dto.SmtpDTO;
 import rs.formuvia.administration.entity.AppUser;
 import rs.formuvia.database.service.DatabaseService;
 import rs.formuvia.database.service.impl.DatabaseServiceImpl;
@@ -47,6 +49,8 @@ public class LoadStaticData implements ExecuteQuery<Void> {
 		StaticData.reportGroups = this.databaseService.findAll(null, ReportGroupDTO.class, connection);
 		StaticData.reports = this.databaseService.findAll(null, ReportDTO.class, connection);
 		StaticData.reportParameters = this.databaseService.findAll(null, ReportParameterDTO.class, connection);
+		StaticData.smtps = this.databaseService.findAll(null, SmtpDTO.class, connection);
+		StaticData.jobItems = this.databaseService.findAll(null, JobItemDTO.class, connection);
 
 		Set<UUID> columnsWithCodebook = columnWithCodebook();
 		for (UUID modelId : columnsWithCodebook) {

@@ -12,7 +12,9 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
 import rs.formuvia.administration.dto.AppUserRoleDTO;
+import rs.formuvia.administration.dto.JobItemDTO;
 import rs.formuvia.administration.dto.RoleDTO;
+import rs.formuvia.administration.dto.SmtpDTO;
 import rs.formuvia.administration.entity.AppUser;
 import rs.formuvia.database.service.DatabaseService;
 import rs.formuvia.database.service.impl.DatabaseServiceImpl;
@@ -88,6 +90,12 @@ public class DatabaseListenJob implements Job {
 						break;
 					case listen_report_parameter:
 						StaticData.reportParameters = this.databaseService.findAll(null, ReportParameterDTO.class);
+						break;
+					case listen_job_item:
+						StaticData.jobItems = this.databaseService.findAll(null, JobItemDTO.class);
+						break;
+					case listen_smtp:
+						StaticData.smtps = this.databaseService.findAll(null, SmtpDTO.class);
 						break;
 
 					}

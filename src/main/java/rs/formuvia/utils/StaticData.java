@@ -17,7 +17,9 @@ import org.quartz.Scheduler;
 import jakarta.json.bind.Jsonb;
 import jakarta.json.bind.JsonbBuilder;
 import rs.formuvia.administration.dto.AppUserRoleDTO;
+import rs.formuvia.administration.dto.JobItemDTO;
 import rs.formuvia.administration.dto.RoleDTO;
+import rs.formuvia.administration.dto.SmtpDTO;
 import rs.formuvia.administration.entity.AppUser;
 import rs.formuvia.common.dto.ComboboxDTO;
 import rs.formuvia.model.dto.ModelColumnConditionDTO;
@@ -60,6 +62,8 @@ public class StaticData {
 	public static volatile List<ReportGroupDTO> reportGroups = new ArrayList<>();
 	public static volatile List<ReportDTO> reports = new ArrayList<>();
 	public static volatile List<ReportParameterDTO> reportParameters = new ArrayList<>();
+	public static volatile List<SmtpDTO> smtps = new ArrayList<>();
+	public static volatile List<JobItemDTO> jobItems = new ArrayList<>();
 
 	public static volatile Map<UUID, List<ComboboxDTO>> modelCodebook = new ConcurrentHashMap<>();
 	public static volatile Set<UUID> modelsToListen = ConcurrentHashMap.newKeySet();
