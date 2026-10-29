@@ -26,7 +26,7 @@ The web client lives in a separate repository: **FormuviaFront** (Angular).
 - Mail servers: the servers the application sends mail through are written down in the application itself (`smtp`), not in `application.properties` - a name of its own, the address mail is sent from, the server and its port, the protection of the connection (none, STARTTLS or SSL/TLS) and, when the server asks for one, the user it signs in as. The password is stored and never sent back to the client. Only an administrator sets them, and each server can be tried out with a test mail. Every mail the application sends is written down in `mail_log` - the server it went through, the recipient, the subject, the text, whether it left and, when it did not, why
 - Multilingual texts: English (`en-US`), Serbian Latin (`sr-Latn-RS`), Serbian Cyrillic (`sr-RS`)
 - Database schema is created and updated automatically on startup – no manual migrations
-- Scheduled jobs (Quartz), e.g. cleanup of expired sessions
+- Scheduled jobs (Quartz): the jobs of the application itself - listening to the database, checking that connection and cleaning up expired sessions - and the jobs a report is given through the application (`job_item`, `job_cron`). A job of a report says what is to be done with it (send it by mail through one of the mail servers, write it into a file on the server as Excel or CSV, or only run it) and when: for every unit of time - minutes, hours, day of the month, month, day of the week, year - either any value, a step (`*/n`) or a list of values, out of which the server builds the cron expression of the trigger. A job is kept in the database of the scheduler (`quartz.database.start`), so it stands there after a restart as well; a job that is switched off is unscheduled without being deleted, a deleted one is taken out of the scheduler together with its row, and the name of a job cannot be changed, because the scheduler holds the job under it. What the server does when such a job fires is still being built
 - OpenAPI / Swagger UI documentation
 
 ## Requirements
@@ -86,6 +86,10 @@ Most important settings:
 | `forward.ip-adress.header` | Header with the client IP when behind a reverse proxy | `X-Real-IP` |
 | `files.path` | Folder where uploaded files are stored; `${user.home}` is replaced with the home of the user running the server | `${user.home}/.formuvia-files` |
 | `test.mail.subject.text` | Subject of the test mail sent from *Administration / Mail servers* | `Formuvia - mail working` |
+| `quartz.database.start` | Start the scheduler that keeps its jobs in the database; without it the jobs of a report are written down but never scheduled | `true` |
+| `database.listen.cron` | How often the changes announced by the database are read | `*/2 * * * * ?` |
+| `database.listen.connection.check.cron` | How often that connection is checked | `0 */1 * * * ?` |
+| `token.clear.cron` | How often expired sessions are cleaned up | `0 0 */1 * * ?` |
 
 Logs are written to the console and to `~/.logs/formuvia.log`. Change the location with `-Dlog.path=/path/to/formuvia.log`.
 

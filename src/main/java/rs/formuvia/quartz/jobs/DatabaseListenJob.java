@@ -12,7 +12,6 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
 import rs.formuvia.administration.dto.AppUserRoleDTO;
-import rs.formuvia.administration.dto.JobItemDTO;
 import rs.formuvia.administration.dto.RoleDTO;
 import rs.formuvia.administration.dto.SmtpDTO;
 import rs.formuvia.administration.entity.AppUser;
@@ -27,6 +26,7 @@ import rs.formuvia.model.dto.ModelJasperDTO;
 import rs.formuvia.model.dto.ModelProcedureDTO;
 import rs.formuvia.model.dto.ModelTriggerDTO;
 import rs.formuvia.model.utils.UpdateColumnModel;
+import rs.formuvia.quartz.dto.JobItemDTO;
 import rs.formuvia.report.dto.ReportDTO;
 import rs.formuvia.report.dto.ReportGroupDTO;
 import rs.formuvia.report.dto.ReportParameterDTO;

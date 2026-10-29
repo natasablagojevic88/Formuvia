@@ -76,6 +76,9 @@ public class ApiRoute {
 	public static final String reportParameterId = "/report/parameter/{id}";
 	public static final String reportParameterTable = "/report/parameter/table/{reportId}";
 	public static final String reportParameterOrderNumber = "/report/parameter/next-order-number/{reportId}";
+	public static final String reportJobTable = "/report/job/table/{reportId}";
+	public static final String reportJob = "/report/job";
+	public static final String reportJobId = "/report/job/{id}";
 
 	public static final String reportPreview = "/report/preview/{reportId}";
 	public static final String reportPreviewTable = "/report/preview/{reportId}/table";

@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import rs.formuvia.database.utils.DatabaseParameter;
 import rs.formuvia.database.utils.DatabaseTable;
+import rs.formuvia.quartz.dto.JobItemDTO;
 import rs.formuvia.report.dto.ReportDTO;
 import rs.formuvia.report.dto.ReportParameterDTO;
 
@@ -24,5 +25,11 @@ public interface ReportService {
 	void getParameterDelete(UUID id);
 
 	Integer getParameterOrderNumber(UUID reportId);
+
+	DatabaseTable<JobItemDTO> getJobTable(DatabaseParameter databaseParameter, UUID reportId);
+
+	JobItemDTO getJobUpdate(JobItemDTO jobItemDTO);
+
+	void getJobDelete(UUID id);
 
 }

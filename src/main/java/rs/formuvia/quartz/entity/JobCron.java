@@ -48,4 +48,29 @@ public class JobCron {
 
 	@Column(name = "in_day")
 	private String inDay;
+
+	@Column(name = "any_month", nullable = false)
+	private Boolean anyMonth;
+
+	@Column(name = "every_month")
+	private Integer everyMonth;
+
+	@Column(name = "in_month")
+	private String inMonth;
+
+	@Column(name = "any_d_of_week", nullable = false)
+	private Boolean anyDOfWeek;
+
+	@Column(name = "in_d_of_week")
+	private String inDOfWeek;
+
+	@Column(name = "any_year", nullable = false)
+	private Boolean anyYear;
+
+	@Column(name = "every_year")
+	private Integer everyYear;
+
+	@Column(name = "in_year")
+	private String inYear;
+
 }

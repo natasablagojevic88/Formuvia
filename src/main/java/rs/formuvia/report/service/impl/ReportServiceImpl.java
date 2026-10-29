@@ -30,6 +30,9 @@ import rs.formuvia.exceptions.CommonException;
 import rs.formuvia.exceptions.UniqueException;
 import rs.formuvia.model.utils.DownloadModelFile;
 import rs.formuvia.model.utils.UpdateColumnModel;
+import rs.formuvia.quartz.dto.JobItemDTO;
+import rs.formuvia.quartz.utils.JobDelete;
+import rs.formuvia.quartz.utils.JobItemUpdate;
 import rs.formuvia.report.dto.ReportDTO;
 import rs.formuvia.report.dto.ReportParameterDTO;
 import rs.formuvia.report.entity.Report;
@@ -177,6 +180,24 @@ public class ReportServiceImpl implements ReportService {
 		List<ReportParameterDTO> list = this.databaseService.findAll(databaseParameter, ReportParameterDTO.class);
 
 		return list.isEmpty() ? 1 : list.getFirst().getOrderNumber() + 1;
+	}
+
+	@Override
+	public DatabaseTable<JobItemDTO> getJobTable(DatabaseParameter databaseParameter, UUID reportId) {
+		databaseParameter.getFilters().add(DatabaseFilter.valueOf("reportId", reportId.toString()));
+		return this.databaseService.createTable(databaseParameter, JobItemDTO.class);
+	}
+
+	@Override
+	public JobItemDTO getJobUpdate(JobItemDTO jobItemDTO) {
+		JobItemUpdate jobItemUpdate = new JobItemUpdate(jobItemDTO, true);
+		return this.databaseService.executeQuery(jobItemUpdate);
+	}
+
+	@Override
+	public void getJobDelete(UUID id) {
+		JobDelete jobDelete = new JobDelete(id);
+		this.databaseService.executeQuery(jobDelete);
 	}
 
 }

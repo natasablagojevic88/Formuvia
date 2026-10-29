@@ -19,10 +19,12 @@ import rs.formuvia.common.service.impl.AppStartUpImpl;
 import rs.formuvia.common.service.impl.CommonServiceImpl;
 import rs.formuvia.database.service.DatabaseService;
 import rs.formuvia.database.service.impl.DatabaseServiceImpl;
+import rs.formuvia.quartz.dto.JobItemDTO;
 import rs.formuvia.quartz.jobs.ClearTokenJob;
 import rs.formuvia.quartz.jobs.DatabaseListenCheckConnectionJob;
 import rs.formuvia.quartz.jobs.DatabaseListenJob;
 import rs.formuvia.quartz.service.QuartzService;
+import rs.formuvia.quartz.utils.JobItemUpdate;
 import rs.formuvia.utils.StaticData;
 
 @Service
@@ -62,9 +64,17 @@ public class QuartzServiceImpl implements QuartzService {
 			StaticData.databaseScheduler = new StdSchedulerFactory(propertiesForDatabase()).getScheduler();
 			StaticData.databaseScheduler.start();
 			loadCheckTokenJob();
+			loadReportJob();
 
 		} catch (Exception e) {
 			this.logger.error(e.getMessage(), e);
+		}
+
+	}
+
+	private void loadReportJob() {
+		for (JobItemDTO jobItem : StaticData.jobItems) {
+			JobItemUpdate.loadJob(jobItem);
 		}
 
 	}

@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -22,6 +23,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import rs.formuvia.database.utils.DatabaseParameter;
 import rs.formuvia.database.utils.DatabaseTable;
+import rs.formuvia.quartz.dto.JobItemDTO;
 import rs.formuvia.report.dto.ReportDTO;
 import rs.formuvia.report.dto.ReportParameterDTO;
 import rs.formuvia.report.service.ReportService;
@@ -146,6 +148,32 @@ public class ReportController {
 	public Response getParameterOrderNumber(
 			@Parameter(description = "Identifier of the report the parameter is added to", required = true) @PathParam("reportId") UUID reportId) {
 		return Response.ok(reportService.getParameterOrderNumber(reportId)).build();
+	}
+
+	@POST
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Path(ApiRoute.reportJobTable)
+	@RolesAllowed(RoleList.ADMIN)
+	public Response getJobTable(DatabaseParameter databaseParameter, @PathParam("reportId") UUID reportId) {
+		return Response.ok(reportService.getJobTable(databaseParameter, reportId)).build();
+	}
+
+	@POST
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Path(ApiRoute.reportJob)
+	@RolesAllowed(RoleList.ADMIN)
+	public Response getJobUpdate(@Valid JobItemDTO jobItemDTO) {
+		return Response.ok(reportService.getJobUpdate(jobItemDTO)).build();
+	}
+
+	@DELETE
+	@Path(ApiRoute.reportJobId)
+	@RolesAllowed(RoleList.ADMIN)
+	public Response getJobDelete(@PathParam("id") UUID id) {
+		reportService.getJobDelete(id);
+		return Response.noContent().build();
 	}
 
 }

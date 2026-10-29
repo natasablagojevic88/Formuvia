@@ -76,4 +76,10 @@ public class JobItem {
 
 	@JoinColumn(foreignKey = @ForeignKey(name = "fk_job_item_smtp"))
 	private Smtp smtp;
+
+	@Column(name = "error_receive")
+	private String errorReceive;
+
+	@JoinColumn(name = "job_cron", nullable = false, foreignKey = @ForeignKey(name = "fk_job_item_cron"))
+	private JobCron jobCron;
 }
