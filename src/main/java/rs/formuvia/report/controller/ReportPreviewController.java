@@ -42,7 +42,7 @@ public class ReportPreviewController {
 			@ApiResponse(responseCode = "403", description = "Current user does not have the role of the group this report belongs to", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
 	public Response getReportPreviewExcel(
 			@Parameter(description = "Identifier of the report that is being offered", required = true) @PathParam("reportId") UUID reportId) {
-		return Response.ok(reportPreviewService.getReportInfo(reportId)).build();
+		return Response.ok(reportPreviewService.getReportInfo(reportId, true)).build();
 	}
 
 	@POST
@@ -56,7 +56,7 @@ public class ReportPreviewController {
 			@ApiResponse(responseCode = "403", description = "Current user does not have the role of the group this report belongs to", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
 	public Response getReportPreviewTable(LinkedHashMap<String, Object> parameters,
 			@Parameter(description = "Identifier of the report that is run", required = true) @PathParam("reportId") UUID reportId) {
-		return Response.ok(reportPreviewService.getReportPreviewTable(parameters, reportId)).build();
+		return Response.ok(reportPreviewService.getReportPreviewTable(parameters, reportId, true)).build();
 	}
 
 	@POST
@@ -70,7 +70,7 @@ public class ReportPreviewController {
 			@ApiResponse(responseCode = "403", description = "Current user does not have the role of the group this report belongs to", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
 	public Response getReportPreviewExcel(LinkedHashMap<String, Object> parameters,
 			@Parameter(description = "Identifier of the report that is run", required = true) @PathParam("reportId") UUID reportId) {
-		return reportPreviewService.getReportPreviewExcel(parameters, reportId);
+		return reportPreviewService.getReportPreviewExcel(parameters, reportId, true);
 	}
 
 	@POST
@@ -83,7 +83,7 @@ public class ReportPreviewController {
 			@ApiResponse(responseCode = "403", description = "Current user does not have the role of the group this report belongs to", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
 	public Response getReportExecute(LinkedHashMap<String, Object> parameters,
 			@Parameter(description = "Identifier of the report that is run", required = true) @PathParam("reportId") UUID reportId) {
-		reportPreviewService.getReportExecute(parameters, reportId);
+		reportPreviewService.getReportExecute(parameters, reportId, true);
 		return Response.noContent().build();
 	}
 
@@ -98,6 +98,6 @@ public class ReportPreviewController {
 			@ApiResponse(responseCode = "403", description = "Current user does not have the role of the group this report belongs to", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
 	public Response getReportPreviewJasper(LinkedHashMap<String, Object> parameters,
 			@Parameter(description = "Identifier of the report that is run", required = true) @PathParam("reportId") UUID reportId) {
-		return reportPreviewService.getReportPreviewJasper(parameters, reportId);
+		return reportPreviewService.getReportPreviewJasper(parameters, reportId, true);
 	}
 }

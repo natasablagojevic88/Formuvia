@@ -6,6 +6,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -17,6 +18,7 @@ import org.jvnet.hk2.annotations.Service;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.ResponseBuilder;
 import rs.formuvia.common.service.ExportTableService;
 import rs.formuvia.common.service.ResourceBundleService;
 import rs.formuvia.common.utils.ExcelUtils;
@@ -135,6 +137,28 @@ public class ExportTableServiceImpl implements ExportTableService {
 				.header(EXPORT_HEADER, CONTENT_DISPOSITION)
 				.header(CONTENT_DISPOSITION, CONTENT_DISPOTION_TEXT + encodedName).entity(bytes).build();
 		return response;
+	}
+
+	public static Response createExcelResponse(byte[] bytes, String filename, String contentType,
+			Map<String, Object> headers) {
+		String encodedName = null;
+		try {
+			encodedName = URLEncoder.encode(filename, StandardCharsets.UTF_8.displayName()).replace("+", "%20");
+		} catch (UnsupportedEncodingException e) {
+			throw new WebApplicationException(e);
+		}
+		ResponseBuilder build = Response.status(HttpURLConnection.HTTP_OK)
+				.header(CustomContainerRequestFilter.CONTENT_TYPE, contentType)
+				.header(EXPORT_HEADER, CONTENT_DISPOSITION)
+				.header(CONTENT_DISPOSITION, CONTENT_DISPOTION_TEXT + encodedName).entity(bytes);
+
+		Iterator<String> itr = headers.keySet().iterator();
+		while (itr.hasNext()) {
+			String key = itr.next();
+			build.header(key, headers.get(key));
+		}
+
+		return build.build();
 	}
 
 }

@@ -209,7 +209,7 @@ public class CustomDefaultExceptionMapper implements ExceptionMapper<Throwable> 
 		return Response.status(errorDetail.getStatus()).entity(errorDetail).build();
 	}
 
-	private Exception getLastException(Throwable exception) {
+	public static Exception getLastException(Throwable exception) {
 		Exception lastException = (Exception) exception;
 		while (lastException.getCause() != null) {
 			lastException = (Exception) lastException.getCause();

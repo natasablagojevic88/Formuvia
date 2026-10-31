@@ -36,7 +36,8 @@ public class JobDelete implements ExecuteQuery<Void> {
 	private void deleteJob(JobItem jobItem) {
 		if (StaticData.databaseScheduler == null)
 			return;
-		JobDetail jobDetail = JobItemUpdate.createJobDetail(jobItem.getName(), jobItem.getReport().getId());
+		JobDetail jobDetail = JobItemUpdate.createJobDetail(jobItem.getName(), jobItem.getReport().getId(),
+				jobItem.getId());
 
 		try {
 			if (StaticData.databaseScheduler.checkExists(jobDetail.getKey()))

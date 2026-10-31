@@ -41,6 +41,7 @@ public class JobItemUpdate implements ExecuteQuery<JobItemDTO> {
 	private final Boolean fromReport;
 	public final static String REPORT_QUARTZ_GROUP = "REPORT_GROUP";
 	public final static String REPORT_ID = "REPORT_ID";
+	public final static String JOB_ID = "JOB_ID";
 
 	private final static String MINUTES_TO_REPLACE = "#MINUTES#";
 	private final static String HOURS_TO_REPLACE = "#HOURS#";
@@ -84,9 +85,9 @@ public class JobItemUpdate implements ExecuteQuery<JobItemDTO> {
 		return jobItemDTOFinal;
 	}
 
-	public static JobDetail createJobDetail(String jobName, UUID reportId) {
+	public static JobDetail createJobDetail(String jobName, UUID reportId, UUID jobId) {
 		return JobBuilder.newJob(ReportJob.class).storeDurably().usingJobData(REPORT_ID, reportId.toString())
-				.withIdentity(jobName, REPORT_QUARTZ_GROUP).build();
+				.usingJobData(JOB_ID, jobId.toString()).withIdentity(jobName, REPORT_QUARTZ_GROUP).build();
 	}
 
 	public static void loadJob(JobItemDTO jobItemDTO) {
@@ -94,7 +95,7 @@ public class JobItemUpdate implements ExecuteQuery<JobItemDTO> {
 			return;
 
 		if (StringUtils.notNull(jobItemDTO.getReportId())) {
-			JobDetail jobDetail = createJobDetail(jobItemDTO.getName(), jobItemDTO.getReportId());
+			JobDetail jobDetail = createJobDetail(jobItemDTO.getName(), jobItemDTO.getReportId(), jobItemDTO.getId());
 			Trigger trigger = TriggerBuilder.newTrigger().withIdentity(jobItemDTO.getName(), REPORT_QUARTZ_GROUP)
 					.withSchedule(CronScheduleBuilder.cronSchedule(cronMaker(jobItemDTO))).forJob(jobDetail).build();
 
@@ -194,9 +195,9 @@ public class JobItemUpdate implements ExecuteQuery<JobItemDTO> {
 		if (this.databaseService.exists(uniqueParameters, JobItemDTO.class, connection))
 			throw new UniqueException(UniqueException.findFieldFromList(JobItemDTO.class, "name"),
 					jobItemDTO.getName());
-
+		Report report = null;
 		if (StringUtils.notNull(jobItemDTO.getReportId())) {
-			Report report = this.databaseService.findById(jobItemDTO.getReportId(), Report.class, connection);
+			report = this.databaseService.findById(jobItemDTO.getReportId(), Report.class, connection);
 
 			if (report.getType().equals(ReportType.JASPER) || report.getType().equals(ReportType.SQL)) {
 
@@ -217,12 +218,18 @@ public class JobItemUpdate implements ExecuteQuery<JobItemDTO> {
 				if (jobItemDTO.getJobOutputType().equals(JobOutputType.INLINE))
 					throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "wrongOutputType",
 							jobItemDTO.getJobType());
+			} else {
+				jobItemDTO.setExportType(null);
 			}
 
 			if (report.getType().equals(ReportType.EXECUTE)) {
 				if (!jobItemDTO.getJobType().equals(JobType.EXECUTE)) {
 					throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "wrongType", jobItemDTO.getJobType());
 				}
+
+				jobItemDTO.setFilePath(null);
+				jobItemDTO.setFileName(null);
+				jobItemDTO.setExportType(null);
 			}
 
 		}
@@ -237,8 +244,15 @@ public class JobItemUpdate implements ExecuteQuery<JobItemDTO> {
 			if (jobItemDTO.getJobOutputType().equals(JobOutputType.ATTACHMENT)) {
 				if (StringUtils.isNull(jobItemDTO.getFileName()))
 					throw new NotNullException(UniqueException.findFieldFromList(JobItemDTO.class, "fileName"));
+
+				if (StringUtils.notNull(report)) {
+					if ((!report.getType().equals(ReportType.JASPER)) && StringUtils.isNull(jobItemDTO.getExportType()))
+						throw new NotNullException(UniqueException.findFieldFromList(JobItemDTO.class, "exportType"));
+				}
+
 			} else {
 				jobItemDTO.setFileName(null);
+				jobItemDTO.setExportType(null);
 			}
 
 			if (StringUtils.isNull(jobItemDTO.getMailSubject()))

@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -20,6 +21,7 @@ import rs.formuvia.model.utils.UpdateColumnModel;
 import rs.formuvia.utils.DatabaseListen;
 import rs.formuvia.utils.StaticData;
 
+@DisallowConcurrentExecution
 public class DatabaseListenCheckConnectionJob implements Job {
 	private static final String SUFIX_FOR_DATABASE_LISTEN = "-database.listen";
 	public static final String LISTEN_QUERY = "LISTEN ";

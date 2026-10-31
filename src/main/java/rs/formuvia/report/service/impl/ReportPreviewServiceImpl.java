@@ -66,6 +66,7 @@ public class ReportPreviewServiceImpl implements ReportPreviewService {
 	private final String SHEET_NAME = "report";
 	private final String REPORT_FILE_NAME = "report.xlsx";
 	private final Integer NUMBER_OF_DECIMAL = 2;
+	public static final String NUMBER_OF_ROWS = "numberOfRows";
 
 	private void checkRole(UUID reportId) {
 		ReportDTO reportDTO = findReport(reportId);
@@ -80,9 +81,13 @@ public class ReportPreviewServiceImpl implements ReportPreviewService {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public ReportResultDTO getReportPreviewTable(LinkedHashMap<String, Object> parameters, UUID reportId) {
+	public ReportResultDTO getReportPreviewTable(LinkedHashMap<String, Object> parameters, UUID reportId,
+			Boolean checkRole) {
 		databaseService = databaseService == null ? new DatabaseServiceImpl() : databaseService;
-		checkRole(reportId);
+
+		if (checkRole)
+			checkRole(reportId);
+
 		ReportDTO reportDTO = findReport(reportId);
 		if (!reportDTO.getType().equals(ReportType.SQL))
 			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "wrongReportType", reportId);
@@ -132,9 +137,9 @@ public class ReportPreviewServiceImpl implements ReportPreviewService {
 	}
 
 	@Override
-	public Response getReportPreviewExcel(LinkedHashMap<String, Object> parameters, UUID reportId) {
+	public Response getReportPreviewExcel(LinkedHashMap<String, Object> parameters, UUID reportId, Boolean checkRole) {
 		resourceBundleService = resourceBundleService == null ? new ResourceBundleServiceImpl() : resourceBundleService;
-		ReportResultDTO reportResultDTO = getReportPreviewTable(parameters, reportId);
+		ReportResultDTO reportResultDTO = getReportPreviewTable(parameters, reportId, checkRole);
 		XSSFWorkbook wb = new XSSFWorkbook();
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		XSSFSheet sheet = wb.createSheet(SHEET_NAME);
@@ -174,14 +179,15 @@ public class ReportPreviewServiceImpl implements ReportPreviewService {
 		}
 
 		return ExportTableServiceImpl.createExcelResponse(baos.toByteArray(), REPORT_FILE_NAME,
-				ExportTableServiceImpl.EXCEL_CONTENT_TYPE);
+				ExportTableServiceImpl.EXCEL_CONTENT_TYPE, Map.of(NUMBER_OF_ROWS, reportResultDTO.getList().size()));
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void getReportExecute(LinkedHashMap<String, Object> parameters, UUID reportId) {
+	public void getReportExecute(LinkedHashMap<String, Object> parameters, UUID reportId, Boolean checkRole) {
 		databaseService = databaseService == null ? new DatabaseServiceImpl() : databaseService;
-		checkRole(reportId);
+		if (checkRole)
+			checkRole(reportId);
 		ReportDTO reportDTO = findReport(reportId);
 		if (!reportDTO.getType().equals(ReportType.EXECUTE))
 			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "wrongReportType", reportId);
@@ -194,17 +200,19 @@ public class ReportPreviewServiceImpl implements ReportPreviewService {
 	}
 
 	@Override
-	public ReportInfoDTO getReportInfo(UUID reportId) {
+	public ReportInfoDTO getReportInfo(UUID reportId, Boolean checkRole) {
 		databaseService = databaseService == null ? new DatabaseServiceImpl() : databaseService;
-		checkRole(reportId);
+		if (checkRole)
+			checkRole(reportId);
 		CreateReportInfo createReportInfo = new CreateReportInfo(httpServletRequest, reportId);
 
 		return databaseService.executeQuery(createReportInfo);
 	}
 
 	@Override
-	public Response getReportPreviewJasper(LinkedHashMap<String, Object> parameters, UUID reportId) {
-		checkRole(reportId);
+	public Response getReportPreviewJasper(LinkedHashMap<String, Object> parameters, UUID reportId, Boolean checkRole) {
+		if (checkRole)
+			checkRole(reportId);
 		ReportPreviewJasper reportPreviewJasper = new ReportPreviewJasper(httpServletRequest, parameters, reportId);
 		return databaseService.executeQuery(reportPreviewJasper);
 	}

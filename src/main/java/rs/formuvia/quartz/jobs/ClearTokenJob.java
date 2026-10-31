@@ -1,5 +1,6 @@
 package rs.formuvia.quartz.jobs;
 
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -9,6 +10,7 @@ import rs.formuvia.common.service.impl.CommonServiceImpl;
 import rs.formuvia.database.service.DatabaseService;
 import rs.formuvia.database.service.impl.DatabaseServiceImpl;
 
+@DisallowConcurrentExecution
 public class ClearTokenJob implements Job {
 	private final String CLEAR_TOKEN_QUERY = "delete_expired_token.sql";
 

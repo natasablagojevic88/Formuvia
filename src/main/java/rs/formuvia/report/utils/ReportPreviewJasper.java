@@ -3,6 +3,9 @@ package rs.formuvia.report.utils;
 import java.io.File;
 import java.net.HttpURLConnection;
 import java.sql.Connection;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.UUID;
@@ -57,6 +60,21 @@ public class ReportPreviewJasper implements ExecuteQuery<Response> {
 
 			Object value = UpdateObject.createValue(parameters.get(parameterDTO.getCode()),
 					parameterDTO.getColumnType(), null, null, null, parameters, commonService);
+
+			if (value instanceof LocalDate date) {
+				value = java.sql.Date.valueOf(date);
+			}
+			;
+
+			if (value instanceof LocalDateTime date) {
+				value = java.sql.Timestamp.valueOf(date);
+			}
+			;
+
+			if (value instanceof LocalTime date) {
+				value = java.sql.Time.valueOf(date);
+			}
+			;
 
 			parameters.put(parameterDTO.getCode(), value);
 		}

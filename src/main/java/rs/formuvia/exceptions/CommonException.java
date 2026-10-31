@@ -2,10 +2,8 @@ package rs.formuvia.exceptions;
 
 import jakarta.ws.rs.WebApplicationException;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
-@RequiredArgsConstructor
 @Setter
 @Getter
 public class CommonException extends WebApplicationException {
@@ -17,5 +15,12 @@ public class CommonException extends WebApplicationException {
 	private final String inMessage;
 
 	private final Object inObject;
+
+	public CommonException(Integer status, String inMessage, Object inObject) {
+		super(inMessage);
+		this.status = status;
+		this.inMessage = inMessage;
+		this.inObject = inObject;
+	}
 
 }
