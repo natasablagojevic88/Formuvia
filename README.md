@@ -104,7 +104,15 @@ Settings of the report engine are read separately, from `resources/jasperreports
 mvn clean package
 ```
 
-The result is `target/Formuvia.war`.
+The result is `target/Formuvia.war`, the API on its own; the web client is then served from somewhere else and let in through `cors.url`.
+
+To put the client inside the same WAR, as one deployment, run Ant instead (`build.xml`, in this folder, with the `FormuviaFront` repository beside it):
+
+```sh
+ant
+```
+
+It builds the client first (`FormuviaFront/buildForWar.xml`: `npm install` and `npm run build`), then runs `mvn clean package` here, and then adds `FormuviaFront/dist/FormuviaFront/browser/` into `target/Formuvia.war` beside `WEB-INF`. The client then calls the API at the address it was itself served from, so there is no CORS and nothing to configure on either side.
 
 ### 4. Deploy
 

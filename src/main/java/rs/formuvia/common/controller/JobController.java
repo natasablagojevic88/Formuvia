@@ -75,7 +75,7 @@ public class JobController {
 			@ApiResponse(responseCode = "200", description = "Page of runs of the job", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = DatabaseTable.class))),
 			@ApiResponse(responseCode = "400", description = "No job with that identifier, the current user may not see it, or a filter or sort names an unknown field", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
 			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
-	public Response getExecute(DatabaseParameter databaseParameter,
+	public Response getJobLogs(DatabaseParameter databaseParameter,
 			@Parameter(description = "Identifier of the job whose runs are returned", required = true) @PathParam("id") UUID id) {
 
 		return Response.ok(jobService.getJobLogs(id, databaseParameter)).build();
