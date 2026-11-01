@@ -8,4 +8,5 @@
 		<item icon="fa-solid fa-file-invoice" name="menu.reports" url="/report-group" />
 		<item icon="fa-solid fa-envelope" name="menu.smtp" url="/smtp" />
 	</item>
+	<item icon="fa-solid fa-clock" name="menu.jobs" url="/job/list" />
 </menu>

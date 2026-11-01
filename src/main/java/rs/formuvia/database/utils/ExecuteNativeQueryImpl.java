@@ -31,6 +31,11 @@ public class ExecuteNativeQueryImpl<C> implements ExecuteQuery<C> {
 	private final Class<C> resultClass;
 	private DatabaseService databaseService = new DatabaseServiceImpl();
 
+	private static final String ARRAY_TEXT_TYPE = "text";
+	private static final String ARRAY_UUID_TYPE = "uuid";
+	private static final String ARRAY_INTEGER_TYPE = "integer";
+	private static final String ARRAY_BIGINT_TYPE = "bigint";
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public C execute(Connection connection) throws Exception {
@@ -40,7 +45,31 @@ public class ExecuteNativeQueryImpl<C> implements ExecuteQuery<C> {
 			Iterator<Integer> iterator = parameters.keySet().iterator();
 			while (iterator.hasNext()) {
 				Integer key = iterator.next();
-				preparedStatement.setObject(key, parameters.get(key));
+				Object value = parameters.get(key);
+				if (value == null) {
+					preparedStatement.setObject(key, null);
+				} else {
+					if (value instanceof Object[]) {
+						Object[] list = (Object[]) value;
+						Object first = list.length == 0 ? null : list[0];
+
+						String type = ARRAY_TEXT_TYPE;
+						if (first != null) {
+							if (first instanceof UUID)
+								type = ARRAY_UUID_TYPE;
+							else if (first instanceof Integer)
+								type = ARRAY_INTEGER_TYPE;
+							else if (first instanceof Long)
+								type = ARRAY_BIGINT_TYPE;
+						}
+
+						preparedStatement.setObject(key, connection.createArrayOf(type, list));
+
+					} else {
+						preparedStatement.setObject(key, value);
+					}
+				}
+
 			}
 		}
 		ResultSet resultSet = preparedStatement.executeQuery();

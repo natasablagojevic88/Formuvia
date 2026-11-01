@@ -52,8 +52,9 @@ public class JobItemUpdate implements ExecuteQuery<JobItemDTO> {
 	private final static String STAR_TO_REPLACE = "*";
 	private final static String EVERY_STAR_TO_REPLACE = "*/";
 	private final static String QUESTION_MARK_TO_REPLACE = "?";
+	private final static String ZERO_CRON = "0";
 
-	private final static String CRON_MAKER = "0 #MINUTES# #HOURS# #DAY# #MONTH# #DAY_OF_WEEK# #YEAR#";
+	private final static String CRON_MAKER = ZERO_CRON + " #MINUTES# #HOURS# #DAY# #MONTH# #DAY_OF_WEEK# #YEAR#";
 
 	private static Logger logger = LogManager.getLogger(JobItemUpdate.class);
 
@@ -96,8 +97,7 @@ public class JobItemUpdate implements ExecuteQuery<JobItemDTO> {
 
 		if (StringUtils.notNull(jobItemDTO.getReportId())) {
 			JobDetail jobDetail = createJobDetail(jobItemDTO.getName(), jobItemDTO.getReportId(), jobItemDTO.getId());
-			Trigger trigger = TriggerBuilder.newTrigger().withIdentity(jobItemDTO.getName(), REPORT_QUARTZ_GROUP)
-					.withSchedule(CronScheduleBuilder.cronSchedule(cronMaker(jobItemDTO))).forJob(jobDetail).build();
+			Trigger trigger = createTrigger(jobItemDTO, jobDetail);
 
 			try {
 				StaticData.databaseScheduler.addJob(jobDetail, true, true);
@@ -125,10 +125,16 @@ public class JobItemUpdate implements ExecuteQuery<JobItemDTO> {
 
 	}
 
+	public static Trigger createTrigger(JobItemDTO jobItemDTO, JobDetail jobDetail) {
+		return TriggerBuilder.newTrigger().withIdentity(jobItemDTO.getName(), REPORT_QUARTZ_GROUP)
+				.withSchedule(CronScheduleBuilder.cronSchedule(cronMaker(jobItemDTO))).forJob(jobDetail).build();
+	}
+
 	private static String cronMaker(JobItemDTO jobItemDTO) {
 		String expresion = new String(CRON_MAKER);
 		if (jobItemDTO.getJobCronAnyMinutes()) {
-			expresion = expresion.replace(MINUTES_TO_REPLACE, STAR_TO_REPLACE);
+			expresion = expresion.replace(MINUTES_TO_REPLACE,
+					!jobItemDTO.getJobCronAnyHours() ? ZERO_CRON : STAR_TO_REPLACE);
 		} else {
 			expresion = expresion.replace(MINUTES_TO_REPLACE,
 					StringUtils.isNull(jobItemDTO.getJobCronEveryMinute()) ? jobItemDTO.getJobCronInMinutes()

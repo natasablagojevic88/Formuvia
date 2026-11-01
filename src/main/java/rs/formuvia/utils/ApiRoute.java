@@ -93,4 +93,9 @@ public class ApiRoute {
 	public static final String smtpTable = "/smtp/table";
 	public static final String smtpTestMail = "/smtp/test-mail/{smtpId}";
 
+	public static final String jobList = "/job/list";
+	public static final String jobId = "/job/{id}";
+	public static final String jobExecuteId = "/job/execute/{id}";
+	public static final String jobLogsId = "/job/logs/{id}";
+
 }

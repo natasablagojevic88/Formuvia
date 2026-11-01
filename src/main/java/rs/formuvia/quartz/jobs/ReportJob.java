@@ -114,7 +114,7 @@ public class ReportJob implements Job {
 			this.databaseService.save(jobLog);
 
 			if (!isSuccefull)
-				if (StringUtils.hasText(jobItem.getErrorReceive())) {
+				if (StringUtils.hasText(jobItem.getErrorReceive()) && StringUtils.notNull(jobItem.getSmtp())) {
 					String message = exception.getMessage() + "<br>";
 					message += Arrays.asList(exception.getStackTrace()).stream().filter(a -> a != null)
 							.map(a -> a.toString() + "<br>").collect(Collectors.joining());
