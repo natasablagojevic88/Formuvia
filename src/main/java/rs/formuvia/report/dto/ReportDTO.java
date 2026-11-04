@@ -46,10 +46,10 @@ public class ReportDTO {
 	private String sqlQuery;
 
 	@HideInTable
-	private UUID jasterFileId;
+	private UUID jasperFileId;
 
 	@HideInTable
-	private String jasterFilePath;
+	private String jasperFilePath;
 
 	@HideInTable
 	private String icon;

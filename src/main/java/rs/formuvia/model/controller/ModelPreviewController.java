@@ -30,7 +30,7 @@ import rs.formuvia.utils.ApiRoute;
 import rs.formuvia.utils.ErrorDetail;
 
 @Path("")
-@Tag(name = "Model / Preview", description = "Reading data from tables defined through the model. Unlike the built-in tables, these have no DTO class of their own: the columns, their labels and the permissions are taken from the model, so one endpoint serves every table that has been created this way. Access is therefore not tied to a fixed role but to the view role of the model being read.")
+@Tag(name = "Preview", description = "Reading data from tables defined through the model. Unlike the built-in tables, these have no DTO class of their own: the columns, their labels and the permissions are taken from the model, so one endpoint serves every table that has been created this way. Access is therefore not tied to a fixed role but to the view role of the model being read.")
 public class ModelPreviewController {
 
 	@Inject

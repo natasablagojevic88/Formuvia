@@ -62,7 +62,7 @@ public class UpdateReport implements ExecuteQuery<ReportDTO> {
 		if (reportDTO.getType().equals(ReportType.EXECUTE) || reportDTO.getType().equals(ReportType.SQL)) {
 			if (StringUtils.isNull(reportDTO.getSqlQuery()))
 				throw new NotNullException(UniqueException.findFieldFromList(ReportDTO.class, "sqlQuery"));
-			report.setJasterFile(null);
+			report.setJasperFile(null);
 		} else {
 			reportDTO.setSqlQuery(null);
 
@@ -70,7 +70,7 @@ public class UpdateReport implements ExecuteQuery<ReportDTO> {
 				if (StringUtils.isNull(reportDTO.getFileUpload()))
 					throw new NotNullException(UniqueException.findFieldFromList(ReportDTO.class, "fileUpload"));
 			} else {
-				if (StringUtils.isNull(reportDTO.getFileUpload()) && StringUtils.isNull(report.getJasterFile()))
+				if (StringUtils.isNull(reportDTO.getFileUpload()) && StringUtils.isNull(report.getJasperFile()))
 					throw new NotNullException(UniqueException.findFieldFromList(ReportDTO.class, "fileUpload"));
 			}
 
@@ -88,9 +88,9 @@ public class UpdateReport implements ExecuteQuery<ReportDTO> {
 					}
 
 					ModelFile modelFile = UpdateModelJasper.createModelFile(
-							report.getJasterFile() == null ? null : report.getJasterFile().getId(), file,
+							report.getJasperFile() == null ? null : report.getJasperFile().getId(), file,
 							reportDTO.getFileUpload().getFileName(), fileUpload.getPath(), connection);
-					report.setJasterFile(modelFile);
+					report.setJasperFile(modelFile);
 				}
 		}
 
@@ -125,7 +125,7 @@ public class UpdateReport implements ExecuteQuery<ReportDTO> {
 
 			@Override
 			protected void configure() {
-				skip(destination.getJasterFile());
+				skip(destination.getJasperFile());
 
 			}
 		});

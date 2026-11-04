@@ -51,6 +51,17 @@ public class ReportJob implements Job {
 
 	private DatabaseService databaseService = new DatabaseServiceImpl();
 
+	private UUID jobId;
+	private UUID reportId;
+
+	public ReportJob(UUID jobId, UUID reportId) {
+		this.jobId = jobId;
+		this.reportId = reportId;
+	}
+
+	public ReportJob() {
+	}
+
 	private Logger logger = LogManager.getLogger(getClass());
 	private SendMailService sendMailService = new SendMailServiceImpl();
 	private ReportPreviewService reportPreviewService = new ReportPreviewServiceImpl();
@@ -69,12 +80,15 @@ public class ReportJob implements Job {
 	@Override
 	public void execute(JobExecutionContext context) throws JobExecutionException {
 
-		JobItem jobItem = this.databaseService.findById(
-				UUID.fromString(context.getJobDetail().getJobDataMap().getString(JobItemUpdate.JOB_ID)), JobItem.class);
+		jobId = context == null ? jobId
+				: UUID.fromString(context.getJobDetail().getJobDataMap().getString(JobItemUpdate.JOB_ID));
 
-		Report report = this.databaseService.findById(
-				UUID.fromString(context.getJobDetail().getJobDataMap().getString(JobItemUpdate.REPORT_ID)),
-				Report.class);
+		reportId = context == null ? reportId
+				: UUID.fromString(context.getJobDetail().getJobDataMap().getString(JobItemUpdate.REPORT_ID));
+
+		JobItem jobItem = this.databaseService.findById(jobId, JobItem.class);
+
+		Report report = this.databaseService.findById(reportId, Report.class);
 
 		JobLog jobLog = new JobLog();
 		jobLog.setJobItem(jobItem);
@@ -122,6 +136,10 @@ public class ReportJob implements Job {
 							ERROR_SUBJECT + jobItem.getName(), message);
 				}
 
+		}
+
+		if (!isSuccefull) {
+			throw new WebApplicationException(exception);
 		}
 	}
 

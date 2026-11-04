@@ -111,7 +111,7 @@ public class ReportServiceImpl implements ReportService {
 		} else {
 			JasperReport jasperReport = null;
 			try {
-				File file = DownloadModelFile.createFileFromPath(report.getJasterFile().getPath(), report.getId());
+				File file = DownloadModelFile.createFileFromPath(report.getJasperFile().getPath(), report.getId());
 				jasperReport = ((JasperReport) JRLoader.loadObject(file));
 			} catch (Exception ex) {
 				throw new WebApplicationException(ex);

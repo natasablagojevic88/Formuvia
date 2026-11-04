@@ -51,6 +51,6 @@ public class Report {
 	private String icon;
 
 	@JoinColumn(name = "jasper_file", foreignKey = @ForeignKey(name = "fk_report_file"))
-	private ModelFile jasterFile;
+	private ModelFile jasperFile;
 
 }

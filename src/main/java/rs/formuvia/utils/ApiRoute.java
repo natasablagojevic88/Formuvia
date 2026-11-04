@@ -80,6 +80,12 @@ public class ApiRoute {
 	public static final String reportJob = "/report/job";
 	public static final String reportJobId = "/report/job/{id}";
 
+	public static final String webhookList = "/webhook/table/{jobId}";
+	public static final String webhook = "/webhook";
+	public static final String webhookId = "/webhook/{id}";
+
+	public static final String webhookExecute = "/execute/webhook/{id}";
+
 	public static final String reportPreview = "/report/preview/{reportId}";
 	public static final String reportPreviewTable = "/report/preview/{reportId}/table";
 	public static final String reportPreviewExcel = "/report/preview/{reportId}/excel";

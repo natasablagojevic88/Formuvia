@@ -177,6 +177,8 @@ public class CreateDatabaseTable<C> implements ExecuteQuery<DatabaseTable<C>> {
 			return StaticData.jobItems.stream().map(a -> new ComboboxDTO(a.getId(), a.getName())).toList();
 		case listen_smtp:
 			return StaticData.smtps.stream().map(a -> new ComboboxDTO(a.getId(), a.getName())).toList();
+		case listen_job_item_webhook:
+			return StaticData.webhooks.stream().map(a -> new ComboboxDTO(a.getId(), a.getBearerToken())).toList();
 
 		}
 

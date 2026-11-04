@@ -26,7 +26,7 @@ import rs.formuvia.utils.ApiRoute;
 import rs.formuvia.utils.ErrorDetail;
 
 @Path("")
-@Tag(name = "Report / Running", description = "Running one report: what it asks for, the rows a SELECT report gives back, the same rows as an Excel file, and running a report that works over the data. Every endpoint requires a valid session and the role of the group the report belongs to; the parameters are sent as a value by parameter code and are put into the query as ?, so the query itself is never built out of them.")
+@Tag(name = "Running", description = "Running one report: what it asks for, the rows a SELECT report gives back, the same rows as an Excel file, and running a report that works over the data. Every endpoint requires a valid session and the role of the group the report belongs to; the parameters are sent as a value by parameter code and are put into the query as ?, so the query itself is never built out of them.")
 public class ReportPreviewController {
 
 	@Inject

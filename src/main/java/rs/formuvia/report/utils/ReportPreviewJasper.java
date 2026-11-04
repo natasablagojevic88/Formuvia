@@ -53,7 +53,7 @@ public class ReportPreviewJasper implements ExecuteQuery<Response> {
 		if (!reportDTO.getType().equals(ReportType.JASPER))
 			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "frontReportFormat", reportDTO.getId());
 
-		File jasperFile = DownloadModelFile.createFileFromPath(reportDTO.getJasterFilePath(), reportDTO.getId());
+		File jasperFile = DownloadModelFile.createFileFromPath(reportDTO.getJasperFilePath(), reportDTO.getId());
 		JasperReport jasperReport = (JasperReport) JRLoader.loadObject(jasperFile);
 		List<ReportParameterDTO> list = CreateReportInfo.getParametersForReportId(this.reportId);
 		for (ReportParameterDTO parameterDTO : list) {

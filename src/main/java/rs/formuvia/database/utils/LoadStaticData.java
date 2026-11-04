@@ -23,6 +23,7 @@ import rs.formuvia.model.dto.ModelTriggerDTO;
 import rs.formuvia.model.service.impl.ModelPreviewServiceImpl;
 import rs.formuvia.model.utils.UpdateColumnModel;
 import rs.formuvia.quartz.dto.JobItemDTO;
+import rs.formuvia.quartz.dto.JobItemWebhookDTO;
 import rs.formuvia.report.dto.ReportDTO;
 import rs.formuvia.report.dto.ReportGroupDTO;
 import rs.formuvia.report.dto.ReportParameterDTO;
@@ -51,6 +52,7 @@ public class LoadStaticData implements ExecuteQuery<Void> {
 		StaticData.reportParameters = this.databaseService.findAll(null, ReportParameterDTO.class, connection);
 		StaticData.smtps = this.databaseService.findAll(null, SmtpDTO.class, connection);
 		StaticData.jobItems = this.databaseService.findAll(null, JobItemDTO.class, connection);
+		StaticData.webhooks = this.databaseService.findAll(null, JobItemWebhookDTO.class, connection);
 
 		Set<UUID> columnsWithCodebook = columnWithCodebook();
 		for (UUID modelId : columnsWithCodebook) {

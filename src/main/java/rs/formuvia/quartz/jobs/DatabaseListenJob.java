@@ -27,6 +27,7 @@ import rs.formuvia.model.dto.ModelProcedureDTO;
 import rs.formuvia.model.dto.ModelTriggerDTO;
 import rs.formuvia.model.utils.UpdateColumnModel;
 import rs.formuvia.quartz.dto.JobItemDTO;
+import rs.formuvia.quartz.dto.JobItemWebhookDTO;
 import rs.formuvia.report.dto.ReportDTO;
 import rs.formuvia.report.dto.ReportGroupDTO;
 import rs.formuvia.report.dto.ReportParameterDTO;
@@ -96,6 +97,9 @@ public class DatabaseListenJob implements Job {
 						break;
 					case listen_smtp:
 						StaticData.smtps = this.databaseService.findAll(null, SmtpDTO.class);
+						break;
+					case listen_job_item_webhook:
+						StaticData.webhooks = this.databaseService.findAll(null, JobItemWebhookDTO.class);
 						break;
 
 					}

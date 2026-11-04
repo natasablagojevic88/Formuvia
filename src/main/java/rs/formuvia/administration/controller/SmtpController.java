@@ -31,7 +31,7 @@ import rs.formuvia.utils.ErrorDetail;
 import rs.formuvia.utils.RoleList;
 
 @Path("")
-@Tag(name = "Administration / Mail servers", description = "Servers the application sends mail through: the name it is known by in the application, the address the mail is sent from, the server and its port, the kind of protection of the connection, and the user it signs in as when the server asks for one. Every endpoint asks for the admin role, and the password is never sent back - it is only written.")
+@Tag(name = "Mail servers", description = "Servers the application sends mail through: the name it is known by in the application, the address the mail is sent from, the server and its port, the kind of protection of the connection, and the user it signs in as when the server asks for one. Every endpoint asks for the admin role, and the password is never sent back - it is only written.")
 public class SmtpController {
 
 	@Inject

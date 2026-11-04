@@ -54,8 +54,8 @@ public class CustomContainerRequestFilter implements ContainerRequestFilter {
 	@Context
 	private HttpServletResponse httpServletResponse;
 
-	private String[] apiNonAuthorized = new String[] { "/login", "/openapi.json", ApiRoute.openApiModule,
-			"/translations" };
+	private String[] apiNonAuthorized = new String[] { ApiRoute.login, "/openapi.json", ApiRoute.openApiModule };
+	private final String webHookExecuteUrl = "/execute/webhook/";
 
 	private DatabaseService databaseService = new DatabaseServiceImpl();
 
@@ -96,9 +96,17 @@ public class CustomContainerRequestFilter implements ContainerRequestFilter {
 
 		commonService.setIpAdress(findIpAddress());
 
-		if (!Arrays.asList(apiNonAuthorized).contains(httpServletRequest.getPathInfo())) {
-			checkToken();
+		Boolean checkToken = true;
+		if (Arrays.asList(apiNonAuthorized).contains(httpServletRequest.getPathInfo())) {
+			checkToken = false;
 		}
+
+		if (StringUtils.hasText(httpServletRequest.getPathInfo()))
+			if (httpServletRequest.getPathInfo().startsWith(webHookExecuteUrl))
+				checkToken = false;
+
+		if (checkToken)
+			checkToken();
 
 		if ("POST".equals(requestContext.getMethod())) {
 			if (requestContext.getHeaderString(CONTENT_TYPE) != null) {

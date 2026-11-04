@@ -29,6 +29,7 @@ import rs.formuvia.model.dto.ModelJasperDTO;
 import rs.formuvia.model.dto.ModelProcedureDTO;
 import rs.formuvia.model.dto.ModelTriggerDTO;
 import rs.formuvia.quartz.dto.JobItemDTO;
+import rs.formuvia.quartz.dto.JobItemWebhookDTO;
 import rs.formuvia.report.dto.ReportDTO;
 import rs.formuvia.report.dto.ReportGroupDTO;
 import rs.formuvia.report.dto.ReportParameterDTO;
@@ -64,6 +65,7 @@ public class StaticData {
 	public static volatile List<ReportParameterDTO> reportParameters = new ArrayList<>();
 	public static volatile List<SmtpDTO> smtps = new ArrayList<>();
 	public static volatile List<JobItemDTO> jobItems = new ArrayList<>();
+	public static volatile List<JobItemWebhookDTO> webhooks = new ArrayList<>();
 
 	public static volatile Map<UUID, List<ComboboxDTO>> modelCodebook = new ConcurrentHashMap<>();
 	public static volatile Set<UUID> modelsToListen = ConcurrentHashMap.newKeySet();
