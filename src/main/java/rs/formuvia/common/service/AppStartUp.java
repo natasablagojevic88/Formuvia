@@ -21,4 +21,6 @@ public interface AppStartUp {
 	void initScriptsExecute();
 
 	void loadMenu();
+
+	void loadCustomResourceBudle();
 }

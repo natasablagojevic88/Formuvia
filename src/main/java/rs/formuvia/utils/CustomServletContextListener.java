@@ -35,6 +35,7 @@ public class CustomServletContextListener implements ServletContextListener {
 		appStartUp.initStaticData();
 		appStartUp.initScriptsExecute();
 		appStartUp.loadMenu();
+		appStartUp.loadCustomResourceBudle();
 
 		quartzService.initScheduler();
 	}

@@ -24,7 +24,7 @@ The web client lives in a separate repository: **FormuviaFront** (Angular).
 - Reports on a table: a table of the model can be given reports of JasperReports (`model_jasper`), each one a report compiled by Jaspersoft Studio and stored as a file of its own. The uploaded file is read with `JRLoader` before it is accepted and has to be a compiled report that takes a parameter `id` of type `java.util.UUID`, the record the report is made over; deleting the entry deletes the stored file with it. Only an administrator sets them
 - File upload: a file of a record is stored on the file system under `files.path`, in a folder of the date it arrived, and the record keeps the identifier it was stored under (column type `FILE`)
 - Mail servers: the servers the application sends mail through are written down in the application itself (`smtp`), not in `application.properties` - a name of its own, the address mail is sent from, the server and its port, the protection of the connection (none, STARTTLS or SSL/TLS) and, when the server asks for one, the user it signs in as. The password is stored and never sent back to the client. Only an administrator sets them, and each server can be tried out with a test mail. Every mail the application sends is written down in `mail_log` - the server it went through, the recipient, the subject, the text, whether it left and, when it did not, why
-- Multilingual texts: English (`en-US`), Serbian Latin (`sr-Latn-RS`), Serbian Cyrillic (`sr-RS`)
+- Multilingual texts: English (`en-US`), Serbian Latin (`sr-Latn-RS`), Serbian Cyrillic (`sr-RS`). Which of them an installation serves stands in `language.list`, and the texts themselves can be changed without touching the WAR - a folder of its own holds one file per language, and a text found there is used in place of the one the application brings (`resource.bundle.path`)
 - Database schema is created and updated automatically on startup – no manual migrations
 - Scheduled jobs (Quartz): the jobs of the application itself - listening to the database, checking that connection and cleaning up expired sessions - and the jobs a report is given through the application (`job_item`, `job_cron`). A job of a report says what is to be done with it (send it by mail through one of the mail servers, write it into a file on the server as Excel or CSV, or only run it) and when: for every unit of time - minutes, hours, day of the month, month, day of the week, year - either any value, a step (`*/n`) or a list of values, out of which the server builds the cron expression of the trigger. A job is kept in the database of the scheduler (`quartz.database.start`), so it stands there after a restart as well; a job that is switched off is unscheduled without being deleted, a deleted one is taken out of the scheduler together with its row, and the name of a job cannot be changed, because the scheduler holds the job under it. When such a job fires the server does the work itself: it sends the report by mail - in the mail itself as an HTML table, or along with it as a CSV, an Excel file or a Jasper PDF - writes that file into the folder of the job, or only runs the report over the data. Every run is written down (`job_log`) with its outcome and, if it failed, the error, which is also sent to the address for errors the job carries, through the mail server of that job - so a job that carries such an address needs a mail server as well, whatever else it does. The jobs of the scheduler are read back through `/api/job/list` and `/api/job/{id}`, each with the state of its last run, `/api/job/logs/{id}` gives the runs of one job as a paged table, and `/api/job/execute/{id}` runs one of them at once, beside its timetable; a job is shown only to a user holding the role it is tied to, and a job without a role to the admin role alone
 - Webhook of a job: a job of a report can also be run from outside the application (`job_item_webhook`). A key is made for a job, as many as needed, each one 32 random bytes written down in Base64 and kept as it was made; the caller sends `POST /api/execute/webhook/{id}`, where the identifier is the one of the key, and proves itself with `Authorization: Bearer <key>`. This is the only route that is reached without a session, so it is in `apiNonAuthorized`. The server does the same work as when the schedule fires that job and writes the run down in `job_log`; the answer comes back when the job is over. A key that is taken away stops working, while the others keep going, and a key runs the job even when the job is switched off, because that only concerns the trigger. The keys are read, made and taken away through `/api/webhook/table/{jobId}`, `/api/webhook` and `/api/webhook/{id}`, all three for the admin role alone
@@ -79,6 +79,9 @@ Most important settings:
 | `database.num.connections` | Connection pool size | `20` |
 | `admin.default.password` | Password of the `admin` user created on first start | – |
 | `default.language` | `en-US`, `sr-Latn-RS` or `sr-RS` | `en-US` |
+| `language.list` | The languages this installation serves, separated by commas | `en-US, sr-RS, sr-Latn-RS` |
+| `resource.bundle.path` | Folder outside the WAR with the texts of this installation; empty = only the texts the application brings are used | – |
+| `resource.bundle.file.prefix` | Name of the files in that folder, without the language and the extension; it has to be set together with the path | – |
 | `cors.url` | Origin of the web client | `http://localhost:4200` |
 | `cookie.secure` | Send cookies only over HTTPS | `true` |
 | `cookie.same.site` | `Strict`, `Lax` or `None` | `Strict` |
@@ -94,6 +97,20 @@ Most important settings:
 | `database.listen.cron` | How often the changes announced by the database are read | `*/2 * * * * ?` |
 | `database.listen.connection.check.cron` | How often that connection is checked | `0 */1 * * * ?` |
 | `token.clear.cron` | How often expired sessions are cleaned up | `0 0 */1 * * ?` |
+
+**Texts of one installation.** Every text the API sends out – the title of a table, the label of a field, an item
+of the menu, a value of a code list, the message of an error, and the names the users themselves gave to their tables
+and fields – is looked up by a key, and a key that is not found is sent out as it stands. `resource.bundle.path`
+together with `resource.bundle.file.prefix` adds a folder outside the WAR that is looked into first, so any of those
+texts can be changed for one installation without the WAR being rebuilt. With `resource.bundle.file.prefix=my_texts`
+that folder holds `my_texts_en_US.properties`, `my_texts_sr_Latn_RS.properties` and `my_texts_sr_RS.properties` – one
+file for every language of `language.list` – and each file carries only the keys it changes; everything else still
+comes from the application. The files are read as UTF-8, so the letters stand in them as they are, and `\uXXXX`
+escapes work as well. The folder is read once, when the application starts, so a changed file is picked up after a
+restart; a folder that is not there, and a language that has no file in it, are written into the log.
+
+Adding a language to `language.list` is not enough on its own: the web client offers the languages it was built with,
+so a new one has to be added there as well.
 
 Logs are written to the console and to `~/.logs/formuvia.log`. Change the location with `-Dlog.path=/path/to/formuvia.log`.
 

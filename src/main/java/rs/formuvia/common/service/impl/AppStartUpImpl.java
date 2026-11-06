@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.net.URLClassLoader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -12,6 +13,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
@@ -70,6 +73,7 @@ public class AppStartUpImpl implements AppStartUp {
 	private DatabaseService databaseService = new DatabaseServiceImpl();
 	private final String DUPLICATE_CLASS_NAME_MESSAGE = "Duplicate class name: ";
 	private final String HOME_PATH = "${user.home}";
+	private static final String LIST_LANGUAGE_PARAM = "language.list";
 
 	@Override
 	public void loadClass() {
@@ -360,6 +364,26 @@ public class AppStartUpImpl implements AppStartUp {
 			parent.getItems().add(menuInfo);
 
 		return menuInfo;
+
+	}
+
+	@Override
+	public void loadCustomResourceBudle() {
+		URLClassLoader url = ResourceBundleServiceImpl.customURLClassLoader();
+		if (url != null)
+			try {
+				List<String> languages = Arrays
+						.asList(StaticData.appProperties.get(LIST_LANGUAGE_PARAM).toString().split("\\,")).stream()
+						.map(a -> a.trim()).toList();
+				for (String lang : languages) {
+					ResourceBundle.getBundle(StaticData.appProperties
+							.get(ResourceBundleServiceImpl.CUSTOM_RESOURCE_FILE_PROP).toString(),
+							Locale.forLanguageTag(lang), url);
+				}
+
+			} catch (Exception e) {
+				logger.error(e.getMessage(), e);
+			}
 
 	}
 
