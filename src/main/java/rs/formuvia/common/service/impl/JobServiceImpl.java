@@ -55,7 +55,8 @@ public class JobServiceImpl implements JobService {
 	public void getExecute(UUID id) {
 		getJob(id);
 		JobItemDTO jobItemDTO = this.databaseService.findById(id, JobItemDTO.class);
-		JobDetail jobDetail = JobItemUpdate.createJobDetail(jobItemDTO.getName(), jobItemDTO.getReportId(), id);
+		JobDetail jobDetail = JobItemUpdate.createJobDetail(jobItemDTO.getName(), jobItemDTO.getReportId(), id,
+				jobItemDTO.getModelId());
 
 		if (StaticData.databaseScheduler == null)
 			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "noSchedulerFound", null);

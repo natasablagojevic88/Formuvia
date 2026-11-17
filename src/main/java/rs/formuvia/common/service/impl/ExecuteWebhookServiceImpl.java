@@ -39,7 +39,8 @@ public class ExecuteWebhookServiceImpl implements ExecuteWebhookService {
 				.equals(jobItemWebhookDTO.getBearerToken()))
 			throw new UnAuthorizedException();
 
-		ReportJob reportJob = new ReportJob(jobItemWebhookDTO.getJobId(), jobItemWebhookDTO.getJobReportId());
+		ReportJob reportJob = new ReportJob(jobItemWebhookDTO.getJobId(), jobItemWebhookDTO.getJobReportId(),
+				jobItemWebhookDTO.getJobModelId());
 		try {
 			reportJob.execute(null);
 		} catch (JobExecutionException e) {

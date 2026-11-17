@@ -24,6 +24,10 @@ import rs.formuvia.database.utils.ExecuteQuery;
 import rs.formuvia.exceptions.CommonException;
 import rs.formuvia.exceptions.NotNullException;
 import rs.formuvia.exceptions.UniqueException;
+import rs.formuvia.model.dto.ModelDTO;
+import rs.formuvia.model.enums.ModelType;
+import rs.formuvia.model.service.impl.ModelPreviewServiceImpl;
+import rs.formuvia.model.utils.UpdateObject;
 import rs.formuvia.quartz.dto.JobItemDTO;
 import rs.formuvia.quartz.entity.JobCron;
 import rs.formuvia.quartz.entity.JobItem;
@@ -39,8 +43,10 @@ import rs.formuvia.utils.StringUtils;
 public class JobItemUpdate implements ExecuteQuery<JobItemDTO> {
 	private final JobItemDTO jobItemDTO;
 	private final Boolean fromReport;
+	private final Boolean fromModel;
 	public final static String REPORT_QUARTZ_GROUP = "REPORT_GROUP";
 	public final static String REPORT_ID = "REPORT_ID";
+	public final static String MODEL_ID = "MODEL_ID";
 	public final static String JOB_ID = "JOB_ID";
 
 	private final static String MINUTES_TO_REPLACE = "#MINUTES#";
@@ -61,14 +67,15 @@ public class JobItemUpdate implements ExecuteQuery<JobItemDTO> {
 	private DatabaseService databaseService = new DatabaseServiceImpl();
 	private ModelMapper modelMapper = new ModelMapper();
 
-	public JobItemUpdate(JobItemDTO jobItemDTO, Boolean fromReport) {
+	public JobItemUpdate(JobItemDTO jobItemDTO, Boolean fromReport, Boolean fromModel) {
 		this.jobItemDTO = jobItemDTO;
 		this.fromReport = fromReport;
+		this.fromModel = fromModel;
 	}
 
 	@Override
 	public JobItemDTO execute(Connection connection) throws Exception {
-		checkJobItemDTO(jobItemDTO, fromReport, connection);
+		checkJobItemDTO(jobItemDTO, fromReport, fromModel, connection);
 
 		JobItem jobItem = StringUtils.isNull(jobItemDTO.getId()) ? new JobItem()
 				: this.databaseService.findById(jobItemDTO.getId(), JobItem.class, connection);
@@ -86,8 +93,10 @@ public class JobItemUpdate implements ExecuteQuery<JobItemDTO> {
 		return jobItemDTOFinal;
 	}
 
-	public static JobDetail createJobDetail(String jobName, UUID reportId, UUID jobId) {
-		return JobBuilder.newJob(ReportJob.class).storeDurably().usingJobData(REPORT_ID, reportId.toString())
+	public static JobDetail createJobDetail(String jobName, UUID reportId, UUID jobId, UUID modelId) {
+		return JobBuilder.newJob(ReportJob.class).storeDurably()
+				.usingJobData(REPORT_ID, reportId == null ? null : reportId.toString())
+				.usingJobData(MODEL_ID, modelId == null ? null : modelId.toString())
 				.usingJobData(JOB_ID, jobId.toString()).withIdentity(jobName, REPORT_QUARTZ_GROUP).build();
 	}
 
@@ -95,32 +104,30 @@ public class JobItemUpdate implements ExecuteQuery<JobItemDTO> {
 		if (StaticData.databaseScheduler == null)
 			return;
 
-		if (StringUtils.notNull(jobItemDTO.getReportId())) {
-			JobDetail jobDetail = createJobDetail(jobItemDTO.getName(), jobItemDTO.getReportId(), jobItemDTO.getId());
-			Trigger trigger = createTrigger(jobItemDTO, jobDetail);
+		JobDetail jobDetail = createJobDetail(jobItemDTO.getName(), jobItemDTO.getReportId(), jobItemDTO.getId(),
+				jobItemDTO.getModelId());
+		Trigger trigger = createTrigger(jobItemDTO, jobDetail);
 
-			try {
-				StaticData.databaseScheduler.addJob(jobDetail, true, true);
+		try {
+			StaticData.databaseScheduler.addJob(jobDetail, true, true);
 
-				if (jobItemDTO.getActive()) {
-					if (StaticData.databaseScheduler.checkExists(trigger.getKey())) {
-						Trigger oldTrigger = StaticData.databaseScheduler.getTrigger(trigger.getKey());
-						StaticData.databaseScheduler.rescheduleJob(oldTrigger.getKey(), trigger);
-					} else {
-						StaticData.databaseScheduler.scheduleJob(trigger);
-					}
-
+			if (jobItemDTO.getActive()) {
+				if (StaticData.databaseScheduler.checkExists(trigger.getKey())) {
+					Trigger oldTrigger = StaticData.databaseScheduler.getTrigger(trigger.getKey());
+					StaticData.databaseScheduler.rescheduleJob(oldTrigger.getKey(), trigger);
 				} else {
-					if (StaticData.databaseScheduler.checkExists(trigger.getKey())) {
-						Trigger oldTrigger = StaticData.databaseScheduler.getTrigger(trigger.getKey());
-						StaticData.databaseScheduler.unscheduleJob(oldTrigger.getKey());
-					}
+					StaticData.databaseScheduler.scheduleJob(trigger);
 				}
-			} catch (SchedulerException e) {
-				logger.error(e.getMessage(), e);
-				throw new WebApplicationException(e);
-			}
 
+			} else {
+				if (StaticData.databaseScheduler.checkExists(trigger.getKey())) {
+					Trigger oldTrigger = StaticData.databaseScheduler.getTrigger(trigger.getKey());
+					StaticData.databaseScheduler.unscheduleJob(oldTrigger.getKey());
+				}
+			}
+		} catch (SchedulerException e) {
+			logger.error(e.getMessage(), e);
+			throw new WebApplicationException(e);
 		}
 
 	}
@@ -183,12 +190,27 @@ public class JobItemUpdate implements ExecuteQuery<JobItemDTO> {
 		return expresion;
 	}
 
-	private void checkJobItemDTO(JobItemDTO jobItemDTO, Boolean fromReport, Connection connection) {
+	private void checkJobItemDTO(JobItemDTO jobItemDTO, Boolean fromReport, Boolean fromModel, Connection connection) {
 
 		if (fromReport) {
+			jobItemDTO.setModelId(null);
 			if (StringUtils.isNull(jobItemDTO.getReportId())) {
 				throw new NotNullException(UniqueException.findFieldFromList(JobItemDTO.class, "reportId"));
 			}
+		}
+
+		if (fromModel) {
+			jobItemDTO.setReportId(null);
+			if (StringUtils.isNull(jobItemDTO.getModelId())) {
+				throw new NotNullException(UniqueException.findFieldFromList(JobItemDTO.class, "modelId"));
+			}
+
+			if (!jobItemDTO.getJobType().equals(JobType.IMPORT_FILE))
+				throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "wrongType", jobItemDTO.getJobType());
+
+			ModelDTO modelDTO = ModelPreviewServiceImpl.findModel(jobItemDTO.getModelId());
+			if (!modelDTO.getType().equals(ModelType.TABLE) || UpdateObject.tableHasParent(modelDTO))
+				throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "importOnlyTopTable", null);
 		}
 
 		DatabaseParameter uniqueParameters = DatabaseParameter
@@ -285,12 +307,16 @@ public class JobItemUpdate implements ExecuteQuery<JobItemDTO> {
 			jobItemDTO.setCsvDelimiter(null);
 		}
 
-		if (jobItemDTO.getJobType().equals(JobType.EXPORT_FILE)) {
-			if (StringUtils.isNull(jobItemDTO.getFileName()))
+		if (jobItemDTO.getJobType().equals(JobType.EXPORT_FILE)
+				|| jobItemDTO.getJobType().equals(JobType.IMPORT_FILE)) {
+			if (StringUtils.isNull(jobItemDTO.getFileName()) && jobItemDTO.getJobType().equals(JobType.EXPORT_FILE))
 				throw new NotNullException(UniqueException.findFieldFromList(JobItemDTO.class, "fileName"));
 
 			if (StringUtils.isNull(jobItemDTO.getFilePath()))
 				throw new NotNullException(UniqueException.findFieldFromList(JobItemDTO.class, "filePath"));
+
+			if (jobItemDTO.getJobType().equals(JobType.IMPORT_FILE))
+				jobItemDTO.setConditional(false);
 
 		} else {
 			jobItemDTO.setFilePath(null);

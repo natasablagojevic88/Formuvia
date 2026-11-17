@@ -6,12 +6,17 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -26,10 +31,17 @@ import org.quartz.JobExecutionException;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import rs.formuvia.common.service.SendMailService;
+import rs.formuvia.common.service.impl.ExportTableServiceImpl;
 import rs.formuvia.common.service.impl.SendMailServiceImpl;
 import rs.formuvia.database.service.DatabaseService;
 import rs.formuvia.database.service.impl.DatabaseServiceImpl;
 import rs.formuvia.exceptions.CommonException;
+import rs.formuvia.model.dto.ModelDTO;
+import rs.formuvia.model.entity.Model;
+import rs.formuvia.model.enums.ModelType;
+import rs.formuvia.model.service.impl.ModelPreviewServiceImpl;
+import rs.formuvia.model.utils.ModelTemplateUpload;
+import rs.formuvia.model.utils.UpdateObject;
 import rs.formuvia.quartz.entity.JobItem;
 import rs.formuvia.quartz.entity.JobLog;
 import rs.formuvia.quartz.enums.JobLogStatus;
@@ -53,10 +65,15 @@ public class ReportJob implements Job {
 
 	private UUID jobId;
 	private UUID reportId;
+	private UUID modelId;
 
-	public ReportJob(UUID jobId, UUID reportId) {
+	private final String BACKUP_FOLDER = "/backup";
+	private final String ERROR_FOLDER = "/error";
+
+	public ReportJob(UUID jobId, UUID reportId, UUID modelId) {
 		this.jobId = jobId;
 		this.reportId = reportId;
+		this.modelId = modelId;
 	}
 
 	public ReportJob() {
@@ -77,6 +94,9 @@ public class ReportJob implements Job {
 	private final String CELL_STYLE = "border:1px solid #b0b0b0;padding:4px 8px";
 	private final String EMPTY_CELL = "&nbsp;";
 
+	private final String ERROR = "NoImport";
+	private final String ERROR_FILE_DELIMITER = ",";
+
 	@Override
 	public void execute(JobExecutionContext context) throws JobExecutionException {
 
@@ -84,11 +104,16 @@ public class ReportJob implements Job {
 				: UUID.fromString(context.getJobDetail().getJobDataMap().getString(JobItemUpdate.JOB_ID));
 
 		reportId = context == null ? reportId
-				: UUID.fromString(context.getJobDetail().getJobDataMap().getString(JobItemUpdate.REPORT_ID));
+				: StringUtils.hasText(context.getJobDetail().getJobDataMap().getString(JobItemUpdate.REPORT_ID))
+						? UUID.fromString(context.getJobDetail().getJobDataMap().getString(JobItemUpdate.REPORT_ID))
+						: null;
+
+		modelId = context == null ? modelId
+				: StringUtils.hasText(context.getJobDetail().getJobDataMap().getString(JobItemUpdate.MODEL_ID))
+						? UUID.fromString(context.getJobDetail().getJobDataMap().getString(JobItemUpdate.MODEL_ID))
+						: null;
 
 		JobItem jobItem = this.databaseService.findById(jobId, JobItem.class);
-
-		Report report = this.databaseService.findById(reportId, Report.class);
 
 		JobLog jobLog = new JobLog();
 		jobLog.setJobItem(jobItem);
@@ -98,19 +123,35 @@ public class ReportJob implements Job {
 
 		Boolean isSuccefull = true;
 		Exception exception = null;
-		try {
-			switch (report.getType()) {
-			case EXECUTE:
-				getExecuteJob(jobItem, report);
-				break;
-			case JASPER:
-				getJasperJob(jobItem, report);
-				break;
-			case SQL:
-				getSqlJob(jobItem, report);
-				break;
 
+		try {
+			if (this.reportId != null) {
+				Report report = this.databaseService.findById(reportId, Report.class);
+				switch (report.getType()) {
+				case EXECUTE:
+					getExecuteJob(jobItem, report);
+					break;
+				case JASPER:
+					getJasperJob(jobItem, report);
+					break;
+				case SQL:
+					getSqlJob(jobItem, report);
+					break;
+
+				}
 			}
+
+			if (this.modelId != null) {
+				Model model = this.databaseService.findById(modelId, Model.class);
+				if (!jobItem.getJobType().equals(JobType.IMPORT_FILE))
+					throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "wrongType", jobItem.getJobType());
+
+				ModelDTO modelDTO = ModelPreviewServiceImpl.findModel(this.modelId);
+				if (!modelDTO.getType().equals(ModelType.TABLE) || UpdateObject.tableHasParent(modelDTO))
+					throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "importOnlyTopTable", null);
+				getExecuteImportFile(jobItem, model);
+			}
+
 		} catch (Exception e) {
 			Exception lastException = CustomDefaultExceptionMapper.getLastException(e);
 			logger.error(lastException.getMessage(), lastException);
@@ -147,6 +188,79 @@ public class ReportJob implements Job {
 		LinkedHashMap<String, Object> parameters = getParameters(report.getId());
 		this.reportPreviewService.getReportExecute(parameters, report.getId(), false);
 
+	}
+
+	private void getExecuteImportFile(JobItem jobItem, Model model) {
+
+		File rootFile = new File(jobItem.getFilePath());
+		File backupFolder = new File(rootFile.getAbsolutePath() + this.BACKUP_FOLDER);
+		File errorFolder = new File(rootFile.getAbsolutePath() + this.ERROR_FOLDER);
+
+		List<File> errorFile = new ArrayList<>();
+		if (!(checkFolderExists(rootFile)))
+			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "noPathFound: " + jobItem.getFilePath(),
+					null);
+
+		List<File> files = Arrays.asList(rootFile.listFiles()).stream().filter(a -> a.isFile()).filter(a -> {
+			if (StringUtils.hasText(jobItem.getFileName())) {
+				return a.getName().startsWith(jobItem.getFileName());
+			} else {
+				return true;
+			}
+		}).filter(a -> UpdateObject.findMimeType(a).equals(ExportTableServiceImpl.EXCEL_CONTENT_TYPE))
+				.collect(Collectors.toList());
+
+		for (File file : files) {
+			try {
+
+				ModelTemplateUpload modelTemplateUpload = new ModelTemplateUpload(null, null, modelId, null, file,
+						false);
+				this.databaseService.executeQuery(modelTemplateUpload);
+
+				if (!checkFolderExists(backupFolder))
+					backupFolder.mkdir();
+
+				try {
+					Files.move(Paths.get(file.getAbsolutePath()),
+							Paths.get(backupFolder.getAbsolutePath() + "/" + file.getName()),
+							StandardCopyOption.REPLACE_EXISTING);
+				} catch (IOException e1) {
+					throw new WebApplicationException(e1);
+				}
+
+			} catch (Exception e) {
+				errorFile.add(file);
+				this.logger.error("NoFileImport: " + file.getName());
+				Exception lastException = CustomDefaultExceptionMapper.getLastException(e);
+				logger.error(lastException.getMessage(), lastException);
+
+				if (!checkFolderExists(errorFolder))
+					errorFolder.mkdir();
+
+				try {
+					Files.move(Paths.get(file.getAbsolutePath()),
+							Paths.get(errorFolder.getAbsolutePath() + "/" + file.getName()),
+							StandardCopyOption.REPLACE_EXISTING);
+				} catch (IOException e1) {
+					throw new WebApplicationException(e1);
+				}
+
+			}
+		}
+
+		if (!errorFile.isEmpty())
+			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, this.ERROR + ": "
+					+ errorFile.stream().map(a -> a.getName()).collect(Collectors.joining(ERROR_FILE_DELIMITER)), null);
+	}
+
+	private Boolean checkFolderExists(File folder) {
+		if (!folder.exists())
+			return false;
+
+		if (!folder.isDirectory())
+			return false;
+
+		return true;
 	}
 
 	private void getSqlJob(JobItem jobItem, Report report) {

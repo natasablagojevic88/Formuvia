@@ -156,7 +156,7 @@ public class ReportController {
 	@Path(ApiRoute.reportJobTable)
 	@RolesAllowed(RoleList.ADMIN)
 	public Response getJobTable(DatabaseParameter databaseParameter, @PathParam("reportId") UUID reportId) {
-		return Response.ok(reportService.getJobTable(databaseParameter, reportId)).build();
+		return Response.ok(reportService.getJobTable(databaseParameter, reportId, null)).build();
 	}
 
 	@POST
@@ -165,7 +165,7 @@ public class ReportController {
 	@Path(ApiRoute.reportJob)
 	@RolesAllowed(RoleList.ADMIN)
 	public Response getJobUpdate(@Valid JobItemDTO jobItemDTO) {
-		return Response.ok(reportService.getJobUpdate(jobItemDTO)).build();
+		return Response.ok(reportService.getJobUpdate(jobItemDTO, true, false)).build();
 	}
 
 	@DELETE

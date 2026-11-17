@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import rs.formuvia.administration.entity.Role;
 import rs.formuvia.administration.entity.Smtp;
+import rs.formuvia.model.entity.Model;
 import rs.formuvia.quartz.enums.JobExportType;
 import rs.formuvia.quartz.enums.JobOutputType;
 import rs.formuvia.quartz.enums.JobType;
@@ -43,6 +44,9 @@ public class JobItem {
 
 	@JoinColumn(foreignKey = @ForeignKey(name = "fk_job_item_report"))
 	private Report report;
+
+	@JoinColumn(foreignKey = @ForeignKey(name = "fk_job_item_model"))
+	private Model model;
 
 	@Column(name = "job_output_type")
 	private JobOutputType jobOutputType;

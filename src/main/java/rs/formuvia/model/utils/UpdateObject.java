@@ -55,6 +55,7 @@ public class UpdateObject implements ExecuteQuery<LinkedHashMap<String, Object>>
 	private final HttpServletRequest httpServletRequest;
 	private LinkedHashMap<String, Object> object;
 	private final UUID modelId;
+	private final Boolean checkRole;
 
 	private SqlQueryWriterService sqlQueryWriterService = new SqlQueryWriterServiceImpl();
 	private CommonService commonService;
@@ -62,12 +63,14 @@ public class UpdateObject implements ExecuteQuery<LinkedHashMap<String, Object>>
 	private ResourceBundleService resourceBundleService;
 	private static Tika tika = new Tika();
 
-	public UpdateObject(HttpServletRequest httpServletRequest, LinkedHashMap<String, Object> object, UUID modelId) {
+	public UpdateObject(HttpServletRequest httpServletRequest, LinkedHashMap<String, Object> object, UUID modelId,
+			Boolean checkRole) {
 		this.httpServletRequest = httpServletRequest;
 		this.object = object;
 		this.modelId = modelId;
 		this.commonService = new CommonServiceImpl(this.httpServletRequest);
 		this.resourceBundleService = new ResourceBundleServiceImpl(this.httpServletRequest);
+		this.checkRole = checkRole;
 	}
 
 	@Override
@@ -91,10 +94,15 @@ public class UpdateObject implements ExecuteQuery<LinkedHashMap<String, Object>>
 
 		String query = null;
 		if (insert) {
-			commonService.checkRole(modelDTO.getAddRoleCode());
+
+			if (checkRole)
+				commonService.checkRole(modelDTO.getAddRoleCode());
+
 			query = sqlQueryWriterService.insertQuery(columnsToArray(columns), modelDTO.getCode());
 		} else {
-			commonService.checkRole(modelDTO.getUpdateRoleCode());
+			if (checkRole)
+				commonService.checkRole(modelDTO.getUpdateRoleCode());
+
 			query = sqlQueryWriterService.updateQuery(columnsToArray(columns), modelDTO.getCode());
 		}
 		Map<Integer, Object> parameters = createParameter(object, columns);

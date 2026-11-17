@@ -32,6 +32,9 @@ public class JobItemWebhookDTO {
 	@HideInTable
 	private UUID jobReportId;
 
+	@HideInTable
+	private UUID jobModelId;
+
 	@InitSort
 	private String bearerToken;
 

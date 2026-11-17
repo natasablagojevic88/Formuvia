@@ -183,14 +183,20 @@ public class ReportServiceImpl implements ReportService {
 	}
 
 	@Override
-	public DatabaseTable<JobItemDTO> getJobTable(DatabaseParameter databaseParameter, UUID reportId) {
-		databaseParameter.getFilters().add(DatabaseFilter.valueOf("reportId", reportId.toString()));
+	public DatabaseTable<JobItemDTO> getJobTable(DatabaseParameter databaseParameter, UUID reportId, UUID modelId) {
+
+		if (reportId != null)
+			databaseParameter.getFilters().add(DatabaseFilter.valueOf("reportId", reportId.toString()));
+
+		if (modelId != null)
+			databaseParameter.getFilters().add(DatabaseFilter.valueOf("modelId", modelId.toString()));
+
 		return this.databaseService.createTable(databaseParameter, JobItemDTO.class);
 	}
 
 	@Override
-	public JobItemDTO getJobUpdate(JobItemDTO jobItemDTO) {
-		JobItemUpdate jobItemUpdate = new JobItemUpdate(jobItemDTO, true);
+	public JobItemDTO getJobUpdate(JobItemDTO jobItemDTO, Boolean fromReport, Boolean fromModel) {
+		JobItemUpdate jobItemUpdate = new JobItemUpdate(jobItemDTO, fromReport, fromModel);
 		return this.databaseService.executeQuery(jobItemUpdate);
 	}
 

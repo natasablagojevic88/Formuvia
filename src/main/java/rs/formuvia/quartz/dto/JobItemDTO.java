@@ -44,6 +44,10 @@ public class JobItemDTO {
 	private UUID reportId;
 
 	@HideInTable
+	@NotEditableInTable
+	private UUID modelId;
+
+	@HideInTable
 	private JobOutputType jobOutputType;
 
 	@HideInTable

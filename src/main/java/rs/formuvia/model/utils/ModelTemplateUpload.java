@@ -39,26 +39,33 @@ public class ModelTemplateUpload implements ExecuteQuery<Void> {
 	private final UUID fileUploadDTOId;
 	private final UUID modelId;
 	private final UUID parentId;
+	private final File importFile;
 	private CommonService commonService;
 	private DatabaseService databaseService = new DatabaseServiceImpl();
+	private final Boolean checkRole;
 
-	public ModelTemplateUpload(HttpServletRequest httpServletRequest, UUID fileUploadDTOId, UUID modelId,
-			UUID parentId) {
+	public ModelTemplateUpload(HttpServletRequest httpServletRequest, UUID fileUploadDTOId, UUID modelId, UUID parentId,
+			File importFile, Boolean checkRole) {
 		this.httpServletRequest = httpServletRequest;
 		this.fileUploadDTOId = fileUploadDTOId;
 		this.modelId = modelId;
 		this.parentId = parentId;
 		this.commonService = new CommonServiceImpl(httpServletRequest);
+		this.importFile = importFile;
+		this.checkRole = checkRole;
 	}
 
 	@Override
 	public Void execute(Connection connection) throws Exception {
 		ModelDTO modelDTO = ModelPreviewServiceImpl.findModel(modelId);
-		this.commonService.checkRole(modelDTO.getAddRoleCode());
 
-		FileUpload fileUpload = databaseService.findById(fileUploadDTOId, FileUpload.class, connection);
+		if (checkRole)
+			this.commonService.checkRole(modelDTO.getAddRoleCode());
 
-		File file = UpdateObject.createUploadFile(fileUpload, commonService);
+		FileUpload fileUpload = fileUploadDTOId == null ? null
+				: databaseService.findById(fileUploadDTOId, FileUpload.class, connection);
+
+		File file = fileUpload != null ? UpdateObject.createUploadFile(fileUpload, commonService) : this.importFile;
 		String mimeType = UpdateObject.findMimeType(file);
 		if (!mimeType.equals(ExportTableServiceImpl.EXCEL_CONTENT_TYPE)) {
 			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "wrongFormat", mimeType);
@@ -122,7 +129,7 @@ public class ModelTemplateUpload implements ExecuteQuery<Void> {
 					object.put(modelColumnDTO.getCode(), value);
 				}
 
-				UpdateObject updateObject = new UpdateObject(httpServletRequest, object, modelId);
+				UpdateObject updateObject = new UpdateObject(httpServletRequest, object, modelId, this.checkRole);
 				databaseService.executeQuery(updateObject, connection);
 
 			} catch (Exception e) {

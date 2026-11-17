@@ -7,7 +7,8 @@ s.status,
 s.end_time,
 s.error_text,
 ji.id,
-ji.report
+ji.report,
+ji.model
 from 
 qrtz_job_details qjb
 left join qrtz_triggers qt on qt.job_name=qjb.job_name

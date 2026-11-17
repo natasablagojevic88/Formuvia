@@ -35,4 +35,7 @@ public class JobListDTO {
 
 	@HideInTable
 	private UUID reportId;
+
+	@HideInTable
+	private UUID modelId;
 }

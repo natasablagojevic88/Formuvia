@@ -2,5 +2,5 @@ package rs.formuvia.quartz.enums;
 
 public enum JobType {
 
-	SEND_MAIL, EXECUTE, EXPORT_FILE;
+	SEND_MAIL, EXECUTE, EXPORT_FILE, IMPORT_FILE;
 }

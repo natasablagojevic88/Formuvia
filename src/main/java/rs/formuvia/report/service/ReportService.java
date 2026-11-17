@@ -26,9 +26,9 @@ public interface ReportService {
 
 	Integer getParameterOrderNumber(UUID reportId);
 
-	DatabaseTable<JobItemDTO> getJobTable(DatabaseParameter databaseParameter, UUID reportId);
+	DatabaseTable<JobItemDTO> getJobTable(DatabaseParameter databaseParameter, UUID reportId, UUID modelId);
 
-	JobItemDTO getJobUpdate(JobItemDTO jobItemDTO);
+	JobItemDTO getJobUpdate(JobItemDTO jobItemDTO, Boolean fromReport, Boolean fromModel);
 
 	void getJobDelete(UUID id);
 

@@ -74,7 +74,7 @@ public class ModelPreviewServiceImpl implements ModelPreviewService {
 
 	@Override
 	public LinkedHashMap<String, Object> getUpdate(UUID modelId, LinkedHashMap<String, Object> object) {
-		UpdateObject updateObject = new UpdateObject(this.httpServletRequest, object, modelId);
+		UpdateObject updateObject = new UpdateObject(this.httpServletRequest, object, modelId, true);
 		return this.databaseService.executeQuery(updateObject);
 	}
 
@@ -112,7 +112,7 @@ public class ModelPreviewServiceImpl implements ModelPreviewService {
 	@Override
 	public void getModelTemplateUpload(UUID fileUploadDTOId, UUID modelId, UUID parentId) {
 		ModelTemplateUpload modelTemplateUpload = new ModelTemplateUpload(httpServletRequest, fileUploadDTOId, modelId,
-				parentId);
+				parentId, null, true);
 		this.databaseService.executeQuery(modelTemplateUpload);
 
 	}

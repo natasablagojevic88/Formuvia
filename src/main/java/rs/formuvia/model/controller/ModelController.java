@@ -21,6 +21,7 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import rs.formuvia.database.utils.DatabaseParameter;
 import rs.formuvia.model.dto.ModelDTO;
 import rs.formuvia.model.dto.ModelExtendedDTO;
 import rs.formuvia.model.dto.ModelJasperDTO;
@@ -28,6 +29,8 @@ import rs.formuvia.model.dto.ModelProcedureDTO;
 import rs.formuvia.model.dto.ModelTreeDTO;
 import rs.formuvia.model.dto.ModelTriggerDTO;
 import rs.formuvia.model.service.ModelService;
+import rs.formuvia.quartz.dto.JobItemDTO;
+import rs.formuvia.report.service.ReportService;
 import rs.formuvia.utils.ApiRoute;
 import rs.formuvia.utils.ErrorDetail;
 import rs.formuvia.utils.RoleList;
@@ -38,6 +41,9 @@ public class ModelController {
 
 	@Inject
 	private ModelService modelService;
+
+	@Inject
+	private ReportService reportService;
 
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
@@ -191,4 +197,21 @@ public class ModelController {
 		return Response.noContent().build();
 	}
 
+	@POST
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Path(ApiRoute.modelJobTable)
+	@RolesAllowed(RoleList.ADMIN)
+	public Response getJobTable(DatabaseParameter databaseParameter, @PathParam("modelId") UUID modelId) {
+		return Response.ok(reportService.getJobTable(databaseParameter, null, modelId)).build();
+	}
+
+	@POST
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Path(ApiRoute.modelJob)
+	@RolesAllowed(RoleList.ADMIN)
+	public Response getJobUpdate(@Valid JobItemDTO jobItemDTO) {
+		return Response.ok(reportService.getJobUpdate(jobItemDTO, false, true)).build();
+	}
 }

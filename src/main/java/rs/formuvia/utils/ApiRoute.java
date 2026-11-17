@@ -59,6 +59,8 @@ public class ApiRoute {
 	public static final String modelChangeColumn = "/preview/change/{modelId}/{columnName}";
 	public static final String modelExecuteProcedure = "/preview/execute-procedure/{procedureId}/{id}";
 	public static final String modelJasperPrint = "/preview/jasper/{modelJasperId}/{id}";
+	public static final String modelJobTable = "/model/job/table/{modelId}";
+	public static final String modelJob = "/model/job";
 
 	public static final String fileUpload = "/file-upload";
 
