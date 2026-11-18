@@ -29,6 +29,7 @@ public class CustomServletContextListener implements ServletContextListener {
 		AppStartUp appStartUp = new AppStartUpImpl();
 		appStartUp.loadClass();
 		appStartUp.initParams();
+		PostgresAppender.checkConnection();
 		appStartUp.initConnections();
 		appStartUp.checkTables();
 		appStartUp.checkAdminUser();
@@ -51,5 +52,6 @@ public class CustomServletContextListener implements ServletContextListener {
 		}
 
 		quartzService.closeScheduler();
+		LogManager.shutdown();
 	}
 }

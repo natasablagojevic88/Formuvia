@@ -32,7 +32,7 @@ import rs.formuvia.utils.ErrorDetail;
 import rs.formuvia.utils.RoleList;
 
 @Path("")
-@Tag(name = "Reports", description = "Reports of one report group: paged table and retrieval of a single report. A report is either data from a query, an action over the data, or a Jasper document. All endpoints require a valid session and the admin role.")
+@Tag(name = "Reports", description = "Reports of one report group with their parameters and the jobs that run them by the schedule. A report is either data from a query, an action over the data, or a Jasper document. All endpoints require a valid session and the admin role.")
 public class ReportController {
 
 	@Inject
@@ -155,7 +155,13 @@ public class ReportController {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path(ApiRoute.reportJobTable)
 	@RolesAllowed(RoleList.ADMIN)
-	public Response getJobTable(DatabaseParameter databaseParameter, @PathParam("reportId") UUID reportId) {
+	@Operation(summary = "List jobs of a report", description = "Returns one page of the jobs of the given report; the report from the path is added to the filters, so a job of another report or of a table never comes back. Request: pageIndex (zero-based), pageSize, filters and orders over JobItemDTO fields. Response: name (translated table title), column, allColumns (every JobItemDTO field with its translated label), list, total and numberOfPages; the values of the job type are translated to the language from the X-Language header.", requestBody = @RequestBody(description = "Page, page size, filters and sort order", required = true, content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = DatabaseParameter.class))), responses = {
+			@ApiResponse(responseCode = "200", description = "Page of jobs of the report", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = DatabaseTable.class))),
+			@ApiResponse(responseCode = "400", description = "Unknown field or invalid value in a filter or sort", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "403", description = "Current user does not have the admin role", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
+	public Response getJobTable(DatabaseParameter databaseParameter,
+			@Parameter(description = "Identifier of the report whose jobs are listed", required = true) @PathParam("reportId") UUID reportId) {
 		return Response.ok(reportService.getJobTable(databaseParameter, reportId, null)).build();
 	}
 
@@ -164,6 +170,11 @@ public class ReportController {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path(ApiRoute.reportJob)
 	@RolesAllowed(RoleList.ADMIN)
+	@Operation(summary = "Save job of a report", description = "Inserts a job when the identifier is empty, otherwise changes the job with that identifier. The job runs the report by the schedule. reportId is required and modelId is ignored. The job type depends on the report: a query or a Jasper report is exported to a file (EXPORT_FILE, with fileName and filePath) or sent by mail (SEND_MAIL, with receive, jobOutputType, mailSubject and smtpId; an attachment also needs fileName and, for a query, exportType); an action is only run (EXECUTE). A Jasper report needs jobOutputType and cannot be sent inline. CSV needs csvDelimiter. conditional is kept only for a query: the job then does its work only when the query returns rows. The timetable is given per unit of time (minutes, hours, day of the month, month, day of the week, year): a unit is any value (jobCronAny...), every n-th value (jobCronEvery...) or values separated by commas (jobCronIn...), never a step and a list together; a day of the month and a day of the week cannot both be chosen. The name must not repeat and cannot be changed once the job is saved. An active job is put into the schedule at once, an inactive one is taken out of it. Returns the saved job.", requestBody = @RequestBody(description = "Job to save; empty identifier inserts a new one", required = true, content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = JobItemDTO.class))), responses = {
+			@ApiResponse(responseCode = "200", description = "Saved job", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = JobItemDTO.class))),
+			@ApiResponse(responseCode = "400", description = "Required field missing, job type or output type not allowed for the report, name already taken or changed, or a timetable that cannot be read", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "403", description = "Current user does not have the admin role", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
 	public Response getJobUpdate(@Valid JobItemDTO jobItemDTO) {
 		return Response.ok(reportService.getJobUpdate(jobItemDTO, true, false)).build();
 	}
@@ -171,7 +182,13 @@ public class ReportController {
 	@DELETE
 	@Path(ApiRoute.reportJobId)
 	@RolesAllowed(RoleList.ADMIN)
-	public Response getJobDelete(@PathParam("id") UUID id) {
+	@Operation(summary = "Delete job", description = "Deletes the job with the given identifier and takes it out of the schedule, so it does not run again. It is used for the jobs of a report and for the import jobs of a table alike. Returns no content.", responses = {
+			@ApiResponse(responseCode = "204", description = "Job deleted"),
+			@ApiResponse(responseCode = "400", description = "Job with the given identifier does not exist", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "403", description = "Current user does not have the admin role", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
+	public Response getJobDelete(
+			@Parameter(description = "Job identifier", required = true) @PathParam("id") UUID id) {
 		reportService.getJobDelete(id);
 		return Response.noContent().build();
 	}

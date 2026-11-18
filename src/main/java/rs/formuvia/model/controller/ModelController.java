@@ -22,6 +22,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import rs.formuvia.database.utils.DatabaseParameter;
+import rs.formuvia.database.utils.DatabaseTable;
 import rs.formuvia.model.dto.ModelDTO;
 import rs.formuvia.model.dto.ModelExtendedDTO;
 import rs.formuvia.model.dto.ModelJasperDTO;
@@ -36,7 +37,7 @@ import rs.formuvia.utils.ErrorDetail;
 import rs.formuvia.utils.RoleList;
 
 @Path("")
-@Tag(name = "Structure", description = "Definition of the application structure as a tree: menus at the first level, tables under menus and subtables under tables. Saving a new table creates it in the database; deleting a table drops it together with its data. All endpoints require a valid session and the admin role.")
+@Tag(name = "Structure", description = "Definition of the application structure as a tree: menus at the first level, tables under menus and subtables under tables. Saving a new table creates it in the database; deleting a table drops it together with its data. A top table can also have jobs that import files into it by the schedule. All endpoints require a valid session and the admin role.")
 public class ModelController {
 
 	@Inject
@@ -202,7 +203,13 @@ public class ModelController {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path(ApiRoute.modelJobTable)
 	@RolesAllowed(RoleList.ADMIN)
-	public Response getJobTable(DatabaseParameter databaseParameter, @PathParam("modelId") UUID modelId) {
+	@Operation(summary = "List import jobs of a table", description = "Returns one page of the jobs that import files into the given table of the model; the table from the path is added to the filters, so a job of another table or of a report never comes back. Request: pageIndex (zero-based), pageSize, filters and orders over JobItemDTO fields. Response: name (translated table title), column, allColumns (every JobItemDTO field with its translated label), list, total and numberOfPages; the values of the job type are translated to the language from the X-Language header.", requestBody = @RequestBody(description = "Page, page size, filters and sort order", required = true, content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = DatabaseParameter.class))), responses = {
+			@ApiResponse(responseCode = "200", description = "Page of import jobs of the table", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = DatabaseTable.class))),
+			@ApiResponse(responseCode = "400", description = "Unknown field or invalid value in a filter or sort", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "403", description = "Current user does not have the admin role", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
+	public Response getJobTable(DatabaseParameter databaseParameter,
+			@Parameter(description = "Identifier of the table of the model whose jobs are listed", required = true) @PathParam("modelId") UUID modelId) {
 		return Response.ok(reportService.getJobTable(databaseParameter, null, modelId)).build();
 	}
 
@@ -211,6 +218,11 @@ public class ModelController {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path(ApiRoute.modelJob)
 	@RolesAllowed(RoleList.ADMIN)
+	@Operation(summary = "Save import job of a table", description = "Inserts a job when the identifier is empty, otherwise changes the job with that identifier. The job reads the files of a folder on the server into a table of the model by the schedule. modelId is required and reportId is ignored; the job type must be IMPORT_FILE and the table a top table, not one under another table. filePath, the folder the files are read from, is required; fileName, when given, picks only the files with that name. The timetable is given per unit of time (minutes, hours, day of the month, month, day of the week, year): a unit is any value (jobCronAny...), every n-th value (jobCronEvery...) or values separated by commas (jobCronIn...), never a step and a list together; a day of the month and a day of the week cannot both be chosen. The name must not repeat and cannot be changed once the job is saved. An active job is put into the schedule at once, an inactive one is taken out of it. Returns the saved job.", requestBody = @RequestBody(description = "Job to save; empty identifier inserts a new one", required = true, content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = JobItemDTO.class))), responses = {
+			@ApiResponse(responseCode = "200", description = "Saved job", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = JobItemDTO.class))),
+			@ApiResponse(responseCode = "400", description = "Required field missing, job type other than IMPORT_FILE, table that is not a top table, name already taken or changed, or a timetable that cannot be read", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "403", description = "Current user does not have the admin role", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
 	public Response getJobUpdate(@Valid JobItemDTO jobItemDTO) {
 		return Response.ok(reportService.getJobUpdate(jobItemDTO, false, true)).build();
 	}

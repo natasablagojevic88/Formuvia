@@ -1,5 +1,6 @@
 package rs.formuvia.quartz.jobs;
 
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -31,7 +32,6 @@ public class DatabaseListenCheckConnectionJob implements Job {
 		String databaseUsername = StaticData.appProperties.getProperty(AppStartUpImpl.CONNECTION_USERNAME);
 		String databasePassword = StaticData.appProperties.getProperty(AppStartUpImpl.CONNECTION_PASSWORD);
 		String checkQuery = StaticData.appProperties.getProperty(DatabaseServiceImpl.CHECK_QUERY);
-		String appName = StaticData.appProperties.getProperty(AppStartUpImpl.APP_NAME);
 
 		try {
 			PreparedStatement preparedStatement = StaticData.databaseListenConnection.prepareStatement(checkQuery);
@@ -42,12 +42,8 @@ public class DatabaseListenCheckConnectionJob implements Job {
 			try {
 				StaticData.databaseListenConnection = DriverManager.getConnection(databaseUrl, databaseUsername,
 						databasePassword);
-				String queryForApplicationName = AppStartUpImpl.SET_APP_NAME;
-				PreparedStatement preparedStatement = StaticData.databaseListenConnection
-						.prepareStatement(queryForApplicationName);
-				preparedStatement.setObject(1, appName + SUFIX_FOR_DATABASE_LISTEN);
-				preparedStatement.execute();
-				preparedStatement.close();
+
+				setAppName(StaticData.databaseListenConnection, SUFIX_FOR_DATABASE_LISTEN);
 
 				Statement statement = StaticData.databaseListenConnection.createStatement();
 				for (DatabaseListen databaseListen : DatabaseListen.values()) {
@@ -65,6 +61,16 @@ public class DatabaseListenCheckConnectionJob implements Job {
 				logger.error(e2.getMessage(), e2);
 			}
 		}
+	}
+
+	public static void setAppName(Connection connection, String sufix) throws Exception {
+		String appName = StaticData.appProperties.getProperty(AppStartUpImpl.APP_NAME);
+		String queryForApplicationName = AppStartUpImpl.SET_APP_NAME;
+		PreparedStatement preparedStatement = connection.prepareStatement(queryForApplicationName);
+		preparedStatement.setObject(1, appName + sufix);
+		preparedStatement.execute();
+		preparedStatement.close();
+
 	}
 
 	@Override

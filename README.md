@@ -125,6 +125,16 @@ mvn clean package
 
 The result is `target/Formuvia.war`, the API on its own; the web client is then served from somewhere else and let in through `cors.url`.
 
+The build runs the unit tests first (JUnit, `src/test/java`), and a failing test stops it before the WAR is made. They need no database, no network and no running server, and take a few seconds:
+
+- the SQL the tables are read with, the named parameters of report queries, and the timetable a job is scheduled by;
+- the translations: the same keys in all three languages of every `resource_bundle_*` group, and a text for every error key thrown in the code, every table title, field label and enum value;
+- `menu.xml` against `menu.xsd`, with every name translated;
+- the OpenAPI description of every endpoint;
+- with the `FormuviaFront` repository beside this one: that the routes it calls exist here, that the rules for the code of a table and of a column are the same on both sides, and that every page of the menu is a route of the client. Without it these checks are skipped.
+
+`mvn test` runs only the tests; `mvn clean package -DskipTests` builds without them.
+
 To put the client inside the same WAR, as one deployment, run Ant instead (`build.xml`, in this folder, with the `FormuviaFront` repository beside it):
 
 ```sh
