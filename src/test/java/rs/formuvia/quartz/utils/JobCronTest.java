@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
+import org.quartz.CronExpression;
 import org.quartz.CronTrigger;
 import org.quartz.JobDetail;
 import org.quartz.Trigger;
@@ -47,10 +48,15 @@ class JobCronTest {
 		return trigger(job).getCronExpression();
 	}
 
+	/**
+	 * Next run after the given moment, from the expression alone. Not trigger.getFireTimeAfter: the
+	 * trigger starts now and counts from whichever is later, so a fixed date in the test would start
+	 * failing once the real clock passes it.
+	 */
 	private static LocalDateTime nextAfter(JobItemDTO job, LocalDateTime time) {
-		CronTrigger trigger = trigger(job);
+		CronExpression expression = assertDoesNotThrow(() -> new CronExpression(cron(job)));
 		Date after = Date.from(time.atZone(ZoneId.systemDefault()).toInstant());
-		return LocalDateTime.ofInstant(trigger.getFireTimeAfter(after).toInstant(), ZoneId.systemDefault());
+		return LocalDateTime.ofInstant(expression.getNextValidTimeAfter(after).toInstant(), ZoneId.systemDefault());
 	}
 
 	@Test
