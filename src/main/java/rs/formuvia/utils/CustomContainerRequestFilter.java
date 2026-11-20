@@ -78,7 +78,7 @@ public class CustomContainerRequestFilter implements ContainerRequestFilter {
 	private final String ALLOW_HEADERS_HEADER = "Access-Control-Allow-Headers";
 	private final String ALLOW_ORIGIN_HEADER = "Access-Control-Allow-Origin";
 
-	private final String CORS_URL = "cors.url";
+	public static final String CORS_URL = "cors.url";
 	private final String ALLOW_CREDENTIALS = "true";
 	private final String ALLOWED_HEADERS = "Content-Type, X-Language";
 	private final String ALLOWED_METHODS = "GET, POST, PUT, DELETE, OPTIONS";

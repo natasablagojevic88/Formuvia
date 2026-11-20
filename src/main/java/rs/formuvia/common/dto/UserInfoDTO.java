@@ -2,6 +2,7 @@ package rs.formuvia.common.dto;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,6 +14,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserInfoDTO {
+
+	private UUID id;
 
 	private String username;
 

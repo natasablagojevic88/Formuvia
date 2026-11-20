@@ -48,6 +48,7 @@ public class SessionServiceImpl implements SessionService {
 		AppUser appUser = commonService.getUser();
 		UserInfoDTO userInfo = new UserInfoDTO();
 		userInfo.setName(appUser.getName());
+		userInfo.setId(appUser.getId());
 		userInfo.setSurname(appUser.getSurname());
 		userInfo.setUsername(appUser.getUsername());
 

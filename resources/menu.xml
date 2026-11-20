@@ -9,4 +9,5 @@
 		<item icon="fa-solid fa-envelope" name="menu.smtp" url="/smtp" />
 	</item>
 	<item icon="fa-solid fa-clock" name="menu.jobs" url="/job/list" />
+	<item icon="fa-solid fa-bell" name="menu.notifications" url="/notification" />
 </menu>

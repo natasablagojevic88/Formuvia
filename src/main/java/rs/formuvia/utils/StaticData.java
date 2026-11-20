@@ -16,6 +16,7 @@ import org.quartz.Scheduler;
 
 import jakarta.json.bind.Jsonb;
 import jakarta.json.bind.JsonbBuilder;
+import jakarta.websocket.Session;
 import rs.formuvia.administration.dto.AppUserRoleDTO;
 import rs.formuvia.administration.dto.RoleDTO;
 import rs.formuvia.administration.dto.SmtpDTO;
@@ -69,5 +70,7 @@ public class StaticData {
 
 	public static volatile Map<UUID, List<ComboboxDTO>> modelCodebook = new ConcurrentHashMap<>();
 	public static volatile Set<UUID> modelsToListen = ConcurrentHashMap.newKeySet();
+
+	public static Map<UUID, Set<Session>> websocketSession = new ConcurrentHashMap<>();
 
 }

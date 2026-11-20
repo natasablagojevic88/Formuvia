@@ -7,12 +7,14 @@ import java.util.stream.Collectors;
 
 import jakarta.persistence.Table;
 import lombok.RequiredArgsConstructor;
+import rs.formuvia.common.entity.Notification;
 import rs.formuvia.common.entity.Track;
 import rs.formuvia.common.service.CommonService;
 import rs.formuvia.common.service.impl.CommonServiceImpl;
 import rs.formuvia.database.service.DatabaseService;
 import rs.formuvia.database.service.impl.DatabaseServiceImpl;
 import rs.formuvia.utils.InitScriptExecute;
+import rs.formuvia.utils.StringUtils;
 
 @RequiredArgsConstructor
 public class CheckTables implements ExecuteQuery<Void> {
@@ -30,6 +32,7 @@ public class CheckTables implements ExecuteQuery<Void> {
 	private final List<TableInfo> tableInfos;
 	public static final String CREATE_AUDIT_TRIGGER = "create_audit";
 	private static final String AUDIT_FILE_QUERY = "audit_function.sql";
+	private final String CREATE_NOTIFICATION_QUERY_FILE = "notification_listen.sql";
 
 	@Override
 	public Void execute(Connection connection) throws Exception {
@@ -111,6 +114,17 @@ public class CheckTables implements ExecuteQuery<Void> {
 				continue;
 			}
 
+			if (tableInfo.getName().equals(Notification.class.getAnnotation(Table.class).name())) {
+				if (triggerInfos.stream().filter(a -> a.getTableName().equals(tableInfo.getName())
+						&& a.getTriggerName().equals(InitScriptExecute.TRIGGER_LISTEN_NAME)).count() == 0) {
+
+					String query = commonService.readQueryFromFile(CREATE_NOTIFICATION_QUERY_FILE);
+					query = createSqlQueryWithReplace(query, connection, null);
+					databaseService.executeUpdateQuery(query, null, connection);
+
+				}
+			}
+
 			if (triggerInfos.stream().filter(a -> a.getTableName().equals(tableInfo.getName())
 					&& a.getTriggerName().equals(CREATE_AUDIT_TRIGGER)).count() == 0) {
 
@@ -123,14 +137,22 @@ public class CheckTables implements ExecuteQuery<Void> {
 
 	public static void createAuditTrigger(Connection connection, String tableName) {
 		String queryTemplate = commonService.readQueryFromFile(AUDIT_FILE_QUERY);
-		String query = new String(queryTemplate.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
+
+		databaseService.executeUpdateQuery(createSqlQueryWithReplace(queryTemplate, connection, tableName), null,
+				connection);
+	}
+
+	private static String createSqlQueryWithReplace(String queryIn, Connection connection, String tableName) {
+		String query = new String(queryIn.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
 		query = query.replaceAll(InitScriptExecute.ADDITIONAL_SCHEMA_TO_REPLACE,
 				InitScriptExecute.additionalSchemaName());
 		query = query.replaceAll(InitScriptExecute.CURRENT_SCHEMA_TO_REPLACE,
 				InitScriptExecute.findCurrentSchema(databaseService, connection));
-		query = query.replaceAll(InitScriptExecute.TABLE_NAME_TO_REPLACE, tableName);
 
-		databaseService.executeUpdateQuery(query, null, connection);
+		if (StringUtils.hasText(tableName))
+			query = query.replaceAll(InitScriptExecute.TABLE_NAME_TO_REPLACE, tableName);
+
+		return query;
 	}
 
 	public static List<String> allTable(Connection connection) {

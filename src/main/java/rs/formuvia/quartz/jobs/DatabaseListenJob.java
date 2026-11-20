@@ -11,10 +11,12 @@ import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
+import jakarta.websocket.Session;
 import rs.formuvia.administration.dto.AppUserRoleDTO;
 import rs.formuvia.administration.dto.RoleDTO;
 import rs.formuvia.administration.dto.SmtpDTO;
 import rs.formuvia.administration.entity.AppUser;
+import rs.formuvia.common.utils.NotificationListen;
 import rs.formuvia.database.service.DatabaseService;
 import rs.formuvia.database.service.impl.DatabaseServiceImpl;
 import rs.formuvia.database.utils.LoadStaticData;
@@ -34,11 +36,13 @@ import rs.formuvia.report.dto.ReportParameterDTO;
 import rs.formuvia.utils.DatabaseListen;
 import rs.formuvia.utils.StaticData;
 import rs.formuvia.utils.StringUtils;
+import rs.formuvia.websocket.NotificationWebSocket;
 
 @DisallowConcurrentExecution
 public class DatabaseListenJob implements Job {
 	private Logger logger = LogManager.getLogger(getClass());
 	private DatabaseService databaseService = new DatabaseServiceImpl();
+	public static final String NOTIFICATION_LISTEN = "listen_notification";
 
 	@Override
 	public void execute(JobExecutionContext context) throws JobExecutionException {
@@ -103,7 +107,17 @@ public class DatabaseListenJob implements Job {
 						break;
 
 					}
+				} else if (nameNotification.contains(NOTIFICATION_LISTEN)) {
+					NotificationListen notificationListen = StaticData.JSONB.fromJson(notification.getParameter(),
+							NotificationListen.class);
+					if (StaticData.websocketSession.get(notificationListen.getUser()) == null)
+						continue;
+
+					for (Session session : StaticData.websocketSession.get(notificationListen.getUser()))
+						NotificationWebSocket.sendMessage(session, notificationListen.getCount().toString());
+
 				} else {
+
 					String modelCode = nameNotification.substring(UpdateColumnModel.LISTEN_PREFIX.length());
 					ModelDTO modelDTO = StaticData.models.stream().filter(a -> StringUtils.notNull(a.getCode()))
 							.filter(a -> a.getCode().equals(modelCode)).findFirst().orElse(null);
@@ -111,8 +125,6 @@ public class DatabaseListenJob implements Job {
 						LoadStaticData.loadStaticDataCodebookModel(modelDTO.getId(), null);
 					}
 				}
-
-				;
 			}
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);

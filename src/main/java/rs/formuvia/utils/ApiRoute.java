@@ -106,4 +106,12 @@ public class ApiRoute {
 	public static final String jobExecuteId = "/job/execute/{id}";
 	public static final String jobLogsId = "/job/logs/{id}";
 
+	public static final String notificationCount = "/notification/count";
+	public static final String notificationListUnseen = "/notification/list/unseen";
+	public static final String notificationListAll = "/notification/list/all";
+	public static final String notificationSeen = "/notification/seen/{id}";
+	public static final String notificationUnSeen = "/notification/unseen/{id}";
+
+	public static final String websocketNotification = "/websocket/notification/{id}";
+
 }

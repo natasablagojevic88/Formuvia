@@ -51,6 +51,10 @@ public class DatabaseListenCheckConnectionJob implements Job {
 				}
 				statement.close();
 
+				statement = StaticData.databaseListenConnection.createStatement();
+				statement.execute(LISTEN_QUERY + DatabaseListenJob.NOTIFICATION_LISTEN);
+				statement.close();
+
 				Set<UUID> columnsWithCodebook = LoadStaticData.columnWithCodebook();
 
 				for (UUID modelId : columnsWithCodebook) {
