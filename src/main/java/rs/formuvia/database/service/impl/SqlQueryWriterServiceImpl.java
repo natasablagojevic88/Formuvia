@@ -316,9 +316,9 @@ public class SqlQueryWriterServiceImpl implements SqlQueryWriterService {
 	}
 
 	public static void checkPageIndexSize(Integer pageIndex, Integer pageSize) {
-		if (pageIndex < 0)
+		if (pageIndex == null || pageIndex < 0)
 			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "pageIndexBelow0", pageIndex);
-		if (pageSize < 0)
+		if (pageSize == null || pageSize <= 0)
 			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "pageSizeBelow0", pageSize);
 	}
 
@@ -330,7 +330,7 @@ public class SqlQueryWriterServiceImpl implements SqlQueryWriterService {
 			bufferedWriter.write("LIMIT ");
 			bufferedWriter.write(String.valueOf(pageSize));
 			bufferedWriter.write(" OFFSET ");
-			Integer offset = pageSize * pageIndex;
+			Long offset = (long) pageSize * pageIndex;
 			bufferedWriter.write(String.valueOf(offset));
 
 			bufferedWriter.close();
@@ -391,7 +391,7 @@ public class SqlQueryWriterServiceImpl implements SqlQueryWriterService {
 		case FILE:
 			objects = new Object[0];
 			break;
-		default:
+		case null, default:
 			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "noFilterColumnTypeFound", null);
 
 		}
