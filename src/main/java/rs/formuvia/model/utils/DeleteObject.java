@@ -48,6 +48,11 @@ public class DeleteObject implements ExecuteQuery<Void> {
 		this.commonService.checkRole(modelDTO.getDeleteRoleCode());
 		LinkedHashMap<String, Object> item = CreateForm.findObjectById(id, modelDTO, connection, resourceBundleService);
 
+		String query = sqlQueryWriterService.deleteQuery(modelDTO.getCode());
+		Map<Integer, Object> parameters = Map.of(1, this.id);
+
+		databaseService.executeUpdateQuery(query, parameters, connection);
+
 		for (ModelColumnDTO columnDTO : StaticData.modelColumns.stream()
 				.filter(a -> a.getModelId().equals(this.modelId)).filter(a -> a.getColumnType().equals(ColumnType.FILE))
 				.collect(Collectors.toList())) {
@@ -60,11 +65,6 @@ public class DeleteObject implements ExecuteQuery<Void> {
 			ModelFile modelFile = this.databaseService.findById(fileRowId, ModelFile.class, connection);
 			this.databaseService.delete(modelFile, connection);
 		}
-
-		String query = sqlQueryWriterService.deleteQuery(modelDTO.getCode());
-		Map<Integer, Object> parameters = Map.of(1, this.id);
-
-		databaseService.executeUpdateQuery(query, parameters, connection);
 
 		return null;
 	}

@@ -37,6 +37,8 @@ import rs.formuvia.report.dto.ReportParameterDTO;
 
 public class StaticData {
 
+	public static volatile boolean shutingDown = false;
+
 	public static List<Class<?>> allClasses = new ArrayList<>();
 	public static Map<Class<?>, List<Field>> classFields = new ConcurrentHashMap<>();
 	public static Map<String, Class<?>> allClassesByName = new ConcurrentHashMap<>();
@@ -49,6 +51,7 @@ public class StaticData {
 	public static Scheduler localScheduler;
 	public static Scheduler databaseScheduler;
 	public static Connection databaseListenConnection;
+	public static Connection postgresAppenderConnection;
 	public static List<MenuInfo> menuInfos = new ArrayList<>();
 
 	public static volatile List<AppUser> appUsers = new ArrayList<>();

@@ -51,6 +51,7 @@ public class ExecuteReportPreview implements ExecuteQuery<ReportResultDTO> {
 
 			if (StringUtils.hasText(resultSet.getMetaData().getColumnClassName(i))) {
 				Class<?> resultClass = Class.forName(resultSet.getMetaData().getColumnClassName(i));
+				ColumnType columnType = ExecuteNativeQueryImpl.findColumnType(resultClass);
 
 				if (resultClass.equals(java.sql.Date.class))
 					reportResultColumnDTO.setColumnType(ColumnType.LOCALDATE);
@@ -58,8 +59,10 @@ public class ExecuteReportPreview implements ExecuteQuery<ReportResultDTO> {
 					reportResultColumnDTO.setColumnType(ColumnType.LOCALTIME);
 				else if (resultClass.equals(java.sql.Timestamp.class))
 					reportResultColumnDTO.setColumnType(ColumnType.LOCALDATETIME);
-				else
-					reportResultColumnDTO.setColumnType(ExecuteNativeQueryImpl.findColumnType(resultClass));
+				else if (columnType != null && columnType != ColumnType.FILE)
+					reportResultColumnDTO.setColumnType(columnType);
+				else if (Number.class.isAssignableFrom(resultClass))
+					reportResultColumnDTO.setColumnType(ColumnType.BIGDECIMAL);
 
 			}
 

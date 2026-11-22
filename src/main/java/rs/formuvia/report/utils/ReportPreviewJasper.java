@@ -1,14 +1,19 @@
 package rs.formuvia.report.utils;
 
 import java.io.File;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.sql.Connection;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.core.Response;
@@ -56,6 +61,9 @@ public class ReportPreviewJasper implements ExecuteQuery<Response> {
 		File jasperFile = DownloadModelFile.createFileFromPath(reportDTO.getJasperFilePath(), reportDTO.getId());
 		JasperReport jasperReport = (JasperReport) JRLoader.loadObject(jasperFile);
 		List<ReportParameterDTO> list = CreateReportInfo.getParametersForReportId(this.reportId);
+		Map<String, Class<?>> jasperTypes = Arrays.stream(jasperReport.getParameters())
+				.filter(p -> !p.isSystemDefined())
+				.collect(Collectors.toMap(JRParameter::getName, JRParameter::getValueClass));
 		for (ReportParameterDTO parameterDTO : list) {
 
 			Object value = UpdateObject.createValue(parameters.get(parameterDTO.getCode()),
@@ -76,6 +84,10 @@ public class ReportPreviewJasper implements ExecuteQuery<Response> {
 			}
 			;
 
+			Class<?> target = jasperTypes.get(parameterDTO.getCode());
+			if (value instanceof Number number && target != null && !target.isInstance(value))
+				value = toJasperNumber(number, target, parameterDTO.getCode());
+
 			parameters.put(parameterDTO.getCode(), value);
 		}
 		parameters.put(JRParameter.REPORT_LOCALE, this.commonService.getUserLocale());
@@ -84,6 +96,29 @@ public class ReportPreviewJasper implements ExecuteQuery<Response> {
 		byte[] bytes = JasperExportManager.exportReportToPdf(jasperPrint);
 
 		return ExportTableServiceImpl.createExcelResponse(bytes, FILE_NAME, PrintModelJasper.MIME_TYPE_EXPORT);
+	}
+
+	private Object toJasperNumber(Number number, Class<?> target, String code) {
+		BigDecimal bigDecimal = new BigDecimal(number.toString());
+		try {
+			if (target == Integer.class)
+				return bigDecimal.intValueExact();
+			if (target == Long.class)
+				return bigDecimal.longValueExact();
+			if (target == Short.class)
+				return bigDecimal.shortValueExact();
+			if (target == Double.class)
+				return bigDecimal.doubleValue();
+			if (target == Float.class)
+				return bigDecimal.floatValue();
+			if (target == BigDecimal.class)
+				return bigDecimal;
+			if (target == BigInteger.class)
+				return bigDecimal.toBigIntegerExact();
+		} catch (ArithmeticException e) {
+			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "notWholeNumber", code);
+		}
+		return number; // Object, Number... – Jasper takes it as it is
 	}
 
 }

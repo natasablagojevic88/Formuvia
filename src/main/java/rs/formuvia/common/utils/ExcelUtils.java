@@ -46,7 +46,7 @@ public class ExcelUtils {
 		cell.setCellValue(text);
 		xssfCellStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.index);
 		xssfCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-		Font font = xssfCellStyle.getFont();
+		Font font = workbook.createFont();
 		font.setBold(true);
 		xssfCellStyle.setFont(font);
 		cell.setCellStyle(xssfCellStyle);
@@ -162,7 +162,6 @@ public class ExcelUtils {
 		case BIGDECIMAL:
 			BigDecimal bigDecimal = new BigDecimal(value.toString());
 			xssfCell.setCellValue(bigDecimal.doubleValue());
-			xssfCell.setCellStyle(decimalExcelStyle(workbook, numberOfDecimal));
 			break;
 		case BOOLEAN:
 			Boolean booleanValue = Boolean.valueOf(value.toString());
@@ -172,29 +171,23 @@ public class ExcelUtils {
 			else
 				cellValue = resourceBundleService.getText(COMMON_NO);
 			xssfCell.setCellValue(cellValue);
-			xssfCell.setCellStyle(booleanExcelStyle(workbook));
 			break;
 		case INTEGER, LONG:
 			Long longValue = Long.valueOf(value.toString());
 			xssfCell.setCellValue(longValue.longValue());
-			xssfCell.setCellStyle(integerExcelStyle(workbook));
 			break;
 		case LOCALDATE:
 			xssfCell.setCellValue(LocalDate.parse(value.toString()));
-			xssfCell.setCellStyle(dateExcelStyle(workbook));
 			break;
 		case LOCALDATETIME:
 			xssfCell.setCellValue(LocalDateTime.parse(value.toString()));
-			xssfCell.setCellStyle(dateTimeExcelStyle(workbook));
 			break;
 		case LOCALTIME: {
 			LocalTime localTime = LocalTime.parse(value.toString());
 			xssfCell.setCellValue(localTime.toSecondOfDay() / 86400d);
-			xssfCell.setCellStyle(timeExcelStyle(workbook));
 			break;
 		}
 		case STRING, UUID, FILE:
-			xssfCell.setCellStyle(stringExcelStyle(workbook));
 			if (StringUtils.isNull(listOfValues) || listOfValues.isEmpty()) {
 				xssfCell.setCellValue(value.toString());
 			} else {

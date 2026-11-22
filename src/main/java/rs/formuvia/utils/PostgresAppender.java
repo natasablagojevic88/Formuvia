@@ -3,7 +3,6 @@ package rs.formuvia.utils;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
-import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.time.LocalDateTime;
@@ -35,7 +34,6 @@ public class PostgresAppender extends AbstractAppender {
 
 	}
 
-	private static Connection connection;
 	private static final String SUFIX_FOR_DATABASE_NAME = "-logger";
 	private static String query;
 	private static CommonService commonService = new CommonServiceImpl();
@@ -43,8 +41,11 @@ public class PostgresAppender extends AbstractAppender {
 
 	public static void checkConnection() {
 
+		if (StaticData.shutingDown)
+			return;
+
 		try {
-			PreparedStatement preparedStatement = connection
+			PreparedStatement preparedStatement = StaticData.postgresAppenderConnection
 					.prepareStatement(StaticData.appProperties.getProperty(DatabaseServiceImpl.CHECK_QUERY));
 			preparedStatement.execute();
 			preparedStatement.close();
@@ -52,11 +53,12 @@ public class PostgresAppender extends AbstractAppender {
 			try {
 				Class.forName(AppStartUpImpl.DRIVER_CLASS);
 				query = commonService.readQueryFromFile(QUERY_FILE);
-				connection = DriverManager.getConnection(
+				StaticData.postgresAppenderConnection = DriverManager.getConnection(
 						StaticData.appProperties.getProperty(AppStartUpImpl.CONNECTION_URL),
 						StaticData.appProperties.getProperty(AppStartUpImpl.CONNECTION_USERNAME),
 						StaticData.appProperties.getProperty(AppStartUpImpl.CONNECTION_PASSWORD));
-				DatabaseListenCheckConnectionJob.setAppName(connection, SUFIX_FOR_DATABASE_NAME);
+				DatabaseListenCheckConnectionJob.setAppName(StaticData.postgresAppenderConnection,
+						SUFIX_FOR_DATABASE_NAME);
 			} catch (Exception e1) {
 			}
 		}
@@ -72,7 +74,7 @@ public class PostgresAppender extends AbstractAppender {
 	@Override
 	public void append(LogEvent event) {
 		checkConnection();
-		try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+		try (PreparedStatement preparedStatement = StaticData.postgresAppenderConnection.prepareStatement(query)) {
 			preparedStatement.setObject(1, LocalDateTime.now());
 			preparedStatement.setObject(2, event.getLevel() == null ? null : event.getLevel().name());
 			preparedStatement.setObject(3, event.getLoggerName());

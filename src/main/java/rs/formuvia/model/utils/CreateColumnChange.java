@@ -61,8 +61,14 @@ public class CreateColumnChange implements ExecuteQuery<LinkedHashMap<String, Ob
 			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "functionHasNotFinished",
 					modelColumnDTO.getChangeValueFunction());
 		}
-		String response = objects.getFirst()[0].toString();
-		;
+		if (StringUtils.isNull(objects.getFirst()[0]))
+			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "functionHasNotFinished",
+					modelColumnDTO.getChangeValueFunction());
+
+		String response = objects.getFirst()[0].toString().strip();
+		if (!response.startsWith("{"))
+			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "functionMustReturnObject",
+					modelColumnDTO.getChangeValueFunction());
 		return StaticData.JSONB.fromJson(new ByteArrayInputStream(response.getBytes(StandardCharsets.UTF_8)),
 				LinkedHashMap.class);
 	}

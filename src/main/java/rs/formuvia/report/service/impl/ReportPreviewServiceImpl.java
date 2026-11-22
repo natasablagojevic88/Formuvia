@@ -149,6 +149,7 @@ public class ReportPreviewServiceImpl implements ReportPreviewService {
 		for (ReportResultColumnDTO column : reportResultDTO.getColumns()) {
 			index++;
 			ExcelUtils.createTableTitleCell(wb, row, index, column.getName());
+			ExportTableServiceImpl.formatColumnType(column.getColumnType(), sheet, index, NUMBER_OF_DECIMAL);
 		}
 
 		int indexRow = 0;

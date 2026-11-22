@@ -1,7 +1,6 @@
 package rs.formuvia.websocket;
 
 import java.io.IOException;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -39,9 +38,13 @@ public class NotificationWebSocket {
 		}
 		UUID uuid = UUID.fromString(id);
 		if (StaticData.websocketSession.get(uuid) == null) {
-			Set<Session> set = ConcurrentHashMap.newKeySet();
-			set.add(session);
-			StaticData.websocketSession.put(uuid, set);
+			StaticData.websocketSession.compute(uuid, (_, set) -> {
+				if (set == null)
+					set = ConcurrentHashMap.newKeySet();
+				set.add(session);
+				return set;
+			});
+
 		}
 
 		else
@@ -65,7 +68,7 @@ public class NotificationWebSocket {
 
 		StaticData.websocketSession.computeIfPresent(id, (_, sesions) -> {
 			sesions.remove(session);
-			return sesions;
+			return sesions.isEmpty() ? null : sesions;
 		});
 	}
 

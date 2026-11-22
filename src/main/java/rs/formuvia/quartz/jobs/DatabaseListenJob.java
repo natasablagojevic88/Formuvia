@@ -54,77 +54,90 @@ public class DatabaseListenJob implements Job {
 					.getNotifications();
 			for (PGNotification notification : pgNotifications) {
 				String nameNotification = notification.getName();
-				if (Arrays.asList(DatabaseListen.values()).stream().map(a -> a.name()).toList()
-						.contains(nameNotification)) {
-					DatabaseListen databaseListen = DatabaseListen.valueOf(nameNotification);
-					switch (databaseListen) {
-					case listen_appuser, listen_appuser_role:
-						StaticData.appUsers = this.databaseService.findAll(null, AppUser.class);
-						StaticData.appUserRoles = this.databaseService.findAll(null, AppUserRoleDTO.class);
-						break;
-					case listen_role:
-						StaticData.roles = this.databaseService.findAll(null, RoleDTO.class);
-						break;
-					case listen_model:
-						StaticData.models = this.databaseService.findAll(null, ModelDTO.class);
-						break;
-					case listen_model_column:
-						StaticData.modelColumns = this.databaseService.findAll(null, ModelColumnDTO.class);
-						break;
-					case listen_model_file:
-						StaticData.modelFiles = this.databaseService.findAll(null, ModelFileDTO.class);
-						break;
-					case listen_model_column_condition:
-						StaticData.modelColumnsConditions = this.databaseService.findAll(null,
-								ModelColumnConditionDTO.class);
-						break;
-					case listen_model_procedure:
-						StaticData.modelProcedures = this.databaseService.findAll(null, ModelProcedureDTO.class);
-						break;
-					case listen_model_trigger:
-						StaticData.modelTriggers = this.databaseService.findAll(null, ModelTriggerDTO.class);
-						break;
-					case listen_model_jasper:
-						StaticData.modelJaspers = this.databaseService.findAll(null, ModelJasperDTO.class);
-						break;
-					case listen_report:
-						StaticData.reports = this.databaseService.findAll(null, ReportDTO.class);
-						break;
-					case listen_report_group:
-						StaticData.reportGroups = this.databaseService.findAll(null, ReportGroupDTO.class);
-						break;
-					case listen_report_parameter:
-						StaticData.reportParameters = this.databaseService.findAll(null, ReportParameterDTO.class);
-						break;
-					case listen_job_item:
-						StaticData.jobItems = this.databaseService.findAll(null, JobItemDTO.class);
-						break;
-					case listen_smtp:
-						StaticData.smtps = this.databaseService.findAll(null, SmtpDTO.class);
-						break;
-					case listen_job_item_webhook:
-						StaticData.webhooks = this.databaseService.findAll(null, JobItemWebhookDTO.class);
-						break;
+				try {
+					if (Arrays.asList(DatabaseListen.values()).stream().map(a -> a.name()).toList()
+							.contains(nameNotification)) {
+						DatabaseListen databaseListen = DatabaseListen.valueOf(nameNotification);
+						switch (databaseListen) {
+						case listen_appuser, listen_appuser_role:
+							StaticData.appUsers = this.databaseService.findAll(null, AppUser.class);
+							StaticData.appUserRoles = this.databaseService.findAll(null, AppUserRoleDTO.class);
+							break;
+						case listen_role:
+							StaticData.appUserRoles = this.databaseService.findAll(null, AppUserRoleDTO.class);
+							StaticData.roles = this.databaseService.findAll(null, RoleDTO.class);
+							StaticData.models = this.databaseService.findAll(null, ModelDTO.class);
+							StaticData.reportGroups = this.databaseService.findAll(null, ReportGroupDTO.class);
+							break;
+						case listen_model:
+							StaticData.models = this.databaseService.findAll(null, ModelDTO.class);
+							break;
+						case listen_model_column:
+							StaticData.modelColumns = this.databaseService.findAll(null, ModelColumnDTO.class);
+							StaticData.modelColumnsConditions = this.databaseService.findAll(null,
+									ModelColumnConditionDTO.class);
+							break;
+						case listen_model_file:
+							StaticData.modelFiles = this.databaseService.findAll(null, ModelFileDTO.class);
+							StaticData.modelJaspers = this.databaseService.findAll(null, ModelJasperDTO.class);
+							StaticData.reports = this.databaseService.findAll(null, ReportDTO.class);
+							break;
+						case listen_model_column_condition:
+							StaticData.modelColumnsConditions = this.databaseService.findAll(null,
+									ModelColumnConditionDTO.class);
+							break;
+						case listen_model_procedure:
+							StaticData.modelProcedures = this.databaseService.findAll(null, ModelProcedureDTO.class);
+							break;
+						case listen_model_trigger:
+							StaticData.modelTriggers = this.databaseService.findAll(null, ModelTriggerDTO.class);
+							break;
+						case listen_model_jasper:
+							StaticData.modelJaspers = this.databaseService.findAll(null, ModelJasperDTO.class);
+							break;
+						case listen_report:
+							StaticData.reports = this.databaseService.findAll(null, ReportDTO.class);
+							break;
+						case listen_report_group:
+							StaticData.reportGroups = this.databaseService.findAll(null, ReportGroupDTO.class);
+							break;
+						case listen_report_parameter:
+							StaticData.reportParameters = this.databaseService.findAll(null, ReportParameterDTO.class);
+							break;
+						case listen_job_item:
+							StaticData.jobItems = this.databaseService.findAll(null, JobItemDTO.class);
+							StaticData.webhooks = this.databaseService.findAll(null, JobItemWebhookDTO.class);
+							break;
+						case listen_smtp:
+							StaticData.smtps = this.databaseService.findAll(null, SmtpDTO.class);
+							break;
+						case listen_job_item_webhook:
+							StaticData.webhooks = this.databaseService.findAll(null, JobItemWebhookDTO.class);
+							break;
 
+						}
+					} else if (nameNotification.contains(NOTIFICATION_LISTEN)) {
+						NotificationListen notificationListen = StaticData.JSONB.fromJson(notification.getParameter(),
+								NotificationListen.class);
+						if (StaticData.websocketSession.get(notificationListen.getUser()) == null)
+							continue;
+
+						for (Session session : StaticData.websocketSession.get(notificationListen.getUser()))
+							NotificationWebSocket.sendMessage(session, notificationListen.getCount().toString());
+
+					} else {
+
+						String modelCode = nameNotification.substring(UpdateColumnModel.LISTEN_PREFIX.length());
+						ModelDTO modelDTO = StaticData.models.stream().filter(a -> StringUtils.notNull(a.getCode()))
+								.filter(a -> a.getCode().equals(modelCode)).findFirst().orElse(null);
+						if (StringUtils.notNull(modelDTO)) {
+							LoadStaticData.loadStaticDataCodebookModel(modelDTO.getId(), null);
+						}
 					}
-				} else if (nameNotification.contains(NOTIFICATION_LISTEN)) {
-					NotificationListen notificationListen = StaticData.JSONB.fromJson(notification.getParameter(),
-							NotificationListen.class);
-					if (StaticData.websocketSession.get(notificationListen.getUser()) == null)
-						continue;
-
-					for (Session session : StaticData.websocketSession.get(notificationListen.getUser()))
-						NotificationWebSocket.sendMessage(session, notificationListen.getCount().toString());
-
-				} else {
-
-					String modelCode = nameNotification.substring(UpdateColumnModel.LISTEN_PREFIX.length());
-					ModelDTO modelDTO = StaticData.models.stream().filter(a -> StringUtils.notNull(a.getCode()))
-							.filter(a -> a.getCode().equals(modelCode)).findFirst().orElse(null);
-					if (StringUtils.notNull(modelDTO)) {
-						LoadStaticData.loadStaticDataCodebookModel(modelDTO.getId(), null);
-					}
+				} catch (Exception e1) {
+					logger.error(e1.getMessage(), e1);
 				}
+
 			}
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);

@@ -3,6 +3,7 @@ package rs.formuvia.database.service.impl;
 import java.io.BufferedWriter;
 import java.io.StringWriter;
 import java.math.BigDecimal;
+import java.net.HttpURLConnection;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -29,6 +30,7 @@ import rs.formuvia.database.utils.QueryDatabaseOrder;
 import rs.formuvia.database.utils.QueryLeftJoin;
 import rs.formuvia.database.utils.QueryTableFinalInfo;
 import rs.formuvia.database.utils.QueryTableInfo;
+import rs.formuvia.exceptions.CommonException;
 import rs.formuvia.utils.StringUtils;
 
 @Service
@@ -313,7 +315,15 @@ public class SqlQueryWriterServiceImpl implements SqlQueryWriterService {
 		}
 	}
 
+	public static void checkPageIndexSize(Integer pageIndex, Integer pageSize) {
+		if (pageIndex < 0)
+			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "pageIndexBelow0", pageIndex);
+		if (pageSize < 0)
+			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "pageSizeBelow0", pageSize);
+	}
+
 	private String createPagingPart(Integer pageIndex, Integer pageSize) {
+		checkPageIndexSize(pageIndex, pageSize);
 		try {
 			StringWriter stringWriter = new StringWriter();
 			BufferedWriter bufferedWriter = new BufferedWriter(stringWriter);
@@ -349,6 +359,7 @@ public class SqlQueryWriterServiceImpl implements SqlQueryWriterService {
 
 	public static Object[] createParametersForFilters(DatabaseFilter databaseFilter) {
 		Object[] objects = null;
+
 		switch (databaseFilter.getColumnType()) {
 		case BIGDECIMAL:
 			objects = createBigDecimalParameters(databaseFilter);
@@ -379,6 +390,8 @@ public class SqlQueryWriterServiceImpl implements SqlQueryWriterService {
 			break;
 		case FILE:
 			objects = new Object[0];
+		default:
+			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "noFilterColumnTypeFound", null);
 
 		}
 

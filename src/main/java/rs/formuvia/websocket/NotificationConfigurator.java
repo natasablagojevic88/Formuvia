@@ -54,8 +54,10 @@ public class NotificationConfigurator extends ServerEndpointConfig.Configurator 
 
 		if (tokenDTO == null)
 			return;
+		if (!tokenDTO.getActive())
+			return;
 
-		if (!(tokenDTO.getActive() && tokenDTO.getRefreshTokenExipires().isAfter(LocalDateTime.now())))
+		if (!tokenDTO.getRefreshTokenExipires().isAfter(LocalDateTime.now()))
 			return;
 
 		sec.getUserProperties().put(APPUSER_ID, tokenDTO.getAppUserId());

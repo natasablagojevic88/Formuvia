@@ -16,6 +16,7 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
 import rs.formuvia.common.service.impl.AppStartUpImpl;
+import rs.formuvia.database.service.DatabaseService;
 import rs.formuvia.database.service.impl.DatabaseServiceImpl;
 import rs.formuvia.database.utils.LoadStaticData;
 import rs.formuvia.model.utils.UpdateColumnModel;
@@ -26,6 +27,7 @@ import rs.formuvia.utils.StaticData;
 public class DatabaseListenCheckConnectionJob implements Job {
 	private static final String SUFIX_FOR_DATABASE_LISTEN = "-database.listen";
 	public static final String LISTEN_QUERY = "LISTEN ";
+	private static DatabaseService databaseService = new DatabaseServiceImpl();
 
 	public static void checkConnection() {
 		String databaseUrl = StaticData.appProperties.getProperty(AppStartUpImpl.CONNECTION_URL);
@@ -60,6 +62,9 @@ public class DatabaseListenCheckConnectionJob implements Job {
 				for (UUID modelId : columnsWithCodebook) {
 					UpdateColumnModel.initListen(modelId);
 				}
+
+				LoadStaticData loadStaticData = new LoadStaticData();
+				databaseService.executeQuery(loadStaticData);
 			} catch (Exception e2) {
 				Logger logger = LogManager.getLogger(DatabaseListenJob.class);
 				logger.error(e2.getMessage(), e2);

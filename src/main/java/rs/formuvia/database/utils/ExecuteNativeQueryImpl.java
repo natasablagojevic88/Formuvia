@@ -41,69 +41,80 @@ public class ExecuteNativeQueryImpl<C> implements ExecuteQuery<C> {
 	public C execute(Connection connection) throws Exception {
 
 		PreparedStatement preparedStatement = connection.prepareStatement(query);
-		if (parameters != null) {
-			Iterator<Integer> iterator = parameters.keySet().iterator();
-			while (iterator.hasNext()) {
-				Integer key = iterator.next();
-				Object value = parameters.get(key);
-				if (value == null) {
-					preparedStatement.setObject(key, null);
-				} else {
-					if (value instanceof Object[]) {
-						Object[] list = (Object[]) value;
-						Object first = list.length == 0 ? null : list[0];
-
-						String type = ARRAY_TEXT_TYPE;
-						if (first != null) {
-							if (first instanceof UUID)
-								type = ARRAY_UUID_TYPE;
-							else if (first instanceof Integer)
-								type = ARRAY_INTEGER_TYPE;
-							else if (first instanceof Long)
-								type = ARRAY_BIGINT_TYPE;
-						}
-
-						preparedStatement.setObject(key, connection.createArrayOf(type, list));
-
-					} else {
-						preparedStatement.setObject(key, value);
-					}
-				}
-
-			}
-		}
-		ResultSet resultSet = preparedStatement.executeQuery();
+		ResultSet resultSet = null;
 		List<C> list = new ArrayList<>();
-		while (resultSet.next()) {
-			if (StaticData.allClasses.contains(resultClass)) {
-				C object = resultClass.getConstructor().newInstance();
-				int columnIndex = 0;
-				for (Field field : StaticData.classFields.get(resultClass).stream()
-						.filter(a -> !a.isAnnotationPresent(SkipColumn.class)).collect(Collectors.toList())) {
-					columnIndex++;
-					field.set(object,
-							getValueFromResultSet(field.getType(), resultSet.getObject(columnIndex), connection));
-				}
-				list.add(object);
-			} else {
-				if (resultClass.isArray()) {
-					Object[] objects = new Object[resultSet.getMetaData().getColumnCount()];
-					for (int i = 1; i <= objects.length; i++) {
-						objects[i - 1] = resultSet.getObject(i);
-						objects[i - 1] = getObjectValue(objects[i - 1]);
-					}
-					list.add((C) objects);
-				} else if (resultClass.equals(Object.class)) {
-					list.add((C) getObjectValue(resultSet.getObject(1)));
-				} else {
-					C object = getValueFromResultSet(resultClass, resultSet.getObject(1), connection);
-					list.add(object);
-				}
+		try {
+			if (parameters != null) {
+				Iterator<Integer> iterator = parameters.keySet().iterator();
+				while (iterator.hasNext()) {
+					Integer key = iterator.next();
+					Object value = parameters.get(key);
+					if (value == null) {
+						preparedStatement.setObject(key, null);
+					} else {
+						if (value instanceof Object[]) {
+							Object[] result = (Object[]) value;
+							Object first = result.length == 0 ? null : result[0];
 
+							String type = ARRAY_TEXT_TYPE;
+							if (first != null) {
+								if (first instanceof UUID)
+									type = ARRAY_UUID_TYPE;
+								else if (first instanceof Integer)
+									type = ARRAY_INTEGER_TYPE;
+								else if (first instanceof Long)
+									type = ARRAY_BIGINT_TYPE;
+							}
+
+							preparedStatement.setObject(key, connection.createArrayOf(type, result));
+
+						} else {
+							preparedStatement.setObject(key, value);
+						}
+					}
+
+				}
 			}
+			resultSet = preparedStatement.executeQuery();
+
+			while (resultSet.next()) {
+				if (StaticData.allClasses.contains(resultClass)) {
+					C object = resultClass.getConstructor().newInstance();
+					int columnIndex = 0;
+					for (Field field : StaticData.classFields.get(resultClass).stream()
+							.filter(a -> !a.isAnnotationPresent(SkipColumn.class)).collect(Collectors.toList())) {
+						columnIndex++;
+						field.set(object,
+								getValueFromResultSet(field.getType(), resultSet.getObject(columnIndex), connection));
+					}
+					list.add(object);
+				} else {
+					if (resultClass.isArray()) {
+						Object[] objects = new Object[resultSet.getMetaData().getColumnCount()];
+						for (int i = 1; i <= objects.length; i++) {
+							objects[i - 1] = resultSet.getObject(i);
+							objects[i - 1] = getObjectValue(objects[i - 1]);
+						}
+						list.add((C) objects);
+					} else if (resultClass.equals(Object.class)) {
+						list.add((C) getObjectValue(resultSet.getObject(1)));
+					} else {
+						C object = getValueFromResultSet(resultClass, resultSet.getObject(1), connection);
+						list.add(object);
+					}
+
+				}
+			}
+			if (resultSet != null)
+				resultSet.close();
+
+			preparedStatement.close();
+		} catch (Exception e) {
+			if (resultSet != null)
+				resultSet.close();
+			preparedStatement.close();
+			throw e;
 		}
-		resultSet.close();
-		preparedStatement.close();
 
 		return (C) list;
 	}

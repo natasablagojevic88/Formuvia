@@ -33,7 +33,7 @@ public class ExportTableServiceImpl implements ExportTableService {
 	public static final String EXCEL_CONTENT_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 	private static final String CONTENT_DISPOSITION = "Content-Disposition";
 	private final String EXPORT_FILE_NAME = "export.xlsx";
-	private static final String CONTENT_DISPOTION_TEXT = "\"attachment; filename*=UTF-8''";
+	private static final String CONTENT_DISPOTION_TEXT = "attachment; filename*=UTF-8''";
 	private final String SHEET_NAME = "export";
 	private static final String EXPORT_HEADER = "Access-Control-Expose-Headers";
 

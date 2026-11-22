@@ -288,7 +288,11 @@ public class UpdateObject implements ExecuteQuery<LinkedHashMap<String, Object>>
 		case BOOLEAN:
 			return Boolean.valueOf(value.toString());
 		case INTEGER:
-			return new BigDecimal(value.toString()).intValue();
+			try {
+				return new BigDecimal(value.toString()).intValueExact();
+			} catch (ArithmeticException e) {
+				throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "notWholeNumber", value);
+			}
 		case LOCALDATE:
 			return LocalDate.parse(value.toString());
 		case LOCALDATETIME:
@@ -296,7 +300,11 @@ public class UpdateObject implements ExecuteQuery<LinkedHashMap<String, Object>>
 		case LOCALTIME:
 			return LocalTime.parse(value.toString());
 		case LONG:
-			return new BigDecimal(value.toString()).longValue();
+			try {
+				return new BigDecimal(value.toString()).longValueExact();
+			} catch (ArithmeticException e) {
+				throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "notWholeNumber", value);
+			}
 		case STRING:
 			return value.toString();
 		case UUID:
@@ -314,12 +322,19 @@ public class UpdateObject implements ExecuteQuery<LinkedHashMap<String, Object>>
 
 	private static UUID createFile(Map<String, Object> fileObject, UUID rowId, Connection connection, ModelDTO modelDTO,
 			String columnName, CommonService commonService) {
+		ModelFile modelFileFromBase = rowId == null ? null
+				: DownloadModelFile.findModelFile(columnName, modelDTO, rowId, connection);
 		if (StringUtils.isNull(fileObject.get("fileUploadFile"))) {
 
 			if (StringUtils.isNull(fileObject.get("id")))
 				return null;
-			else
-				return UUID.fromString(fileObject.get("id").toString());
+			else {
+				UUID idFromClient = UUID.fromString(fileObject.get("id").toString());
+				if (modelFileFromBase == null || !idFromClient.equals(modelFileFromBase.getId()))
+					throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "wrongFileID", idFromClient);
+				return idFromClient;
+			}
+
 		}
 
 		String fileName = (String) fileObject.get("fileName");
@@ -329,8 +344,6 @@ public class UpdateObject implements ExecuteQuery<LinkedHashMap<String, Object>>
 		File file = createUploadFile(fileUpload, commonService);
 
 		String mimeType = findMimeType(file);
-		ModelFile modelFileFromBase = rowId == null ? null
-				: DownloadModelFile.findModelFile(columnName, modelDTO, rowId, connection);
 
 		ModelFile modelFile = modelFileFromBase == null ? new ModelFile() : modelFileFromBase;
 		modelFile.setFileName(fileName);

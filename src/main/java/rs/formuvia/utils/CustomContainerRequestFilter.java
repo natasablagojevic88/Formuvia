@@ -110,8 +110,8 @@ public class CustomContainerRequestFilter implements ContainerRequestFilter {
 
 		if ("POST".equals(requestContext.getMethod())) {
 			if (requestContext.getHeaderString(CONTENT_TYPE) != null) {
-				if (MediaType.APPLICATION_JSON.toLowerCase()
-						.equals(requestContext.getHeaderString(CONTENT_TYPE).toLowerCase())) {
+				if (MediaType.valueOf(requestContext.getHeaderString(CONTENT_TYPE))
+						.isCompatible(MediaType.APPLICATION_JSON_TYPE)) {
 					Parameter parameter = Arrays.asList(this.resource.getResourceMethod().getParameters()).stream()
 							.filter(a -> a.isAnnotationPresent(Valid.class)).findFirst().orElse(null);
 					if (parameter != null) {

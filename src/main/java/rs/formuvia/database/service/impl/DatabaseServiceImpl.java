@@ -76,15 +76,18 @@ public class DatabaseServiceImpl implements DatabaseService {
 				}
 				Integer MAXIMUM_CONNECTION_NUMBER = Integer
 						.valueOf(StaticData.appProperties.get(AppStartUpImpl.CONNECTION_NUMBER).toString());
-				if (StaticData.allConnections.contains(connection)) {
-					StaticData.allConnections.remove(connection);
-				}
 
-				if (StaticData.allConnections.size() < MAXIMUM_CONNECTION_NUMBER) {
-					AppStartUp appStartUp = new AppStartUpImpl();
-					connection = appStartUp.createConnection();
-				} else {
-					throw new WebApplicationException("NO_FREE_CONNECTION");
+				if (connection != null)
+					if (StaticData.allConnections.contains(connection))
+						StaticData.allConnections.remove(connection);
+
+				synchronized (StaticData.allConnections) {
+					if (StaticData.allConnections.size() < MAXIMUM_CONNECTION_NUMBER) {
+						AppStartUp appStartUp = new AppStartUpImpl();
+						connection = appStartUp.createConnection();
+					} else {
+						throw new WebApplicationException("NO_FREE_CONNECTION");
+					}
 				}
 
 			}

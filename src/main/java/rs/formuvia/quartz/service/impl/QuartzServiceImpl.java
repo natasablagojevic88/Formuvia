@@ -63,7 +63,11 @@ public class QuartzServiceImpl implements QuartzService {
 			this.databaseService.executeUpdateQuery(quartzSchema, null);
 			StaticData.databaseScheduler = new StdSchedulerFactory(propertiesForDatabase()).getScheduler();
 			StaticData.databaseScheduler.start();
-			loadCheckTokenJob();
+			try {
+				loadCheckTokenJob();
+			} catch (Exception e) {
+				this.logger.error(e.getMessage(), e);
+			}
 			loadReportJob();
 
 		} catch (Exception e) {

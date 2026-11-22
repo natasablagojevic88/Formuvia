@@ -166,6 +166,10 @@ public class AppStartUpImpl implements AppStartUp {
 
 	@Override
 	public Connection createConnection() throws Exception {
+
+		if (StaticData.shutingDown)
+			throw new WebApplicationException("NO_FREE_CONNECTION");
+
 		String databaseUrl = StaticData.appProperties.getProperty(CONNECTION_URL);
 		String databaseUsername = StaticData.appProperties.getProperty(CONNECTION_USERNAME);
 		String databasePassword = StaticData.appProperties.getProperty(CONNECTION_PASSWORD);

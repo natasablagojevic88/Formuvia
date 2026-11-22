@@ -91,11 +91,19 @@ public class UpdateColumnModel implements ExecuteQuery<ModelColumnExtendedDTO> {
 				modelColumnDTO.setNullable(modelColumn.getNullable());
 			}
 
+			if (!modelColumnDTO.getTextArea().equals(modelColumn.getTextArea())) {
+				modelColumnDTO.setTextArea(modelColumn.getTextArea());
+			}
+
 			if (modelColumnDTO.getColumnType().equals(ColumnType.UUID)) {
 				if (!modelColumnDTO.getCodebookId().equals(modelColumn.getCodebook().getId())) {
 					modelColumnDTO.setCodebookId(modelColumn.getCodebook().getId());
 				}
 			}
+
+			if (modelColumnDTO.getColumnType().equals(ColumnType.BIGDECIMAL))
+				modelColumnDTO.setLength(modelColumn.getLength());
+
 		}
 		checkFunctionExists("json", modelColumnDTO.getChangeValueFunction(), connection);
 		List<ModelColumnDTO> list = databaseService.findAll(
