@@ -390,6 +390,7 @@ public class SqlQueryWriterServiceImpl implements SqlQueryWriterService {
 			break;
 		case FILE:
 			objects = new Object[0];
+			break;
 		default:
 			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "noFilterColumnTypeFound", null);
 

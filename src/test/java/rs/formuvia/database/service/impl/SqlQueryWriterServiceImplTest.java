@@ -25,6 +25,7 @@ import rs.formuvia.database.utils.DatabaseParameter;
 import rs.formuvia.database.utils.QueryColumnInfo;
 import rs.formuvia.database.utils.QueryDatabaseOrder;
 import rs.formuvia.database.utils.QueryTableInfo;
+import rs.formuvia.exceptions.CommonException;
 
 /**
  * Every table of the application is read through these queries, so the exact text matters: the alias of the
@@ -255,6 +256,43 @@ class SqlQueryWriterServiceImplTest {
 	@Test
 	void textThatIsNotANumberIsRefused() {
 		assertThrows(NumberFormatException.class, () -> values("abc", ColumnType.INTEGER));
+	}
+
+	@Test
+	void filterWithoutAColumnTypeIsRefusedWithAMessage() {
+		// a filter sent by hand, without columnType: a translated message, not a NullPointerException
+		CommonException exception = assertThrows(CommonException.class, () -> values("7", null));
+		assertEquals("noFilterColumnTypeFound", exception.getInMessage());
+	}
+
+	@Test
+	void pageIndexBelowZeroIsRefused() {
+		CommonException exception = assertThrows(CommonException.class,
+				() -> SqlQueryWriterServiceImpl.checkPageIndexSize(-1, 10));
+		assertEquals("pageIndexBelow0", exception.getInMessage());
+	}
+
+	@Test
+	void pageSizeMustBeAboveZero() {
+		// with 0 the table asks for no rows and the number of pages is divided by zero (ArithmeticException);
+		// a page size sent as null must not end in a NullPointerException
+		for (Integer pageSize : new Integer[] { -1, 0, null }) {
+			CommonException exception = assertThrows(CommonException.class,
+					() -> SqlQueryWriterServiceImpl.checkPageIndexSize(0, pageSize), "pageSize " + pageSize);
+			assertEquals("pageSizeBelow0", exception.getInMessage());
+		}
+	}
+
+	@Test
+	void offsetOfAFarPageDoesNotOverflow() {
+		// pageSize * pageIndex as int turns into a negative number past 2147483647
+		DatabaseParameter parameter = new DatabaseParameter();
+		parameter.setPageIndex(3);
+		parameter.setPageSize(1_000_000_000);
+
+		String query = n(writer.createSelectQuery(userTable(), parameter));
+
+		assertTrue(query.endsWith("LIMIT 1000000000 OFFSET 3000000000"), query);
 	}
 
 	private static Object[] values(String value, ColumnType columnType) {

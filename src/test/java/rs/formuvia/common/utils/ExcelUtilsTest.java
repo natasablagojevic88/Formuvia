@@ -17,18 +17,19 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import rs.formuvia.common.dto.ComboboxDTO;
 import rs.formuvia.common.service.ResourceBundleService;
+import rs.formuvia.common.service.impl.ExportTableServiceImpl;
 import rs.formuvia.database.enums.ColumnType;
 import rs.formuvia.utils.StaticData;
 
 /**
  * The export of a table and of a report to Excel (ExportTableServiceImpl, ReportPreviewServiceImpl) writes every
  * value through ExcelUtils.createCell: a number must stay a number and a date a date, so that Excel can sum and
- * sort them.
+ * sort them. The format of a column (decimals, date) is set once per column with
+ * ExportTableServiceImpl.formatColumnType, and every new cell of that column takes it.
  */
 class ExcelUtilsTest {
 
@@ -78,24 +79,41 @@ class ExcelUtilsTest {
 		assertEquals(9_000_000_000d, cell(ColumnType.LONG, "9000000000").getNumericCellValue());
 	}
 
+	/** A cell of a column formatted the way both exports do it. */
+	private XSSFCell formattedCell(int index, ColumnType type, Object value, Integer decimals) {
+		ExportTableServiceImpl.formatColumnType(type, row.getSheet(), index, decimals);
+		return ExcelUtils.createCell(workbook, row, index, type, TEXTS, value, null, decimals);
+	}
+
 	@Test
 	void decimalsAreShownWithTheNumberOfDecimalsOfTheColumn() {
-		XSSFCell cell = ExcelUtils.createCell(workbook, row, 0, ColumnType.BIGDECIMAL, TEXTS, "3.14159", null, 3);
+		XSSFCell cell = formattedCell(0, ColumnType.BIGDECIMAL, "3.14159", 3);
 		assertTrue(cell.getCellStyle().getDataFormatString().endsWith("0.000"), cell.getCellStyle().getDataFormatString());
 	}
 
 	@Test
+	void columnsOfTheSameTypeShareOneStyle() {
+		// a style per cell ends at about 64,000 cells, the limit of Excel
+		int styles = workbook.getNumCellStyles();
+		XSSFRow second = row.getSheet().createRow(1);
+		formattedCell(0, ColumnType.BIGDECIMAL, "1.5", 2);
+		ExcelUtils.createCell(workbook, second, 0, ColumnType.BIGDECIMAL, TEXTS, "2.5", null, 2);
+		assertEquals(styles + 1, workbook.getNumCellStyles());
+		assertEquals(row.getCell(0).getCellStyle().getIndex(), second.getCell(0).getCellStyle().getIndex());
+	}
+
+	@Test
 	void datesAndTimesAreDatesWithTheFormatFromTheSettings() {
-		XSSFCell date = cell(ColumnType.LOCALDATE, "2026-11-18");
+		XSSFCell date = formattedCell(0, ColumnType.LOCALDATE, "2026-11-18", null);
 		assertEquals(LocalDateTime.of(2026, 11, 18, 0, 0), date.getLocalDateTimeCellValue());
 		assertEquals("dd.MM.yyyy", date.getCellStyle().getDataFormatString());
 
-		XSSFCell dateTime = cell(ColumnType.LOCALDATETIME, "2026-11-18T08:30:00");
+		XSSFCell dateTime = formattedCell(1, ColumnType.LOCALDATETIME, "2026-11-18T08:30:00", null);
 		assertEquals(LocalDateTime.of(2026, 11, 18, 8, 30), dateTime.getLocalDateTimeCellValue());
 		assertEquals("dd.MM.yyyy HH:mm", dateTime.getCellStyle().getDataFormatString());
 
 		// a time is a part of the day, as Excel keeps it
-		XSSFCell time = cell(ColumnType.LOCALTIME, "06:00");
+		XSSFCell time = formattedCell(2, ColumnType.LOCALTIME, "06:00", null);
 		assertEquals(0.25, time.getNumericCellValue(), 1e-9);
 		assertEquals("HH:mm", time.getCellStyle().getDataFormatString());
 	}
@@ -130,12 +148,12 @@ class ExcelUtilsTest {
 		assertTrue(cell.getCellStyle().getLocked());
 	}
 
-	@Disabled("ExcelUtils.createCell makes a new cell style for every cell, and an .xlsx holds at most 64000 styles: "
-			+ "an export with more than 64000 filled cells (8 columns x 8000 rows) stops with IllegalStateException. "
-			+ "Remove @Disabled once the styles are made once per workbook.")
 	@Test
 	void largeExportFitsIntoOneWorkbook() {
+		// an .xlsx holds at most 64000 styles; the styles are made once per column, not per cell
 		XSSFSheet sheet = workbook.getSheetAt(0);
+		for (int c = 0; c < 8; c++)
+			ExportTableServiceImpl.formatColumnType(ColumnType.STRING, sheet, c, null);
 		assertDoesNotThrow(() -> {
 			for (int r = 1; r <= 10_000; r++) {
 				XSSFRow line = sheet.createRow(r);
