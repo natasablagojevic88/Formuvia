@@ -17,6 +17,7 @@ import jakarta.ws.rs.core.Context;
 import rs.formuvia.common.dto.ComboboxDTO;
 import rs.formuvia.common.service.FunctionListService;
 import rs.formuvia.common.service.ResourceBundleService;
+import rs.formuvia.common.service.impl.FunctionListServiceImpl;
 import rs.formuvia.database.enums.SearchOperation;
 import rs.formuvia.database.service.DatabaseService;
 import rs.formuvia.database.utils.DatabaseFilter;
@@ -54,10 +55,7 @@ public class ModelServiceImpl implements ModelService {
 	@Context
 	private HttpServletRequest httpServletRequest;
 
-	@Inject
-	private FunctionListService functionListService;
-
-	private final String PROCEDURE_TYPE = "PROCEDURE";
+	private static final String PROCEDURE_TYPE = "PROCEDURE";
 
 	private final String rootName = "model.root";
 
@@ -135,13 +133,6 @@ public class ModelServiceImpl implements ModelService {
 		ModelProcedure modelProcedure = StringUtils.isNull(modelProcedureDTO.getId()) ? new ModelProcedure()
 				: this.databaseService.findById(modelProcedureDTO.getId(), ModelProcedure.class);
 
-		List<String> procedures = this.functionListService.getAllFunction(PROCEDURE_TYPE, null);
-
-		if (!procedures.contains(modelProcedureDTO.getProcedure())) {
-			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "noProcedureFound",
-					modelProcedureDTO.getProcedure());
-		}
-
 		DatabaseParameter databaseParameter = new DatabaseParameter();
 		databaseParameter.getFilters().add(DatabaseFilter.valueOf("name", modelProcedureDTO.getName()));
 		databaseParameter.getFilters()
@@ -155,10 +146,21 @@ public class ModelServiceImpl implements ModelService {
 			throw new UniqueException(UniqueException.findFieldFromList(ModelProcedureDTO.class, "name"),
 					modelProcedureDTO.getName());
 
+		checkProcedureExists(modelProcedureDTO.getProcedure());
+
 		this.modelMapper.map(modelProcedureDTO, modelProcedure);
 		modelProcedure = this.databaseService.save(modelProcedure);
 
 		return this.modelMapper.map(modelProcedure, ModelProcedureDTO.class);
+	}
+
+	public static void checkProcedureExists(String procedure) {
+		FunctionListService functionListService = new FunctionListServiceImpl();
+		List<String> procedures = functionListService.getAllFunction(PROCEDURE_TYPE, null);
+
+		if (!procedures.contains(procedure)) {
+			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "noProcedureFound", procedure);
+		}
 	}
 
 	@Override

@@ -28,7 +28,7 @@ public class FunctionListServiceImpl implements FunctionListService {
 	@Override
 	public List<String> getAllFunction(String functionType, String dataType) {
 		String query = getQuery();
-
+		databaseService = databaseService == null ? new DatabaseServiceImpl() : databaseService;
 		List<Object[]> result = this.databaseService.executeNativeQuery(query, createParameters(functionType, dataType),
 				Object[].class);
 

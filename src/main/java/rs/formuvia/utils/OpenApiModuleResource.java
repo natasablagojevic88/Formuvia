@@ -7,6 +7,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import io.swagger.v3.jaxrs2.integration.JaxrsOpenApiContextBuilder;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.integration.api.OpenApiContext;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.servers.Server;
+import jakarta.ws.rs.ApplicationPath;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -56,8 +59,12 @@ public class OpenApiModuleResource {
 							Formuvia.createSwaggerConfiguration(Formuvia.PACKAGE_NAME + "." + module))
 					.ctxId(module).buildContext(true);
 
-			return openApiContext.getOutputJsonMapper().writerWithDefaultPrettyPrinter()
-					.writeValueAsString(openApiContext.read());
+			OpenAPI openAPI = openApiContext.read();
+			// read without the Application, so the paths have no @ApplicationPath; the server carries it
+			String applicationPath = Formuvia.class.getAnnotation(ApplicationPath.class).value();
+			openAPI.setServers(List.of(new Server().url(CustomServletContextListener.context + applicationPath)));
+
+			return openApiContext.getOutputJsonMapper().writerWithDefaultPrettyPrinter().writeValueAsString(openAPI);
 		} catch (Exception e) {
 			throw new WebApplicationException(e);
 		}

@@ -114,4 +114,8 @@ public class ApiRoute {
 
 	public static final String websocketNotification = "/websocket/notification/{id}";
 
+	public static final String bpmModelList = "/bpm-model/{modelId}/table";
+	public static final String bpmModel = "/bpm-model";
+	public static final String bpmModelId = "/bpm-model/{id}";
+
 }
