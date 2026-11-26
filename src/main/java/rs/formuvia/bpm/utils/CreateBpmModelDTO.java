@@ -7,6 +7,7 @@ import java.util.UUID;
 import rs.formuvia.bpm.dto.BpmItemChangeColumnDTO;
 import rs.formuvia.bpm.dto.BpmItemDTO;
 import rs.formuvia.bpm.dto.BpmItemMailReceiveDTO;
+import rs.formuvia.bpm.dto.BpmItemPreviousDTO;
 import rs.formuvia.bpm.dto.BpmModelDTO;
 import rs.formuvia.database.service.DatabaseService;
 import rs.formuvia.database.service.impl.DatabaseServiceImpl;
@@ -39,10 +40,15 @@ public class CreateBpmModelDTO implements ExecuteQuery<BpmModelDTO> {
 				DatabaseParameter.valueOf(DatabaseFilter.valueOf("bpmItemBpmModelId", modelId.toString())),
 				BpmItemChangeColumnDTO.class, connection);
 
-		for (BpmItemDTO item : list.stream().filter(a -> a.getPreviousItemId() == null).toList()) {
+		List<BpmItemPreviousDTO> previousDTOs = this.databaseService.findAll(
+				DatabaseParameter.valueOf(DatabaseFilter.valueOf("itemBpmModelId", modelId.toString())),
+				BpmItemPreviousDTO.class, connection);
+
+		for (BpmItemDTO item : list.stream()
+				.filter(a -> !previousDTOs.stream().map(b -> b.getItemId()).toList().contains(a.getId())).toList()) {
 			addReceive(item, listReceive);
 			addChangeColumn(item, listChangeColumn);
-			addChilden(list, item, listReceive, listChangeColumn);
+			addChilden(list, item, listReceive, listChangeColumn, previousDTOs);
 			bpmModelDTO.getItems().add(item);
 
 		}
@@ -50,15 +56,20 @@ public class CreateBpmModelDTO implements ExecuteQuery<BpmModelDTO> {
 	}
 
 	private void addChilden(List<BpmItemDTO> list, BpmItemDTO parent, List<BpmItemMailReceiveDTO> listReceive,
-			List<BpmItemChangeColumnDTO> listChangeColumn) {
+			List<BpmItemChangeColumnDTO> listChangeColumn, List<BpmItemPreviousDTO> previousDTOs) {
 
-		for (BpmItemDTO child : list.stream().filter(a -> a.getPreviousItemId() != null)
-				.filter(a -> a.getPreviousItemId().equals(parent.getId())).toList()) {
+		List<BpmItemPreviousDTO> children = previousDTOs.stream().filter(a -> a.getParentId().equals(parent.getId()))
+				.toList();
+
+		for (BpmItemPreviousDTO childPrevious : children) {
+			BpmItemDTO child = list.stream().filter(a -> a.getId().equals(childPrevious.getItemId())).findFirst().get();
+			child.setPreviousAccept(childPrevious.getPreviousAccept());
 			addReceive(child, listReceive);
 			addChangeColumn(child, listChangeColumn);
 			parent.getChildren().add(child);
-			addChilden(list, child, listReceive, listChangeColumn);
+			addChilden(list, child, listReceive, listChangeColumn, previousDTOs);
 		}
+
 	}
 
 	private void addReceive(BpmItemDTO item, List<BpmItemMailReceiveDTO> listReceive) {

@@ -7,6 +7,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -24,7 +25,7 @@ import rs.formuvia.bpm.enums.BpmExecuteType;
 @AllArgsConstructor
 @Entity
 @Table(name = "bpm_item", uniqueConstraints = @UniqueConstraint(columnNames = { "bpm_model",
-		"name" }, name = "bpm_item_unique1"))
+		"name" }, name = "bpm_item_unique1"), indexes = @Index(columnList = "bpm_model", name = "bpm_item_index_model"))
 public class BpmItem {
 
 	@Id
@@ -61,11 +62,7 @@ public class BpmItem {
 	@Column(name = "sql_condition", columnDefinition = "text")
 	private String sqlCondition;
 
-	@Column(name = "previous_accept", nullable = false)
-	private Boolean previousAccept;
-
-	@JoinColumn(name = "previous_item", foreignKey = @ForeignKey(name = "fk_bpm_item_previous_item"))
-	@ManyToOne(cascade = CascadeType.REMOVE)
-	private BpmItem previousItem;
+	@Column(name = "at_least_enter", nullable = false)
+	private Integer atLeastEnter;
 
 }

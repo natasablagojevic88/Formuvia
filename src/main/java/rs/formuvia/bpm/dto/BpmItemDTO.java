@@ -50,9 +50,7 @@ public class BpmItemDTO {
 
 	private String sqlCondition;
 
-	private Boolean previousAccept;
-
-	private UUID previousItemId;
+	private Integer atLeastEnter;
 
 	@SkipColumn
 	private List<BpmItemMailReceiveDTO> receiveNotification = new ArrayList<>();
@@ -63,4 +61,9 @@ public class BpmItemDTO {
 	@SkipColumn
 	@HideInTable
 	private List<BpmItemDTO> children = new ArrayList<>();
+
+	@SkipColumn
+	@HideInTable
+	private Boolean previousAccept;
+
 }

@@ -6,6 +6,7 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -22,7 +23,7 @@ import rs.formuvia.model.entity.ModelColumn;
 @AllArgsConstructor
 @Entity
 @Table(name = "bpm_item_change_column", uniqueConstraints = @UniqueConstraint(name = "bpm_item_change_column_unique1", columnNames = {
-		"bpm_item", "model_column" }))
+		"bpm_item", "model_column" }), indexes = @Index(columnList = "bpm_item", name = "bpm_item_change_column_index"))
 public class BpmItemChangeColumn {
 
 	@Id

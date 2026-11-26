@@ -7,6 +7,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -23,7 +24,7 @@ import rs.formuvia.model.entity.Model;
 @AllArgsConstructor
 @Entity
 @Table(name = "bpm_model", uniqueConstraints = @UniqueConstraint(name = "bpm_model_unique_name", columnNames = { "name",
-		"model" }))
+		"model" }), indexes = @Index(columnList = "model", name = "bpm_model_model_index"))
 public class BpmModel {
 
 	@Id

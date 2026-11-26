@@ -5,7 +5,9 @@ import java.net.HttpURLConnection;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
@@ -15,10 +17,12 @@ import jakarta.ws.rs.WebApplicationException;
 import rs.formuvia.bpm.dto.BpmItemChangeColumnDTO;
 import rs.formuvia.bpm.dto.BpmItemDTO;
 import rs.formuvia.bpm.dto.BpmItemMailReceiveDTO;
+import rs.formuvia.bpm.dto.BpmItemPreviousDTO;
 import rs.formuvia.bpm.dto.BpmModelDTO;
 import rs.formuvia.bpm.entity.BpmItem;
 import rs.formuvia.bpm.entity.BpmItemChangeColumn;
 import rs.formuvia.bpm.entity.BpmItemMailReceive;
+import rs.formuvia.bpm.entity.BpmItemPrevious;
 import rs.formuvia.bpm.entity.BpmModel;
 import rs.formuvia.bpm.enums.BpmExecuteType;
 import rs.formuvia.database.enums.SearchOperation;
@@ -39,6 +43,8 @@ public class UpdateBpmModel implements ExecuteQuery<BpmModelDTO> {
 
 	private DatabaseService databaseService = new DatabaseServiceImpl();
 	private ModelMapper modelMapper = new ModelMapper();
+
+	private Map<String, BpmItem> enteredItem = new ConcurrentHashMap<>();
 
 	public UpdateBpmModel(BpmModelDTO bpmModelDTO) {
 		this.bpmModelDTO = bpmModelDTO;
@@ -72,29 +78,43 @@ public class UpdateBpmModel implements ExecuteQuery<BpmModelDTO> {
 		List<BpmItem> currentItem = this.databaseService.findAll(
 				DatabaseParameter.valueOf(DatabaseFilter.valueOf("bpmModel", bpmModel.getId().toString())),
 				BpmItem.class, connection);
+		List<BpmItemPreviousDTO> currentPrevious = this.databaseService.findAll(
+				DatabaseParameter.valueOf(DatabaseFilter.valueOf("itemBpmModelId", bpmModel.getId().toString())),
+				BpmItemPreviousDTO.class, connection);
 		List<BpmItem> items = new ArrayList<>();
+		List<BpmItemPrevious> previousItem = new ArrayList<>();
 		for (BpmItemDTO item : bpmModelDTO.getItems()) {
-			addItem(item, items, connection, bpmModel);
+			addItem(item, items, connection, bpmModel, null, previousItem);
 		}
 
 		if (items.stream().filter(a -> a.getIsAcceptEnd()).count() == 0)
 			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "noProcesFinished", null);
 
+		DatabaseParameter findPrevousParameter = DatabaseParameter
+				.valueOf(DatabaseFilter.valueOf("itemBpmModelId", bpmModel.getId().toString()));
+
+		List<BpmItemPreviousDTO> previousDTOs = this.databaseService.findAll(findPrevousParameter,
+				BpmItemPreviousDTO.class, connection);
+
 		for (BpmItem task : items) {
 
-			List<BpmItem> children = findChildren(items, task.getId());
+			List<BpmItemPreviousDTO> children = findChildren(previousDTOs, task.getId());
 
-			if (!task.getIsAcceptEnd())
-				if (children.stream().filter(a -> a.getPreviousAccept()).count() == 0)
-					throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "noTaskAcceptEnd", task.getName());
+			if (task.getIsAcceptEnd() && children.stream().anyMatch(a -> a.getPreviousAccept()))
+				throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "bpmEndAndNext", task.getName());
 
 			if (!task.getType().equals(BpmExecuteType.TASK))
 				continue;
 
-			if (!task.getIsRejectEnd())
-				if (children.stream().filter(a -> !a.getPreviousAccept()).count() == 0)
-					throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "noTaskRejectEnd", task.getName());
+			if (task.getIsRejectEnd() && children.stream().anyMatch(a -> !a.getPreviousAccept()))
+				throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "bpmEndAndNext", task.getName());
 
+			if (task.getAtLeastEnter() > 1) {
+				Long countParent = previousItem.stream().filter(a -> a.getItem().getId().equals(task.getId())).count();
+				if (countParent < task.getAtLeastEnter())
+					throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "atLeastHigherThenNumberOfParents",
+							task.getName());
+			}
 		}
 
 		for (BpmItem itemToDelete : currentItem.stream()
@@ -102,28 +122,59 @@ public class UpdateBpmModel implements ExecuteQuery<BpmModelDTO> {
 			this.databaseService.delete(itemToDelete, connection);
 		}
 
+		for (BpmItemPreviousDTO previousToDelete : currentPrevious.stream()
+				.filter(a -> !previousItem.stream().map(b -> b.getId()).toList().contains(a.getId())).toList()) {
+			this.databaseService.delete(
+					this.databaseService.findById(previousToDelete.getId(), BpmItemPrevious.class, connection),
+					connection);
+		}
+
 		CreateBpmModelDTO createBpmModelDTO = new CreateBpmModelDTO(bpmModel.getId());
 		return this.databaseService.executeQuery(createBpmModelDTO, connection);
 	}
 
-	private List<BpmItem> findChildren(List<BpmItem> items, UUID parentId) {
-		return items.stream().filter(a -> a.getPreviousItem() != null)
-				.filter(a -> a.getPreviousItem().getId().equals(parentId)).toList();
+	private List<BpmItemPreviousDTO> findChildren(List<BpmItemPreviousDTO> items, UUID parentId) {
+		return items.stream().filter(a -> a.getParentId().equals(parentId)).toList();
 	}
 
-	private void addItem(BpmItemDTO item, List<BpmItem> items, Connection connection, BpmModel bpmModel) {
+	private void addItem(BpmItemDTO item, List<BpmItem> items, Connection connection, BpmModel bpmModel, BpmItem parent,
+			List<BpmItemPrevious> previousItem) {
 		BpmItem bpmItem = new BpmItem();
 		item.setBpmModelId(bpmModel.getId());
-		if (item.getPreviousAccept() == null)
-			item.setPreviousAccept(false);
+		if (item.getAtLeastEnter() == null)
+			item.setAtLeastEnter(1);
+
 		checkItem(item, connection);
 		modelMapper.map(item, bpmItem);
-		if (item.getPreviousItemId() != null) {
-			BpmItem previousItem = new BpmItem();
-			previousItem.setId(item.getPreviousItemId());
-			bpmItem.setPreviousItem(previousItem);
+
+		if (enteredItem.get(bpmItem.getName()) != null)
+			bpmItem = enteredItem.get(bpmItem.getName());
+		else {
+			bpmItem = this.databaseService.save(bpmItem, connection);
+			this.enteredItem.put(bpmItem.getName(), bpmItem);
 		}
-		bpmItem = this.databaseService.save(bpmItem, connection);
+
+		if (parent != null) {
+			DatabaseParameter databaseParameter = DatabaseParameter
+					.singleFilter(new DatabaseFilter[] { DatabaseFilter.valueOf("item", bpmItem.getId().toString()),
+							DatabaseFilter.valueOf("parent", parent.getId().toString()) });
+
+			if (!this.databaseService.exists(databaseParameter, BpmItemPrevious.class, connection)) {
+				BpmItemPrevious bpmItemPrevious = new BpmItemPrevious();
+				bpmItemPrevious.setItem(bpmItem);
+				bpmItemPrevious.setParent(parent);
+				bpmItemPrevious.setPreviousAccept(item.getPreviousAccept());
+				bpmItemPrevious = this.databaseService.save(bpmItemPrevious, connection);
+				previousItem.add(bpmItemPrevious);
+			} else {
+				BpmItemPrevious bpmItemPrevious = this.databaseService
+						.findAll(databaseParameter, BpmItemPrevious.class, connection).getFirst();
+				bpmItemPrevious.setPreviousAccept(item.getPreviousAccept());
+				bpmItemPrevious = this.databaseService.save(bpmItemPrevious, connection);
+				previousItem.add(bpmItemPrevious);
+			}
+
+		}
 
 		List<BpmItemMailReceive> databaseReceives = this.databaseService.findAll(
 				DatabaseParameter.valueOf(DatabaseFilter.valueOf("bpmItem", bpmItem.getId().toString())),
@@ -164,10 +215,9 @@ public class UpdateBpmModel implements ExecuteQuery<BpmModelDTO> {
 		}
 
 		for (BpmItemDTO child : item.getChildren()) {
-			child.setPreviousItemId(bpmItem.getId());
 			if (!item.getType().equals(BpmExecuteType.TASK))
 				child.setPreviousAccept(true);
-			addItem(child, items, connection, bpmModel);
+			addItem(child, items, connection, bpmModel, bpmItem, previousItem);
 		}
 
 		items.add(bpmItem);

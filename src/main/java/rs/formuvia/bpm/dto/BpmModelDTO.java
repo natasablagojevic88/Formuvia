@@ -41,4 +41,5 @@ public class BpmModelDTO {
 	@SkipColumn
 	@HideInTable
 	private List<BpmItemDTO> items = new ArrayList<>();
+
 }
