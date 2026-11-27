@@ -117,5 +117,11 @@ public class ApiRoute {
 	public static final String bpmModelList = "/bpm-model/{modelId}/table";
 	public static final String bpmModel = "/bpm-model";
 	public static final String bpmModelId = "/bpm-model/{id}";
+	public static final String bpmModelAllGroups = "/bpm-model/all-groups";
+
+	public static final String bpmGroupTable = "/bpm-group/table";
+	public static final String bpmGroup = "/bpm-group";
+	public static final String bpmGroupId = "/bpm-group/{id}";
+	public static final String bpmGroupAllUser = "/bpm-group/all-users";
 
 }

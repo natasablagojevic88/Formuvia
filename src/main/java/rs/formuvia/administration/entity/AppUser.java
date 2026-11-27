@@ -21,6 +21,10 @@ import lombok.Setter;
 		"username" }, name = "appuser_username_unique"))
 public class AppUser {
 
+	public AppUser(UUID id) {
+		this.id = id;
+	}
+
 	@Id
 	private UUID id;
 

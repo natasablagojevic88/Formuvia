@@ -1,10 +1,13 @@
 package rs.formuvia.bpm.service.impl;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.jvnet.hk2.annotations.Service;
 
 import jakarta.inject.Inject;
+import rs.formuvia.bpm.dto.BpmGroupDTO;
 import rs.formuvia.bpm.dto.BpmModelDTO;
 import rs.formuvia.bpm.entity.BpmModel;
 import rs.formuvia.bpm.service.BpmModelService;
@@ -14,6 +17,7 @@ import rs.formuvia.database.service.DatabaseService;
 import rs.formuvia.database.utils.DatabaseFilter;
 import rs.formuvia.database.utils.DatabaseParameter;
 import rs.formuvia.database.utils.DatabaseTable;
+import rs.formuvia.utils.StaticData;
 
 @Service
 public class BpmModelServiceImpl implements BpmModelService {
@@ -44,6 +48,12 @@ public class BpmModelServiceImpl implements BpmModelService {
 		BpmModel bpmModel = this.databaseService.findById(id, BpmModel.class);
 		this.databaseService.delete(bpmModel);
 
+	}
+
+	@Override
+	public List<BpmGroupDTO> getAllGroups() {
+
+		return StaticData.bpmGroups.stream().collect(Collectors.toList());
 	}
 
 }

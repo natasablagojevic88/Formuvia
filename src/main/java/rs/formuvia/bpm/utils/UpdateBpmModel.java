@@ -103,18 +103,19 @@ public class UpdateBpmModel implements ExecuteQuery<BpmModelDTO> {
 			if (task.getIsAcceptEnd() && children.stream().anyMatch(a -> a.getPreviousAccept()))
 				throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "bpmEndAndNext", task.getName());
 
-			if (!task.getType().equals(BpmExecuteType.TASK))
-				continue;
-
-			if (task.getIsRejectEnd() && children.stream().anyMatch(a -> !a.getPreviousAccept()))
-				throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "bpmEndAndNext", task.getName());
-
 			if (task.getAtLeastEnter() > 1) {
 				Long countParent = previousItem.stream().filter(a -> a.getItem().getId().equals(task.getId())).count();
 				if (countParent < task.getAtLeastEnter())
 					throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "atLeastHigherThenNumberOfParents",
 							task.getName());
 			}
+
+			if (!task.getType().equals(BpmExecuteType.TASK))
+				continue;
+
+			if (task.getIsRejectEnd() && children.stream().anyMatch(a -> !a.getPreviousAccept()))
+				throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "bpmEndAndNext", task.getName());
+
 		}
 
 		for (BpmItem itemToDelete : currentItem.stream()
@@ -248,6 +249,7 @@ public class UpdateBpmModel implements ExecuteQuery<BpmModelDTO> {
 			item.setMailSubject(null);
 			item.setReceiveNotification(new ArrayList<>());
 			item.setIsRejectEnd(false);
+			item.setBpmGroupId(null);
 
 			if (StringUtils.isNull(item.getProcedure()))
 				throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "noProcedureFieldField", item.getName());
@@ -265,7 +267,7 @@ public class UpdateBpmModel implements ExecuteQuery<BpmModelDTO> {
 			if (StringUtils.isNull(item.getMailBody()))
 				throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "noMailBodyField", item.getName());
 
-			if (item.getReceiveNotification().isEmpty())
+			if (item.getReceiveNotification().isEmpty() && StringUtils.isNull(item.getBpmGroupId()))
 				throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "noReceiveNotification", item.getName());
 
 			break;
@@ -274,7 +276,7 @@ public class UpdateBpmModel implements ExecuteQuery<BpmModelDTO> {
 			item.setMailSubject(null);
 			item.setReceiveNotification(new ArrayList<>());
 
-			if (StringUtils.isNull(item.getAppUserId()))
+			if (StringUtils.isNull(item.getAppUserId()) && StringUtils.isNull(item.getBpmGroupId()))
 				throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "noUserField", item.getName());
 
 			break;

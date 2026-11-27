@@ -21,6 +21,7 @@ import rs.formuvia.administration.dto.AppUserRoleDTO;
 import rs.formuvia.administration.dto.RoleDTO;
 import rs.formuvia.administration.dto.SmtpDTO;
 import rs.formuvia.administration.entity.AppUser;
+import rs.formuvia.bpm.dto.BpmGroupDTO;
 import rs.formuvia.common.dto.ComboboxDTO;
 import rs.formuvia.model.dto.ModelColumnConditionDTO;
 import rs.formuvia.model.dto.ModelColumnDTO;
@@ -70,6 +71,7 @@ public class StaticData {
 	public static volatile List<SmtpDTO> smtps = new ArrayList<>();
 	public static volatile List<JobItemDTO> jobItems = new ArrayList<>();
 	public static volatile List<JobItemWebhookDTO> webhooks = new ArrayList<>();
+	public static volatile List<BpmGroupDTO> bpmGroups = new ArrayList<>();
 
 	public static volatile Map<UUID, List<ComboboxDTO>> modelCodebook = new ConcurrentHashMap<>();
 	public static volatile Set<UUID> modelsToListen = ConcurrentHashMap.newKeySet();

@@ -16,6 +16,7 @@ import rs.formuvia.administration.dto.AppUserRoleDTO;
 import rs.formuvia.administration.dto.RoleDTO;
 import rs.formuvia.administration.dto.SmtpDTO;
 import rs.formuvia.administration.entity.AppUser;
+import rs.formuvia.bpm.dto.BpmGroupDTO;
 import rs.formuvia.common.utils.NotificationListen;
 import rs.formuvia.database.service.DatabaseService;
 import rs.formuvia.database.service.impl.DatabaseServiceImpl;
@@ -113,6 +114,9 @@ public class DatabaseListenJob implements Job {
 							break;
 						case listen_job_item_webhook:
 							StaticData.webhooks = this.databaseService.findAll(null, JobItemWebhookDTO.class);
+							break;
+						case listen_bpm_group:
+							StaticData.bpmGroups = this.databaseService.findAll(null, BpmGroupDTO.class);
 							break;
 
 						}

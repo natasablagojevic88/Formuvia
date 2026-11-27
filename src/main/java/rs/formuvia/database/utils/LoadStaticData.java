@@ -11,6 +11,7 @@ import rs.formuvia.administration.dto.AppUserRoleDTO;
 import rs.formuvia.administration.dto.RoleDTO;
 import rs.formuvia.administration.dto.SmtpDTO;
 import rs.formuvia.administration.entity.AppUser;
+import rs.formuvia.bpm.dto.BpmGroupDTO;
 import rs.formuvia.database.service.DatabaseService;
 import rs.formuvia.database.service.impl.DatabaseServiceImpl;
 import rs.formuvia.model.dto.ModelColumnConditionDTO;
@@ -53,6 +54,7 @@ public class LoadStaticData implements ExecuteQuery<Void> {
 		StaticData.smtps = this.databaseService.findAll(null, SmtpDTO.class, connection);
 		StaticData.jobItems = this.databaseService.findAll(null, JobItemDTO.class, connection);
 		StaticData.webhooks = this.databaseService.findAll(null, JobItemWebhookDTO.class, connection);
+		StaticData.bpmGroups = this.databaseService.findAll(null, BpmGroupDTO.class, connection);
 
 		Set<UUID> columnsWithCodebook = columnWithCodebook();
 		for (UUID modelId : columnsWithCodebook) {

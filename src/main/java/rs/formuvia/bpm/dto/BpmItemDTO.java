@@ -34,6 +34,8 @@ public class BpmItemDTO {
 	@NotNull
 	private BpmExecuteType type;
 
+	private UUID bpmGroupId;
+
 	private UUID appUserId;
 
 	private String procedure;

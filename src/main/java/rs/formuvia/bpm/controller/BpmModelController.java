@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -21,6 +22,7 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import rs.formuvia.bpm.dto.BpmGroupDTO;
 import rs.formuvia.bpm.dto.BpmModelDTO;
 import rs.formuvia.bpm.service.BpmModelService;
 import rs.formuvia.database.utils.DatabaseParameter;
@@ -46,7 +48,8 @@ public class BpmModelController {
 			@ApiResponse(responseCode = "400", description = "Unknown field or invalid value in a filter or sort", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
 			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
 			@ApiResponse(responseCode = "403", description = "Current user does not have the admin role", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
-	public Response getTable(DatabaseParameter databaseParameter, @Parameter(description = "Identifier of the model the processes belong to", required = true) @PathParam("modelId") UUID modelId) {
+	public Response getTable(DatabaseParameter databaseParameter,
+			@Parameter(description = "Identifier of the model the processes belong to", required = true) @PathParam("modelId") UUID modelId) {
 		return Response.ok(bpmModelService.getTable(databaseParameter, modelId)).build();
 	}
 
@@ -54,12 +57,13 @@ public class BpmModelController {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path(ApiRoute.bpmModelId)
 	@RolesAllowed(RoleList.ADMIN)
-	@Operation(summary = "Get process", description = "Returns one process with all its steps, used to fill the process designer: the name, the start and end procedure and items, the steps that start the process. Every step carries its children (the steps after it; previousAccept says whether a child follows the acceptance or the rejection of a task), the users who get its notification (receiveNotification) and the columns a task may change (changeColumns).", responses = {
+	@Operation(summary = "Get process", description = "Returns one process with all its steps, used to fill the process designer: the name, the mail server (smtpId), the start and end procedure and items, the steps that start the process. Every step carries its children (the steps after it; previousAccept says whether a child follows the acceptance or the rejection of a task), the user or the group who decides a task (appUserId or bpmGroupId), the users who get its notification (receiveNotification) and a group that gets it as well (bpmGroupId) and the columns a task may change (changeColumns).", responses = {
 			@ApiResponse(responseCode = "200", description = "Process found", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = BpmModelDTO.class))),
 			@ApiResponse(responseCode = "400", description = "Process with the given identifier does not exist", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
 			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
 			@ApiResponse(responseCode = "403", description = "Current user does not have the admin role", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
-	public Response getBpmModel(@Parameter(description = "Process identifier", required = true) @PathParam("id") UUID id) {
+	public Response getBpmModel(
+			@Parameter(description = "Process identifier", required = true) @PathParam("id") UUID id) {
 		return Response.ok(bpmModelService.getBpmModel(id)).build();
 	}
 
@@ -68,7 +72,7 @@ public class BpmModelController {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path(ApiRoute.bpmModel)
 	@RolesAllowed(RoleList.ADMIN)
-	@Operation(summary = "Create or update process", description = "Creates a new process when id is empty, otherwise updates the process with that id, together with the whole tree of steps sent in items; steps that are no longer in the tree are deleted. The name must be unique within the model and the start and end procedure, when given, must exist in the database. Every step needs a name and a type: a task needs the user who decides, a procedure step an existing procedure, a notification a subject, a text and at least one recipient. An entry condition must be a SELECT. At least one step must end the process, and a task must have a next step or the end of the process both after acceptance and after rejection; any other step a next step or the end.", requestBody = @RequestBody(description = "Process with its tree of steps; id empty for a new process", required = true, content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = BpmModelDTO.class))), responses = {
+	@Operation(summary = "Create or update process", description = "Creates a new process when id is empty, otherwise updates the process with that id, together with the whole tree of steps sent in items; steps that are no longer in the tree are deleted. The name must be unique within the model, a mail server (smtpId) the notifications go through is required, and the start and end procedure, when given, must exist in the database. Every step needs a name and a type: a task needs the user or the group who decides (appUserId or bpmGroupId), a procedure step an existing procedure, a notification a subject, a text and at least one recipient or a group. An entry condition must be a SELECT. At least one step must end the process, and a task must have a next step or the end of the process both after acceptance and after rejection; any other step a next step or the end.", requestBody = @RequestBody(description = "Process with its tree of steps; id empty for a new process", required = true, content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = BpmModelDTO.class))), responses = {
 			@ApiResponse(responseCode = "200", description = "Process saved; the response is the process as it was saved, with the identifiers of new steps", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = BpmModelDTO.class))),
 			@ApiResponse(responseCode = "400", description = "A required field is missing, the name is already used in the model, a procedure does not exist, a condition is not a SELECT, or a step leaves the process without a next step or an end", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
 			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
@@ -85,8 +89,21 @@ public class BpmModelController {
 			@ApiResponse(responseCode = "400", description = "Process with the given identifier does not exist", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
 			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
 			@ApiResponse(responseCode = "403", description = "Current user does not have the admin role", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
-	public Response getDelete(@Parameter(description = "Process identifier", required = true) @PathParam("id") UUID id) {
+	public Response getDelete(
+			@Parameter(description = "Process identifier", required = true) @PathParam("id") UUID id) {
 		bpmModelService.getDelete(id);
 		return Response.noContent().build();
+	}
+
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path(ApiRoute.bpmModelAllGroups)
+	@RolesAllowed(RoleList.ADMIN)
+	@Operation(summary = "List all process user groups", description = "Returns every process user group (id and name; users and allUsers are empty), to give a task or a notification of a process to a group.", responses = {
+			@ApiResponse(responseCode = "200", description = "Every group", content = @Content(mediaType = MediaType.APPLICATION_JSON, array = @ArraySchema(schema = @Schema(implementation = BpmGroupDTO.class)))),
+			@ApiResponse(responseCode = "401", description = "No valid session", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))),
+			@ApiResponse(responseCode = "403", description = "Current user does not have the admin role", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDetail.class))) })
+	public Response getAllGroups() {
+		return Response.ok(bpmModelService.getAllGroups()).build();
 	}
 }

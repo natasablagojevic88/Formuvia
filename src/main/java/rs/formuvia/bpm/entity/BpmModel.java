@@ -16,6 +16,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import rs.formuvia.administration.entity.Smtp;
 import rs.formuvia.model.entity.Model;
 
 @Setter
@@ -42,4 +43,7 @@ public class BpmModel {
 
 	@Column(name = "end_sql_procedure")
 	private String endSqlProcedure;
+
+	@JoinColumn(nullable = false, foreignKey = @ForeignKey(name = "fk_bpm_model_smtp"))
+	private Smtp smtp;
 }

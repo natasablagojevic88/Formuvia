@@ -25,6 +25,10 @@ import rs.formuvia.utils.RoleList;
 @EntityClass(value = AppUser.class, roles = RoleList.ADMIN, saveUrl = ApiRoute.appuser)
 public class AppUserDTO {
 
+	public AppUserDTO(UUID id) {
+		this.id = id;
+	}
+
 	@HideInTable
 	@NotEditableInTable
 	private UUID id;

@@ -53,6 +53,9 @@ public class BpmItem {
 	@Column(name = "mail_body", columnDefinition = "text")
 	private String mailBody;
 
+	@JoinColumn(name = "bpm_group", foreignKey = @ForeignKey(name = "fk_bpm_item_bpm_group"))
+	private BpmGroup bpmGroup;
+
 	@Column(name = "is_reject_end", nullable = false)
 	private Boolean isRejectEnd;
 

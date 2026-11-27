@@ -4,6 +4,7 @@ import rs.formuvia.administration.entity.AppUser;
 import rs.formuvia.administration.entity.AppUserRole;
 import rs.formuvia.administration.entity.Role;
 import rs.formuvia.administration.entity.Smtp;
+import rs.formuvia.bpm.entity.BpmGroup;
 import rs.formuvia.model.entity.Model;
 import rs.formuvia.model.entity.ModelColumn;
 import rs.formuvia.model.entity.ModelColumnCondition;
@@ -24,7 +25,8 @@ public enum DatabaseListen {
 	listen_model_column_condition(ModelColumnCondition.class), listen_model_procedure(ModelProcedure.class),
 	listen_model_trigger(ModelTrigger.class), listen_model_jasper(ModelJasper.class),
 	listen_report_group(ReportGroup.class), listen_report(Report.class), listen_report_parameter(ReportParameter.class),
-	listen_job_item(JobItem.class), listen_smtp(Smtp.class), listen_job_item_webhook(JobItemWebhook.class);
+	listen_job_item(JobItem.class), listen_smtp(Smtp.class), listen_job_item_webhook(JobItemWebhook.class),
+	listen_bpm_group(BpmGroup.class);
 
 	public Class<?> entityClass;
 
