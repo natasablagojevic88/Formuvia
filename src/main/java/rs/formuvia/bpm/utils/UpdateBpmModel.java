@@ -241,6 +241,12 @@ public class UpdateBpmModel implements ExecuteQuery<BpmModelDTO> {
 		if (StringUtils.hasText(item.getSqlCondition()))
 			UpdateColumnModel.checkDefaultValue(item.getSqlCondition());
 
+		if (StringUtils.notNull(item.getBpmGroupId()) && StringUtils.notNull(item.getAppUserId()))
+			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "taskCanDoGroupOrUser", null);
+
+		if (StringUtils.notNull(item.getBpmGroupId()) && (!item.getReceiveNotification().isEmpty()))
+			throw new CommonException(HttpURLConnection.HTTP_BAD_REQUEST, "receiveCanDoGroupOrUser", null);
+
 		switch (item.getType()) {
 		case EXECUTE_PROCEDURE:
 			item.setAppUserId(null);

@@ -10,11 +10,13 @@ import rs.formuvia.administration.entity.AppUser;
 import rs.formuvia.bpm.dto.BpmGroupDTO;
 import rs.formuvia.bpm.entity.BpmGroup;
 import rs.formuvia.bpm.entity.BpmGroupUser;
+import rs.formuvia.database.enums.SearchOperation;
 import rs.formuvia.database.service.DatabaseService;
 import rs.formuvia.database.service.impl.DatabaseServiceImpl;
 import rs.formuvia.database.utils.DatabaseFilter;
 import rs.formuvia.database.utils.DatabaseParameter;
 import rs.formuvia.database.utils.ExecuteQuery;
+import rs.formuvia.exceptions.UniqueException;
 import rs.formuvia.utils.StringUtils;
 
 public class UpdateBpmGroup implements ExecuteQuery<BpmGroupDTO> {
@@ -35,6 +37,18 @@ public class UpdateBpmGroup implements ExecuteQuery<BpmGroupDTO> {
 				: this.databaseService.findById(bpmGroupDTO.getId(), BpmGroup.class, connection);
 
 		modelMapper.map(this.bpmGroupDTO, groupGroup);
+
+		DatabaseParameter uniqueParameter = DatabaseParameter
+				.singleFilter(DatabaseFilter.valueOf("name", bpmGroupDTO.getName()));
+
+		if (StringUtils.notNull(bpmGroupDTO.getId()))
+			uniqueParameter.getFilters()
+					.add(DatabaseFilter.valueOf("id", SearchOperation.NOT_EQUALS, bpmGroupDTO.getId().toString()));
+
+		if (this.databaseService.exists(uniqueParameter, BpmGroupDTO.class, connection))
+			throw new UniqueException(UniqueException.findFieldFromList(BpmGroupDTO.class, "name"),
+					bpmGroupDTO.getName());
+
 		groupGroup = this.databaseService.save(groupGroup, connection);
 		List<BpmGroupUser> curentUsersForGroup = this.databaseService.findAll(
 				DatabaseParameter.valueOf(DatabaseFilter.valueOf("userGroup", groupGroup.getId().toString())),
